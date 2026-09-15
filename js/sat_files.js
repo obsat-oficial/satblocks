@@ -1467,10 +1467,15 @@ print("[OBSAT] Missao iniciada na memoria Flash")
     }, 8000);
 
     const safe = filename.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-    // Tudo em uma única linha (via exec com \\n escapado) para não precisar
-    // de Paste Mode — mesmo padrão já usado por fetchFilesFromHardware().
+    // IMPORTANTE: o REPL ecoa de volta cada caractere recebido (mesmo motivo do
+    // ">>> >>> comando" duplicado no console). Se os marcadores __FILE_START__/
+    // __FILE_END__ aparecessem inteiros no código-fonte enviado, esse eco por si
+    // só já "casaria" com o parser abaixo antes da resposta real chegar — daí o
+    // erro de base64 inválido. Por isso cada marcador é montado em pedaços
+    // separados por "+" no código Python: o eco do comando nunca contém o
+    // marcador completo de uma vez, só a saída real do print() o forma.
     const cmd = "import ubinascii as _ub\r\n" +
-      "exec(\"try:\\n    with open('" + safe + "') as _f:\\n        _c = _f.read()\\n    print('__FILE_START__" + safe + "__' + _ub.b2a_base64(_c).decode().strip() + '__FILE_END__')\\nexcept Exception as _e:\\n    print('__FILE_ERROR__" + safe + "__' + str(_e))\")\r\n";
+      "exec(\"try:\\n    with open('" + safe + "') as _f:\\n        _c = _f.read()\\n    print('__FILE' + '_START__' + '" + safe + "' + '__' + _ub.b2a_base64(_c).decode().strip() + '__FILE' + '_END__')\\nexcept Exception as _e:\\n    print('__FILE' + '_ERROR__' + '" + safe + "' + '__' + str(_e))\")\r\n";
     SatConnection.send(cmd);
     return true;
   }
@@ -1489,11 +1494,19 @@ print("[OBSAT] Missao iniciada na memoria Flash")
       const startIdx = rawStreamBuffer.lastIndexOf(startMarker);
       const endIdx = startIdx !== -1 ? rawStreamBuffer.indexOf('__FILE_END__', startIdx) : -1;
 
-      if (startIdx !== -1 && endIdx !== -1) {
+      // Segunda camada de proteção: só aceita o trecho encontrado se ele
+      // realmente tiver "cara" de base64 (evita reagir a qualquer outro
+      // falso positivo dos marcadores, além do eco de comando já tratado acima).
+      const b64Candidate = startIdx !== -1 && endIdx !== -1
+        ? rawStreamBuffer.substring(startIdx + startMarker.length, endIdx).trim()
+        : '';
+      // Comprimento 0 é válido aqui (arquivo genuinamente vazio na Flash).
+      const looksLikeBase64 = startIdx !== -1 && endIdx !== -1 && /^[A-Za-z0-9+/=\s]*$/.test(b64Candidate);
+
+      if (looksLikeBase64) {
         clearTimeout(pendingFileReadTimeout);
-        const b64 = rawStreamBuffer.substring(startIdx + startMarker.length, endIdx).trim();
         try {
-          const content = base64ToUtf8(b64);
+          const content = base64ToUtf8(b64Candidate);
           const target = deviceFiles.find(f => f.name === pendingFileReadName);
           if (target) {
             target.content = content;
@@ -1511,6 +1524,9 @@ print("[OBSAT] Missao iniciada na memoria Flash")
           console.warn('Erro ao decodificar conteúdo do arquivo:', e);
         }
         pendingFileReadName = null;
+      } else if (startIdx !== -1 && endIdx !== -1) {
+        // Achou os marcadores mas o conteúdo não parece base64 (provavelmente
+        // o eco do próprio comando) — ignora e continua esperando a resposta real.
       } else {
         const errIdx = rawStreamBuffer.lastIndexOf(errorMarker);
         if (errIdx !== -1) {
