@@ -704,6 +704,369 @@ class WLAN:
     def scan(self):
         return []
 `
+    },
+    {
+      name: 'mcp23017.py',
+      size: '1.1 KB',
+      content: `# Driver Oficial MicroPython para Expansor de I/O MCP23017 (I2C, 16 pinos)
+from machine import I2C
+
+class MCP23017:
+    def __init__(self, i2c, addr=0x20):
+        self.i2c = i2c
+        self.addr = addr
+        self.state_a = 0
+        self.state_b = 0
+        try:
+            # 0x00/0x01 = IODIRA/IODIRB -> 0x00 define todos os 16 pinos como saida
+            self.i2c.writeto_mem(self.addr, 0x00, bytes([0x00]))
+            self.i2c.writeto_mem(self.addr, 0x01, bytes([0x00]))
+        except Exception:
+            pass
+
+    def set_pin(self, pin, value):
+        p = int(pin)
+        v = int(value)
+        try:
+            if p < 8:
+                if v: self.state_a |= (1 << p)
+                else: self.state_a &= ~(1 << p)
+                self.i2c.writeto_mem(self.addr, 0x12, bytes([self.state_a]))  # GPIOA
+            else:
+                p2 = p - 8
+                if v: self.state_b |= (1 << p2)
+                else: self.state_b &= ~(1 << p2)
+                self.i2c.writeto_mem(self.addr, 0x13, bytes([self.state_b]))  # GPIOB
+        except Exception:
+            pass
+
+    def read_pin(self, pin):
+        p = int(pin)
+        try:
+            if p < 8:
+                gpio = self.i2c.readfrom_mem(self.addr, 0x12, 1)[0]
+                return (gpio >> p) & 1
+            else:
+                gpio = self.i2c.readfrom_mem(self.addr, 0x13, 1)[0]
+                return (gpio >> (p - 8)) & 1
+        except Exception:
+            return 0
+`
+    },
+    {
+      name: 'ak8963.py',
+      size: '1.4 KB',
+      content: `# Driver MicroPython para o Magnetometro AK8963 (I2C, integrado ao MPU-9250)
+# Compativel com placas ESP32 / RP2040 usadas nas oficinas OBSAT.
+# Observacao: o driver mpu9250.py deste catalogo ja le o magnetometro
+# internamente; use este arquivo separado apenas se precisar do AK8963
+# isolado, sem instanciar a classe MPU9250 completa.
+import struct
+import time
+from machine import I2C
+
+_WIA = 0x00
+_ST1 = 0x02
+_HXL = 0x03
+_ST2 = 0x09
+_CNTL1 = 0x0A
+
+class AK8963:
+    def __init__(self, i2c, addr=0x0C):
+        self.i2c = i2c
+        self.addr = addr
+        self._init_mag()
+
+    def _init_mag(self):
+        try:
+            # Modo continuo 2 (100 Hz), saida de 16 bits
+            self.i2c.writeto_mem(self.addr, _CNTL1, b'\\x16')
+            time.sleep_ms(10)
+        except Exception:
+            pass
+
+    def who_am_i(self):
+        try:
+            return self.i2c.readfrom_mem(self.addr, _WIA, 1)[0]
+        except Exception:
+            return 0
+
+    @property
+    def magnetic(self):
+        try:
+            status = self.i2c.readfrom_mem(self.addr, _ST1, 1)[0]
+            if not (status & 0x01):
+                return (0.0, 0.0, 0.0)
+            raw = self.i2c.readfrom_mem(self.addr, _HXL, 7)
+            x, y, z = struct.unpack('<hhh', raw[0:6])
+            # Bit de overflow magnetico (HOFL) no ST2 (ultimo byte lido)
+            if raw[6] & 0x08:
+                return (0.0, 0.0, 0.0)
+            scale = 0.15  # uT por LSB (resolucao de 16 bits)
+            return (round(x * scale, 2), round(y * scale, 2), round(z * scale, 2))
+        except Exception:
+            return (0.0, 0.0, 0.0)
+`
+    },
+    {
+      name: 'mpu6500.py',
+      size: '1.6 KB',
+      content: `# Driver MicroPython para IMU MPU-6500 (Acelerometro + Giroscopio, I2C)
+# Mesmo mapa de registradores do MPU-6050/9250 (familia InvenSense).
+# Compativel com placas ESP32 / RP2040 usadas nas oficinas OBSAT.
+import struct
+from machine import I2C
+
+class MPU6500:
+    def __init__(self, i2c, addr=0x68):
+        self.i2c = i2c
+        self.addr = addr
+        self._init_imu()
+
+    def _init_imu(self):
+        try:
+            self.i2c.writeto_mem(self.addr, 0x6B, b'\\x00')  # PWR_MGMT_1: acorda o sensor
+            self.i2c.writeto_mem(self.addr, 0x1C, b'\\x00')  # ACCEL_CONFIG: +/- 2g
+            self.i2c.writeto_mem(self.addr, 0x1B, b'\\x00')  # GYRO_CONFIG: +/- 250 dps
+        except Exception:
+            pass
+
+    def who_am_i(self):
+        try:
+            return self.i2c.readfrom_mem(self.addr, 0x75, 1)[0]
+        except Exception:
+            return 0
+
+    @property
+    def acceleration(self):
+        try:
+            raw = self.i2c.readfrom_mem(self.addr, 0x3B, 6)
+            vals = struct.unpack('>hhh', raw)
+            return (round(vals[0] / 16384.0 * 9.80665, 3),
+                    round(vals[1] / 16384.0 * 9.80665, 3),
+                    round(vals[2] / 16384.0 * 9.80665, 3))
+        except Exception:
+            return (0.0, 0.0, 9.81)
+
+    @property
+    def gyro(self):
+        try:
+            raw = self.i2c.readfrom_mem(self.addr, 0x43, 6)
+            vals = struct.unpack('>hhh', raw)
+            return (round(vals[0] / 131.0, 2),
+                    round(vals[1] / 131.0, 2),
+                    round(vals[2] / 131.0, 2))
+        except Exception:
+            return (0.0, 0.0, 0.0)
+
+    @property
+    def temperature(self):
+        try:
+            raw = self.i2c.readfrom_mem(self.addr, 0x41, 2)
+            t = struct.unpack('>h', raw)[0]
+            return round((t / 333.87) + 21.0, 2)
+        except Exception:
+            return 25.0
+`
+    },
+    {
+      name: 'rtttl.py',
+      size: '3.9 KB',
+      content: `# Biblioteca RTTTL original do projeto BIPES (github.com/BIPES/BIPES,
+# ui/pylibs/rtttl.py), reproduzida sem alteracoes para tocar melodias
+# em formato RTTTL (Ring Tone Text Transfer Language) via buzzer/PWM.
+from machine import Pin, PWM
+import time
+import songs
+
+# define frequency for each tone
+B1  = 31
+C2  = 33
+CS2 = 35
+D2  = 37
+DS2 = 39
+E2  = 41
+F2  = 44
+FS2 = 46
+G2  = 49
+GS2 = 52
+A2  = 55
+AS2 = 58
+B2  = 62
+C3  = 65
+CS3 = 69
+D3  = 73
+DS3 = 78
+E3  = 82
+F3  = 87
+FS3 = 93
+G3  = 98
+GS3 = 104
+A3  = 110
+AS3 = 117
+B3  = 123
+C4  = 131
+CS4 = 139
+D4  = 147
+DS4 = 156
+E4  = 165
+F4  = 175
+FS4 = 185
+G4  = 196
+GS4 = 208
+A4  = 220
+AS4 = 233
+B4  = 247
+C5  = 262
+CS5 = 277
+D5  = 294
+DS5 = 311
+E5  = 330
+F5  = 349
+FS5 = 370
+G5  = 392
+GS5 = 415
+A5  = 440
+AS5 = 466
+B5  = 494
+C6  = 523
+CS6 = 554
+D6  = 587
+DS6 = 622
+E6  = 659
+F6  = 698
+FS6 = 740
+G6  = 784
+GS6 = 831
+A6  = 880
+AS6 = 932
+B6  = 988
+C7  = 1047
+CS7 = 1109
+D7  = 1175
+DS7 = 1245
+E7  = 1319
+F7  = 1397
+FS7 = 1480
+G7  = 1568
+GS7 = 1661
+A7  = 1760
+AS7 = 1865
+B7  = 1976
+C8  = 2093
+CS8 = 2217
+D8  = 2349
+DS8 = 2489
+E8  = 2637
+F8  = 2794
+FS8 = 2960
+G8  = 3136
+GS8 = 3322
+A8  = 3520
+AS8 = 3729
+B8  = 3951
+C9  = 4186
+CS9 = 4435
+D9  = 4699
+DS9 = 4978
+P = 0
+
+def RTTTL(text):
+    try:
+        title, defaults, song = text.split(':')
+        d, o, b = defaults.split(',')
+        d = int(d.split('=')[1])
+        o = int(o.split('=')[1])
+        b = int(b.split('=')[1])
+        whole = (60000/b)*4
+        noteList = song.split(',')
+    except:
+        return 'Please enter a valid RTTTL string.'
+    notes = 'abcdefgp'
+    outList = []
+    for note in noteList:
+        index = 0
+        for i in note:
+            if i in notes:
+                index = note.find(i)
+                break
+        length = note[0:index]
+        value = note[index:].replace('#','s').replace('.','')
+        if not any(char.isdigit() for char in value):
+            value += str(o)
+        if 'p' in value:
+            value = 'p'
+        if length == '':
+            length = d
+        else:
+            length = int(length)
+        length = whole/length
+        if '.' in note:
+            length += length/2
+        outList.append((eval(value.upper()), length))
+    return outList
+
+def play(pin, tune):
+    tune = RTTTL(tune)
+    if type(tune) is not list:
+        return tune
+    for freqc, msec in tune:
+        msec = msec * 0.001
+        if freqc > 0:
+            pwm0 = PWM(pin, freq=freqc, duty=512)
+        time.sleep(msec*0.9)
+        if freqc > 0:
+            pwm0.deinit()
+        time.sleep(msec*0.1)
+`
+    },
+    {
+      name: 'songs.py',
+      size: '5.1 KB',
+      content: `# Biblioteca de musicas RTTTL original do projeto BIPES
+# (github.com/BIPES/BIPES, ui/pylibs/songs.py), reproduzida sem alteracoes.
+# The following RTTTL tunes were extracted from the following:
+# https://github.com/onebeartoe/media-players/blob/master/pi-ezo/src/main/java/org/onebeartoe/media/piezo/ports/rtttl/BuiltInSongs.java
+# most of which originated from here:
+# http://www.picaxe.com/RTTTL-Ringtones-for-Tune-Command/
+#
+
+SONGS = [
+    'Super Mario - Main Theme:d=4,o=5,b=125:a,8f.,16c,16d,16f,16p,f,16d,16c,16p,16f,16p,16f,16p,8c6,8a.,g,16c,a,8f.,16c,16d,16f,16p,f,16d,16c,16p,16f,16p,16a#,16a,16g,2f,16p,8a.,8f.,8c,8a.,f,16g#,16f,16c,16p,8g#.,2g,8a.,8f.,8c,8a.,f,16g#,16f,8c,2c6',
+    'Super Mario - Title Music:d=4,o=5,b=125:8d7,8d7,8d7,8d6,8d7,8d7,8d7,8d6,2d#7,8d7,p,32p,8d6,8b6,8b6,8b6,8d6,8b6,8b6,8b6,8d6,8b6,8b6,8b6,16b6,16c7,b6,8a6,8d6,8a6,8a6,8a6,8d6,8a6,8a6,8a6,8d6,8a6,8a6,8a6,16a6,16b6,a6,8g6,8d6,8b6,8b6,8b6,8d6,8b6,8b6,8b6,8d6,8b6,8b6,8b6,16a6,16b6,c7,e7,8d7,8d7,8d7,8d6,8c7,8c7,8c7,8f#6,2g6',
+    'SMBtheme:d=4,o=5,b=100:16e6,16e6,32p,8e6,16c6,8e6,8g6,8p,8g,8p,8c6,16p,8g,16p,8e,16p,8a,8b,16a#,8a,16g.,16e6,16g6,8a6,16f6,8g6,8e6,16c6,16d6,8b,16p,8c6,16p,8g,16p,8e,16p,8a,8b,16a#,8a,16g.,16e6,16g6,8a6,16f6,8g6,8e6,16c6,16d6,8b,8p,16g6,16f#6,16f6,16d#6,16p,16e6,16p,16g#,16a,16c6,16p,16a,16c6,16d6,8p,16g6,16f#6,16f6,16d#6,16p,16e6,16p,16c7,16p,16c7,16c7,p,16g6,16f#6,16f6,16d#6,16p,16e6,16p,16g#,16a,16c6,16p,16a,16c6,16d6,8p,16d#6,8p,16d6,8p,16c6',
+    'SMBwater:d=8,o=6,b=225:4d5,4e5,4f#5,4g5,4a5,4a#5,b5,b5,b5,p,b5,p,2b5,p,g5,2e.,2d#.,2e.,p,g5,a5,b5,c,d,2e.,2d#,4f,2e.,2p,p,g5,2d.,2c#.,2d.,p,g5,a5,b5,c,c#,2d.,2g5,4f,2e.,2p,p,g5,2g.,2g.,2g.,4g,4a,p,g,2f.,2f.,2f.,4f,4g,p,f,2e.,4a5,4b5,4f,e,e,4e.,b5,2c.',
+    'SMBunderground:d=16,o=6,b=100:c,c5,a5,a,a#5,a#,2p,8p,c,c5,a5,a,a#5,a#,2p,8p,f5,f,d5,d,d#5,d#,2p,8p,f5,f,d5,d,d#5,d#,2p,32d#,d,32c#,c,p,d#,p,d,p,g#5,p,g5,p,c#,p,32c,f#,32f,32e,a#,32a,g#,32p,d#,b5,32p,a#5,32p,a5,g#5',
+    'Picaxe:d=4,o=6,b=101:g5,c,8c,c,e,d,8c,d,8e,8d,c,8c,e,g,2a,a,g,8e,e,c,d,8c,d,8e,8d,c,8a5,a5,g5,2c',
+    'The Simpsons:d=4,o=5,b=160:c.6,e6,f#6,8a6,g.6,e6,c6,8a,8f#,8f#,8f#,2g,8p,8p,8f#,8f#,8f#,8g,a#.,8c6,8c6,8c6,c6',
+    'Indiana:d=4,o=5,b=250:e,8p,8f,8g,8p,1c6,8p.,d,8p,8e,1f,p.,g,8p,8a,8b,8p,1f6,p,a,8p,8b,2c6,2d6,2e6,e,8p,8f,8g,8p,1c6,p,d6,8p,8e6,1f.6,g,8p,8g,e.6,8p,d6,8p,8g,e.6,8p,d6,8p,8g,f.6,8p,e6,8p,8d6,2c6',
+    'TakeOnMe:d=4,o=4,b=160:8f#5,8f#5,8f#5,8d5,8p,8b,8p,8e5,8p,8e5,8p,8e5,8g#5,8g#5,8a5,8b5,8a5,8a5,8a5,8e5,8p,8d5,8p,8f#5,8p,8f#5,8p,8f#5,8e5,8e5,8f#5,8e5,8f#5,8f#5,8f#5,8d5,8p,8b,8p,8e5,8p,8e5,8p,8e5,8g#5,8g#5,8a5,8b5,8a5,8a5,8a5,8e5,8p,8d5,8p,8f#5,8p,8f#5,8p,8f#5,8e5,8e5',
+    'Entertainer:d=4,o=5,b=140:8d,8d#,8e,c6,8e,c6,8e,2c.6,8c6,8d6,8d#6,8e6,8c6,8d6,e6,8b,d6,2c6,p,8d,8d#,8e,c6,8e,c6,8e,2c.6,8p,8a,8g,8f#,8a,8c6,e6,8d6,8c6,8a,2d6',
+    'Muppets:d=4,o=5,b=250:c6,c6,a,b,8a,b,g,p,c6,c6,a,8b,8a,8p,g.,p,e,e,g,f,8e,f,8c6,8c,8d,e,8e,8e,8p,8e,g,2p,c6,c6,a,b,8a,b,g,p,c6,c6,a,8b,a,g.,p,e,e,g,f,8e,f,8c6,8c,8d,e,8e,d,8d,c',
+    'Xfiles:d=4,o=5,b=125:e,b,a,b,d6,2b.,1p,e,b,a,b,e6,2b.,1p,g6,f#6,e6,d6,e6,2b.,1p,g6,f#6,e6,d6,f#6,2b.,1p,e,b,a,b,d6,2b.,1p,e,b,a,b,e6,2b.,1p,e6,2b.',
+    'Looney:d=4,o=5,b=140:32p,c6,8f6,8e6,8d6,8c6,a.,8c6,8f6,8e6,8d6,8d#6,e.6,8e6,8e6,8c6,8d6,8c6,8e6,8c6,8d6,8a,8c6,8g,8a#,8a,8f',
+    '20thCenFox:d=16,o=5,b=140:b,8p,b,b,2b,p,c6,32p,b,32p,c6,32p,b,32p,c6,32p,b,8p,b,b,b,32p,b,32p,b,32p,b,32p,b,32p,b,32p,b,32p,g#,32p,a,32p,b,8p,b,b,2b,4p,8e,8g#,8b,1c#6,8f#,8a,8c#6,1e6,8a,8c#6,8e6,1e6,8b,8g#,8a,2b',
+    'Bond:d=4,o=5,b=80:32p,16c#6,32d#6,32d#6,16d#6,8d#6,16c#6,16c#6,16c#6,16c#6,32e6,32e6,16e6,8e6,16d#6,16d#6,16d#6,16c#6,32d#6,32d#6,16d#6,8d#6,16c#6,16c#6,16c#6,16c#6,32e6,32e6,16e6,8e6,16d#6,16d6,16c#6,16c#7,c.7,16g#6,16f#6,g#.6',
+    'MASH:d=8,o=5,b=140:4a,4g,f#,g,p,f#,p,g,p,f#,p,2e.,p,f#,e,4f#,e,f#,p,e,p,4d.,p,f#,4e,d,e,p,d,p,e,p,d,p,2c#.,p,d,c#,4d,c#,d,p,e,p,4f#,p,a,p,4b,a,b,p,a,p,b,p,2a.,4p,a,b,a,4b,a,b,p,2a.,a,4f#,a,b,p,d6,p,4e.6,d6,b,p,a,p,2b',
+    'StarWars:d=4,o=5,b=45:32p,32f#,32f#,32f#,8b.,8f#.6,32e6,32d#6,32c#6,8b.6,16f#.6,32e6,32d#6,32c#6,8b.6,16f#.6,32e6,32d#6,32e6,8c#.6,32f#,32f#,32f#,8b.,8f#.6,32e6,32d#6,32c#6,8b.6,16f#.6,32e6,32d#6,32c#6,8b.6,16f#.6,32e6,32d#6,32e6,8c#6',
+    'GoodBad:d=4,o=5,b=56:32p,32a#,32d#6,32a#,32d#6,8a#.,16f#.,16g#.,d#,32a#,32d#6,32a#,32d#6,8a#.,16f#.,16g#.,c#6,32a#,32d#6,32a#,32d#6,8a#.,16f#.,32f.,32d#.,c#,32a#,32d#6,32a#,32d#6,8a#.,16g#.,d#',
+    'TopGun:d=4,o=4,b=31:32p,16c#,16g#,16g#,32f#,32f,32f#,32f,16d#,16d#,32c#,32d#,16f,32d#,32f,16f#,32f,32c#,16f,d#,16c#,16g#,16g#,32f#,32f,32f#,32f,16d#,16d#,32c#,32d#,16f,32d#,32f,16f#,32f,32c#,g#',
+    'A-Team:d=8,o=5,b=125:4d#6,a#,2d#6,16p,g#,4a#,4d#.,p,16g,16a#,d#6,a#,f6,2d#6,16p,c#.6,16c6,16a#,g#.,2a#',
+    'Flinstones:d=4,o=5,b=40:32p,16f6,16a#,16a#6,32g6,16f6,16a#.,16f6,32d#6,32d6,32d6,32d#6,32f6,16a#,16c6,d6,16f6,16a#.,16a#6,32g6,16f6,16a#.,32f6,32f6,32d#6,32d6,32d6,32d#6,32f6,16a#,16c6,a#,16a6,16d.6,16a#6,32a6,32a6,32g6,32f#6,32a6,8g6,16g6,16c.6,32a6,32a6,32g6,32g6,32f6,32e6,32g6,8f6,16f6,16a#.,16a#6,32g6,16f6,16a#.,16f6,32d#6,32d6,32d6,32d#6,32f6,16a#,16c.6,32d6,32d#6,32f6,16a#,16c.6,32d6,32d#6,32f6,16a#6,16c7,8a#.6',
+    'Jeopardy:d=4,o=6,b=125:c,f,c,f5,c,f,2c,c,f,c,f,a.,8g,8f,8e,8d,8c#,c,f,c,f5,c,f,2c,f.,8d,c,a#5,a5,g5,f5,p,d#,g#,d#,g#5,d#,g#,2d#,d#,g#,d#,g#,c.7,8a#,8g#,8g,8f,8e,d#,g#,d#,g#5,d#,g#,2d#,g#.,8f,d#,c#,c,p,a#5,p,g#.5,d#,g#',
+    'Gadget:d=16,o=5,b=50:32d#,32f,32f#,32g#,a#,f#,a,f,g#,f#,32d#,32f,32f#,32g#,a#,d#6,4d6,32d#,32f,32f#,32g#,a#,f#,a,f,g#,f#,8d#',
+    'Smurfs:d=32,o=5,b=200:4c#6,16p,4f#6,p,16c#6,p,8d#6,p,8b,p,4g#,16p,4c#6,p,16a#,p,8f#,p,8a#,p,4g#,4p,g#,p,a#,p,b,p,c6,p,4c#6,16p,4f#6,p,16c#6,p,8d#6,p,8b,p,4g#,16p,4c#6,p,16a#,p,8b,p,8f,p,4f#',
+    'MahnaMahna:d=16,o=6,b=125:c#,c.,b5,8a#.5,8f.,4g#,a#,g.,4d#,8p,c#,c.,b5,8a#.5,8f.,g#.,8a#.,4g,8p,c#,c.,b5,8a#.5,8f.,4g#,f,g.,8d#.,f,g.,8d#.,f,8g,8d#.,f,8g,d#,8c,a#5,8d#.,8d#.,4d#,8d#.',
+    'LeisureSuit:d=16,o=6,b=56:f.5,f#.5,g.5,g#5,32a#5,f5,g#.5,a#.5,32f5,g#5,32a#5,g#5,8c#.,a#5,32c#,a5,a#.5,c#.,32a5,a#5,32c#,d#,8e,c#.,f.,f.,f.,f.,f,32e,d#,8d,a#.5,e,32f,e,32f,c#,d#.,c#',
+    'MissionImp:d=16,o=6,b=95:32d,32d#,32d,32d#,32d,32d#,32d,32d#,32d,32d,32d#,32e,32f,32f#,32g,g,8p,g,8p,a#,p,c7,p,g,8p,g,8p,f,p,f#,p,g,8p,g,8p,a#,p,c7,p,g,8p,g,8p,f,p,f#,p,a#,g,2d,32p,a#,g,2c#,32p,a#,g,2c,a#5,8c,2p,32p,a#5,g5,2f#,32p,a#5,g5,2f,32p,a#5,g5,2e,d#,8d',
+]
+
+def find(name):
+    for song in SONGS:
+        song_name = song.split(':')[0]
+        if song_name == name:
+            return song
+`
     }
   ];
 
@@ -949,6 +1312,13 @@ print("[OBSAT] Missao iniciada na memoria Flash")
       editor.value = `# Arquivo ${filename}\n`;
     }
 
+    // Se o nome veio da listagem real da Flash (os.listdir), busca o
+    // conteúdo de verdade gravado na placa em vez de manter só o palpite
+    // local (driver oficial conhecido ou placeholder genérico).
+    if (file && file.fromDevice) {
+      readFileFromBoard(filename);
+    }
+
     updateEditorView();
     renderFileList();
   }
@@ -1076,13 +1446,79 @@ print("[OBSAT] Missao iniciada na memoria Flash")
   }
 
   let rawStreamBuffer = '';
+  let pendingFileReadName = null;
+  let pendingFileReadTimeout = null;
+
+  // Base64 -> string decodificando como UTF-8 (atob() sozinho trata cada
+  // byte como um char code Latin-1, corrompendo acentos/emojis nos arquivos).
+  function base64ToUtf8(b64) {
+    const binary = atob(b64.replace(/\s+/g, ''));
+    const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+    return new TextDecoder('utf-8').decode(bytes);
+  }
+
+  function readFileFromBoard(filename) {
+    if (!window.SatConnection || !SatConnection.isConnected || !SatConnection.isConnected()) return false;
+
+    pendingFileReadName = filename;
+    clearTimeout(pendingFileReadTimeout);
+    pendingFileReadTimeout = setTimeout(() => {
+      pendingFileReadName = null;
+    }, 8000);
+
+    const safe = filename.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    // Tudo em uma única linha (via exec com \\n escapado) para não precisar
+    // de Paste Mode — mesmo padrão já usado por fetchFilesFromHardware().
+    const cmd = "import ubinascii as _ub\r\n" +
+      "exec(\"try:\\n    with open('" + safe + "') as _f:\\n        _c = _f.read()\\n    print('__FILE_START__" + safe + "__' + _ub.b2a_base64(_c).decode().strip() + '__FILE_END__')\\nexcept Exception as _e:\\n    print('__FILE_ERROR__" + safe + "__' + str(_e))\")\r\n";
+    SatConnection.send(cmd);
+    return true;
+  }
 
   function handleIncomingDeviceData(text) {
     if (!text) return;
     rawStreamBuffer += text;
 
-    if (rawStreamBuffer.length > 32768) {
-      rawStreamBuffer = rawStreamBuffer.slice(-16384);
+    if (rawStreamBuffer.length > 65536) {
+      rawStreamBuffer = rawStreamBuffer.slice(-32768);
+    }
+
+    if (pendingFileReadName) {
+      const startMarker = `__FILE_START__${pendingFileReadName}__`;
+      const errorMarker = `__FILE_ERROR__${pendingFileReadName}__`;
+      const startIdx = rawStreamBuffer.lastIndexOf(startMarker);
+      const endIdx = startIdx !== -1 ? rawStreamBuffer.indexOf('__FILE_END__', startIdx) : -1;
+
+      if (startIdx !== -1 && endIdx !== -1) {
+        clearTimeout(pendingFileReadTimeout);
+        const b64 = rawStreamBuffer.substring(startIdx + startMarker.length, endIdx).trim();
+        try {
+          const content = base64ToUtf8(b64);
+          const target = deviceFiles.find(f => f.name === pendingFileReadName);
+          if (target) {
+            target.content = content;
+            target.size = `${(content.length / 1024).toFixed(1)} KB`;
+          }
+          if (currentEditingFile === pendingFileReadName) {
+            const editor = document.getElementById('fileEditorTextarea');
+            if (editor) {
+              editor.value = content;
+              updateEditorView();
+            }
+          }
+          renderFileList();
+        } catch (e) {
+          console.warn('Erro ao decodificar conteúdo do arquivo:', e);
+        }
+        pendingFileReadName = null;
+      } else {
+        const errIdx = rawStreamBuffer.lastIndexOf(errorMarker);
+        if (errIdx !== -1) {
+          clearTimeout(pendingFileReadTimeout);
+          showDriverToast(`⚠️ Não foi possível ler "${pendingFileReadName}" da Flash.`);
+          pendingFileReadName = null;
+        }
+      }
     }
 
     if (rawStreamBuffer.includes('__FLASH_FILES__')) {
@@ -1097,13 +1533,17 @@ print("[OBSAT] Missao iniciada na memoria Flash")
             const updated = list.map(name => {
               const prev = deviceFiles.find(f => f.name === name);
               const official = OFFICIAL_DRIVERS.find(d => d.name === name);
-              let fallbackContent = `# Arquivo ${name} carregado da Flash\n`;
+              let fallbackContent = `# Arquivo ${name} carregado da Flash\n# Abra o arquivo para carregar o conteudo real gravado na placa.\n`;
               if (name === 'boot.py') fallbackContent = BOOT_PY_EXPLANATION;
               else if (name === 'main.py') fallbackContent = MAIN_PY_EXPLANATION;
               return {
                 name: name,
                 size: official ? official.size : (prev ? prev.size : '1 KB'),
-                content: prev ? prev.content : (official ? official.content : fallbackContent)
+                content: prev ? prev.content : (official ? official.content : fallbackContent),
+                // Nome veio de os.listdir() na placa real: o conteúdo acima é só um
+                // palpite (driver oficial conhecido ou placeholder) até ser confirmado
+                // lendo o arquivo de verdade (ver readFileFromBoard).
+                fromDevice: true
               };
             });
 
