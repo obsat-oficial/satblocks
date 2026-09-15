@@ -13,6 +13,25 @@
     return;
   }
 
+  // Substitui Blockly.Mutator.reconnect (classe Blockly.Mutator removida no Blockly >= v9,
+  // migrado para o sistema de MutatorIcon). Reconecta uma conexão salva do mutator
+  // (connectionChild, tipicamente a saída de um bloco de valor) ao input indicado do
+  // bloco principal, só se ela ainda não estiver conectada a outro lugar.
+  function satMutatorReconnect(connectionChild, block, inputName) {
+    if (!connectionChild || !connectionChild.getSourceBlock() || !connectionChild.getSourceBlock().workspace) {
+      return false;
+    }
+    const input = block.getInput(inputName);
+    const connectionParent = input && input.connection;
+    if (!connectionParent) return false;
+    const currentParent = connectionChild.targetBlock();
+    if ((!currentParent || currentParent !== block) && !connectionParent.isConnected()) {
+      connectionParent.connect(connectionChild);
+      return true;
+    }
+    return false;
+  }
+
   // Paleta de Cores Lúdicas e Didáticas SatBlocks (Cores individuais por grandeza física)
   const SENSOR_COLORS = {
     MISSION: '#7c3aed',         // Púrpura Orbital (Missão & Satélite)
@@ -105,10 +124,28 @@
 
       this.updateShape_();
       this.setOutput(true, "String");
-      this.setMutator(new Blockly.Mutator(['sat_telemetry_item']));
+      Blockly.Extensions.apply('sat_telemetry_packet_mutator', this, true);
       this.setTooltip("Monta dinamicamente uma string de telemetria em CSV ou JSON. Clique na engrenagem para adicionar/remover campos e editar rótulos.");
     },
 
+    updateShape_: function() {
+      let i = 0;
+      while (this.getInput('ADD' + i)) {
+        this.removeInput('ADD' + i);
+        i++;
+      }
+      for (let j = 0; j < this.itemCount_; j++) {
+        const label = this.itemLabels_[j] || ("Campo " + (j + 1));
+        this.appendValueInput('ADD' + j)
+            .setAlign(Blockly.ALIGN_RIGHT)
+            .appendField(label + ":");
+      }
+    }
+  };
+
+  // Mutator clássico (engrenagem) migrado de setMutator(new Blockly.Mutator([...]))
+  // (classe removida no Blockly >= v9) para Blockly.Extensions.registerMutator.
+  Blockly.Extensions.registerMutator('sat_telemetry_packet_mutator', {
     mutationToDom: function() {
       const container = Blockly.utils.xml.createElement('mutation');
       container.setAttribute('items', this.itemCount_);
@@ -164,7 +201,7 @@
       this.updateShape_();
 
       for (let i = 0; i < this.itemCount_; i++) {
-        Blockly.Mutator.reconnect(connections[i], this, 'ADD' + i);
+        satMutatorReconnect(connections[i], this, 'ADD' + i);
       }
     },
 
@@ -177,22 +214,8 @@
         i++;
         itemBlock = itemBlock.nextConnection && itemBlock.nextConnection.targetBlock();
       }
-    },
-
-    updateShape_: function() {
-      let i = 0;
-      while (this.getInput('ADD' + i)) {
-        this.removeInput('ADD' + i);
-        i++;
-      }
-      for (let j = 0; j < this.itemCount_; j++) {
-        const label = this.itemLabels_[j] || ("Campo " + (j + 1));
-        this.appendValueInput('ADD' + j)
-            .setAlign(Blockly.ALIGN_RIGHT)
-            .appendField(label + ":");
-      }
     }
-  };
+  }, undefined, ['sat_telemetry_item']);
 
   // =========================================================================
   // BLOCOS DIDÁTICOS DE JSON ESTRUTURADO, DICIONÁRIOS E VETORES ESPACIAIS
@@ -232,10 +255,26 @@
 
       this.updateShape_();
       this.setOutput(true, ["Object", "String"]);
-      this.setMutator(new Blockly.Mutator(['sat_json_object_item']));
+      Blockly.Extensions.apply('sat_json_object_mutator', this, true);
       this.setTooltip("Cria o pacote JSON com os campos oficiais do Edital OBSAT (equipe, bateria, temperatura, pressão, giroscópio, acelerômetro, payload). Clique na engrenagem para adicionar/remover campos.");
     },
 
+    updateShape_: function() {
+      let i = 0;
+      while (this.getInput('VAL' + i)) {
+        this.removeInput('VAL' + i);
+        i++;
+      }
+      for (let j = 0; j < this.itemCount_; j++) {
+        const key = this.itemKeys_[j] || ("campo" + (j + 1));
+        this.appendValueInput('VAL' + j)
+            .setAlign(Blockly.ALIGN_RIGHT)
+            .appendField('"' + key + '":');
+      }
+    }
+  };
+
+  Blockly.Extensions.registerMutator('sat_json_object_mutator', {
     mutationToDom: function() {
       const container = Blockly.utils.xml.createElement('mutation');
       container.setAttribute('items', this.itemCount_);
@@ -291,7 +330,7 @@
       this.updateShape_();
 
       for (let i = 0; i < this.itemCount_; i++) {
-        Blockly.Mutator.reconnect(connections[i], this, 'VAL' + i);
+        satMutatorReconnect(connections[i], this, 'VAL' + i);
       }
     },
 
@@ -304,22 +343,8 @@
         i++;
         itemBlock = itemBlock.nextConnection && itemBlock.nextConnection.targetBlock();
       }
-    },
-
-    updateShape_: function() {
-      let i = 0;
-      while (this.getInput('VAL' + i)) {
-        this.removeInput('VAL' + i);
-        i++;
-      }
-      for (let j = 0; j < this.itemCount_; j++) {
-        const key = this.itemKeys_[j] || ("campo" + (j + 1));
-        this.appendValueInput('VAL' + j)
-            .setAlign(Blockly.ALIGN_RIGHT)
-            .appendField('"' + key + '":');
-      }
     }
-  };
+  }, undefined, ['sat_json_object_item']);
 
   // =========================================================================
   // BLOCO CONFIGURÁVEL DE PAYLOAD CIENTÍFICO COM MUTATOR
@@ -360,10 +385,32 @@
 
       this.updateShape_();
       this.setOutput(true, ["Object", "String"]);
-      this.setMutator(new Blockly.Mutator(['sat_payload_object_item']));
+      Blockly.Extensions.apply('sat_obsat_payload_mutator', this, true);
       this.setTooltip("Monta o objeto JSON 'payload' customizável para sua missão científica. Clique na engrenagem para adicionar, remover ou renomear campos dos sensores e experimentos da equipe.");
     },
 
+    updateShape_: function() {
+      // Remove inputs legados se existirem
+      const legacyInputs = ["STATUS", "TEMP", "HUM", "GYRO", "ACCEL", "MOTION"];
+      legacyInputs.forEach(name => {
+        if (this.getInput(name)) this.removeInput(name);
+      });
+
+      let i = 0;
+      while (this.getInput('VAL' + i)) {
+        this.removeInput('VAL' + i);
+        i++;
+      }
+      for (let j = 0; j < this.itemCount_; j++) {
+        const key = this.itemKeys_[j] || ("campo" + (j + 1));
+        this.appendValueInput('VAL' + j)
+            .setAlign(Blockly.ALIGN_RIGHT)
+            .appendField('"' + key + '":');
+      }
+    }
+  };
+
+  Blockly.Extensions.registerMutator('sat_obsat_payload_mutator', {
     mutationToDom: function() {
       const container = Blockly.utils.xml.createElement('mutation');
       container.setAttribute('items', this.itemCount_);
@@ -420,7 +467,7 @@
       this.updateShape_();
 
       for (let i = 0; i < this.itemCount_; i++) {
-        Blockly.Mutator.reconnect(connections[i], this, 'VAL' + i);
+        satMutatorReconnect(connections[i], this, 'VAL' + i);
       }
     },
 
@@ -433,28 +480,8 @@
         i++;
         itemBlock = itemBlock.nextConnection && itemBlock.nextConnection.targetBlock();
       }
-    },
-
-    updateShape_: function() {
-      // Remove inputs legados se existirem
-      const legacyInputs = ["STATUS", "TEMP", "HUM", "GYRO", "ACCEL", "MOTION"];
-      legacyInputs.forEach(name => {
-        if (this.getInput(name)) this.removeInput(name);
-      });
-
-      let i = 0;
-      while (this.getInput('VAL' + i)) {
-        this.removeInput('VAL' + i);
-        i++;
-      }
-      for (let j = 0; j < this.itemCount_; j++) {
-        const key = this.itemKeys_[j] || ("campo" + (j + 1));
-        this.appendValueInput('VAL' + j)
-            .setAlign(Blockly.ALIGN_RIGHT)
-            .appendField('"' + key + '":');
-      }
     }
-  };
+  }, undefined, ['sat_payload_object_item']);
 
   // Bloco de Vetor 3D [ X, Y, Z ] (para Giroscópio, Acelerômetro, Magnetômetro)
   Blockly.Blocks['sat_vector_3d'] = {
@@ -1476,10 +1503,31 @@
 
       this.updateShape_();
       this.setOutput(true, ["Object", "Dictionary", "JSON"]);
-      this.setMutator(new Blockly.Mutator(['sat_obsat_telemetry_item']));
+      Blockly.Extensions.apply('sat_obsat_telemetry_mutator', this, true);
       this.setTooltip("Cria o dicionário de telemetria no formato homologado para a OBSAT 2026. Clique na engrenagem para adicionar/remover campos e editar os rótulos.");
     },
 
+    updateShape_: function() {
+      // Remove inputs existentes
+      let i = 0;
+      while (this.getInput('VAL' + i)) {
+        this.removeInput('VAL' + i);
+        i++;
+      }
+      // Remove legados se existirem
+      ['TEAM', 'TEMP', 'PRESS', 'ALT', 'BAT', 'PAYLOAD'].forEach(name => {
+        if (this.getInput(name)) this.removeInput(name);
+      });
+
+      for (let j = 0; j < this.itemCount_; j++) {
+        const label = this.itemLabels_[j] || (this.itemKeys_[j] ? this.itemKeys_[j] : ("Campo " + (j + 1)));
+        this.appendValueInput('VAL' + j)
+            .appendField(label + ":");
+      }
+    }
+  };
+
+  Blockly.Extensions.registerMutator('sat_obsat_telemetry_mutator', {
     mutationToDom: function() {
       const container = Blockly.utils.xml.createElement('mutation');
       container.setAttribute('items', this.itemCount_);
@@ -1548,7 +1596,7 @@
       this.updateShape_();
 
       for (let i = 0; i < this.itemCount_; i++) {
-        Blockly.Mutator.reconnect(connections[i], this, 'VAL' + i);
+        satMutatorReconnect(connections[i], this, 'VAL' + i);
       }
     },
 
@@ -1561,27 +1609,8 @@
         i++;
         itemBlock = itemBlock.nextConnection && itemBlock.nextConnection.targetBlock();
       }
-    },
-
-    updateShape_: function() {
-      // Remove inputs existentes
-      let i = 0;
-      while (this.getInput('VAL' + i)) {
-        this.removeInput('VAL' + i);
-        i++;
-      }
-      // Remove legados se existirem
-      ['TEAM', 'TEMP', 'PRESS', 'ALT', 'BAT', 'PAYLOAD'].forEach(name => {
-        if (this.getInput(name)) this.removeInput(name);
-      });
-
-      for (let j = 0; j < this.itemCount_; j++) {
-        const label = this.itemLabels_[j] || (this.itemKeys_[j] ? this.itemKeys_[j] : ("Campo " + (j + 1)));
-        this.appendValueInput('VAL' + j)
-            .appendField(label + ":");
-      }
     }
-  };
+  }, undefined, ['sat_obsat_telemetry_item']);
   Blockly.Blocks['sat_format_telemetry'] = Blockly.Blocks['sat_obsat_telemetry_packet'];
 
   // Envio Direto de Telemetria para o Servidor de Testes OBSAT (Local ou Oficial)
