@@ -2137,7 +2137,7 @@ window.SatBlocksApp = (function() {
           return;
         }
         const hovered = document.querySelector(':hover');
-        if (hovered && (hovered.closest('.blocklyToolboxDiv') || hovered.closest('.blocklyFlyout') || hovered.closest('#btnToggleToolbox') || hovered.closest('#toolboxHoverTrigger'))) {
+        if (hovered && (hovered.closest('.blocklyToolbox') || hovered.closest('.blocklyFlyout') || hovered.closest('#btnToggleToolbox') || hovered.closest('#toolboxHoverTrigger'))) {
           return;
         }
         if (area) area.classList.remove('hover-active');
@@ -2151,7 +2151,7 @@ window.SatBlocksApp = (function() {
 
     document.addEventListener('mousemove', (e) => {
       if (!isToolboxCollapsed) return;
-      const toolboxEl = document.querySelector('.blocklyToolboxDiv');
+      const toolboxEl = document.querySelector('.blocklyToolbox');
       const flyoutEl = document.querySelector('.blocklyFlyout');
 
       // Se o mouse está na borda esquerda ou dentro do toolbox ou dentro do flyout aberto
@@ -2169,7 +2169,7 @@ window.SatBlocksApp = (function() {
     // Quando o usuário clica no workspace ou arrasta um bloco para o workspace, fecha suavemente se o flyout fechar
     document.addEventListener('click', (e) => {
       if (!isToolboxCollapsed) return;
-      const toolboxEl = document.querySelector('.blocklyToolboxDiv');
+      const toolboxEl = document.querySelector('.blocklyToolbox');
       const flyoutEl = document.querySelector('.blocklyFlyout');
       if (toolboxEl && !toolboxEl.contains(e.target) && (!flyoutEl || !flyoutEl.contains(e.target)) && !toggleBtn.contains(e.target)) {
         setTimeout(() => {

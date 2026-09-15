@@ -17,7 +17,7 @@ window.SatBlocksTour = (function() {
       title: "📦 Blocos Aeroespaciais & Sensores",
       badge: "Toolbox de Voo",
       text: "Acesse sensores oficiais dos kits OBSAT: Temperatura/Umidade (SHT20), Pressão (BMP280), IMU/Giroscópio (MPU9250), CO2 (CCS811), Rádio LoRa, EasyMQTT e Pacote de Telemetria com engrenagem.",
-      target: ".blocklyToolboxDiv",
+      target: ".blocklyToolbox",
       position: "right"
     },
     {

@@ -1674,7 +1674,8 @@ porcentagem = ler_bateria_porcentagem()
         if (!cleanXml.startsWith('<xml')) {
           cleanXml = `<xml xmlns="https://developers.google.com/blockly/xml">${cleanXml}</xml>`;
         }
-        const dom = Blockly.Xml.textToDom(cleanXml);
+        const parseXml = Blockly.Xml.textToDom || (Blockly.utils && Blockly.utils.xml && Blockly.utils.xml.textToDom);
+        const dom = parseXml(cleanXml);
 
         // Pré-cria todas as variáveis declaradas no XML para que o Blockly associe os IDs reais
         const varFields = dom.querySelectorAll('field[name="VAR"]');

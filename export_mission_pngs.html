@@ -3,14 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <title>Export Mission PNGs - SatBlocks</title>
-  <script src="core/blockly/blockly_compressed.js?v=2026.2"></script>
-  <script src="core/blockly/blocks_compressed.js?v=2026.2"></script>
-  <script src="core/blockly/python_compressed.js?v=2026.2"></script>
-  <script src="core/blockly/javascript_compressed.js?v=2026.2"></script>
-  <script src="core/msg/pt-br.js?v=2026.2"></script>
+  <script src="core/blockly/blockly_compressed.js?v=2026.3"></script>
+  <script src="core/blockly/blocks_compressed.js?v=2026.3"></script>
+  <script src="core/blockly/python_compressed.js?v=2026.3"></script>
+  <script src="core/blockly/javascript_compressed.js?v=2026.3"></script>
+  <script src="core/blockly/order_shim.js?v=2026.3"></script>
+  <script src="core/msg/pt-br.js?v=2026.3"></script>
   <script src="satblocks/block_definitions.js?v=20260911-1000"></script>
-  <script src="satblocks/generator_python.js?v=20260911-1000"></script>
-  <script src="js/sat_profiles.js?v=20260911-1000"></script>
+  <script src="satblocks/generator_python.js?v=20260915-2"></script>
+  <script src="js/sat_profiles.js?v=20260915-2"></script>
   <script src="js/sat_capture.js?v=20260911-1000"></script>
   <style>
     body { font-family: sans-serif; margin: 20px; background: #f8fafc; }
@@ -70,7 +71,8 @@
             throw new Error('Perfil não encontrado: ' + m.id);
           }
 
-          const xmlDom = Blockly.Xml.textToDom(profile.xml);
+          const parseXml = Blockly.Xml.textToDom || (Blockly.utils && Blockly.utils.xml && Blockly.utils.xml.textToDom);
+          const xmlDom = parseXml(profile.xml);
           Blockly.Xml.domToWorkspace(xmlDom, workspace);
           
           // Espera para layout e renderização dos blocos no DOM

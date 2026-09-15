@@ -317,7 +317,7 @@
 
     Blockly.Python.definitions_ = Object.create(null);
     Blockly.Python.functionNames_ = Object.create(null);
-    Blockly.Python.variableDB_.reset();
+    Blockly.Python.nameDB_.reset();
 
     return result.replace(/\n\n\n+/g, '\n\n');
   };
@@ -1952,30 +1952,30 @@ def obsat_led_mcp(pin=0, state=1):
   };
 
   Blockly.Python['file_write'] = function(block) {
-    const varName = Blockly.Python.variableDB_.getName(block.getFieldValue('filename'), Blockly.Variables.NAME_TYPE);
+    const varName = Blockly.Python.nameDB_.getName(block.getFieldValue('filename'), "VARIABLE");
     const data = Blockly.Python.valueToCode(block, 'data', Blockly.Python.ORDER_NONE) || '""';
     return `${varName}.write(str(${data}))\n`;
   };
 
   Blockly.Python['file_write_line'] = function(block) {
-    const varName = Blockly.Python.variableDB_.getName(block.getFieldValue('filename'), Blockly.Variables.NAME_TYPE);
+    const varName = Blockly.Python.nameDB_.getName(block.getFieldValue('filename'), "VARIABLE");
     const data = Blockly.Python.valueToCode(block, 'data', Blockly.Python.ORDER_NONE) || '""';
     return `${varName}.write(str(${data}) + "\\n")\n`;
   };
 
   Blockly.Python['file_write_byte'] = function(block) {
-    const varName = Blockly.Python.variableDB_.getName(block.getFieldValue('filename'), Blockly.Variables.NAME_TYPE);
+    const varName = Blockly.Python.nameDB_.getName(block.getFieldValue('filename'), "VARIABLE");
     const data = Blockly.Python.valueToCode(block, 'data', Blockly.Python.ORDER_NONE) || '0';
     return `${varName}.write(bytes([int(${data})]))\n`;
   };
 
   Blockly.Python['file_read'] = function(block) {
-    const varName = Blockly.Python.variableDB_.getName(block.getFieldValue('filename'), Blockly.Variables.NAME_TYPE);
+    const varName = Blockly.Python.nameDB_.getName(block.getFieldValue('filename'), "VARIABLE");
     return [`${varName}.read()`, Blockly.Python.ORDER_FUNCTION_CALL];
   };
 
   Blockly.Python['file_close'] = function(block) {
-    const varName = Blockly.Python.variableDB_.getName(block.getFieldValue('filename'), Blockly.Variables.NAME_TYPE);
+    const varName = Blockly.Python.nameDB_.getName(block.getFieldValue('filename'), "VARIABLE");
     return `${varName}.close()\n`;
   };
 

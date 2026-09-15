@@ -721,8 +721,12 @@ body {
 
 /* ==========================================
    BARRA LATERAL RETRÁTIL (GAVETA FLUTUANTE ESTILO NAVEGADORES)
+   Classes conforme Blockly >= v9 (makeDefaultCssConfig_ em blockly_compressed.js):
+   .blocklyToolboxDiv -> .blocklyToolbox | .blocklyTreeRow -> .blocklyToolboxCategory
+   .blocklyTreeSelected -> .blocklyToolboxSelected | .blocklyTreeLabel -> .blocklyToolboxCategoryLabel
+   .blocklyTreeIcon -> .blocklyToolboxCategoryIcon | .blocklyTreeSeparator (mantido sem mudança)
    ========================================== */
-.blocklyToolboxDiv {
+.blocklyToolbox {
   transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s !important;
   z-index: 950 !important;
   background-color: #ffffff !important;
@@ -732,14 +736,11 @@ body {
   max-width: 275px !important;
   box-sizing: border-box !important;
   padding-top: 38px !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
 }
 
-/* Itens de Categoria da Barra Lateral do Blockly */
-.blocklyToolboxContents {
-  padding: 6px 8px !important;
-}
-
-.blocklyTreeRow {
+.blocklyToolboxCategory {
   height: 36px !important;
   line-height: 36px !important;
   padding: 0 12px 0 10px !important;
@@ -754,17 +755,17 @@ body {
   transition: background 0.15s ease, transform 0.1s ease !important;
 }
 
-.blocklyTreeRow:not(.blocklyTreeSelected):hover {
+.blocklyToolboxCategory:not(.blocklyToolboxSelected):hover {
   background-color: #f1f5f9 !important;
   transform: translateX(3px) !important;
 }
 
-.blocklyTreeSelected {
+.blocklyToolboxSelected {
   background-color: rgba(2, 132, 199, 0.08) !important;
   box-shadow: inset 0 0 0 1px rgba(2, 132, 199, 0.25) !important;
 }
 
-.blocklyTreeLabel {
+.blocklyToolboxCategoryLabel {
   font-family: var(--font-sans) !important;
   font-size: 13.5px !important;
   font-weight: 600 !important;
@@ -775,7 +776,7 @@ body {
   vertical-align: middle !important;
 }
 
-.blocklyTreeSelected .blocklyTreeLabel {
+.blocklyToolboxSelected .blocklyToolboxCategoryLabel {
   color: #0284c7 !important;
   font-weight: 700 !important;
 }
@@ -786,7 +787,7 @@ body {
   margin: 10px 8px !important;
 }
 
-.blocklyTreeIcon {
+.blocklyToolboxCategoryIcon {
   display: none !important;
 }
 
@@ -847,7 +848,7 @@ body {
 }
 
 /* MODO RECOLHIDO (GAVETA OCULTA / AUTO-HOVER) */
-#blocklyArea.toolbox-collapsed .blocklyToolboxDiv {
+#blocklyArea.toolbox-collapsed .blocklyToolbox {
   transform: translateX(-100%);
   box-shadow: 6px 0 25px rgba(15, 23, 42, 0.16) !important;
 }
@@ -857,7 +858,7 @@ body {
 }
 
 /* Quando passa o mouse na borda esquerda, na aba de toggle ou na própria gaveta: expande suavemente */
-#blocklyArea.toolbox-collapsed.hover-active .blocklyToolboxDiv {
+#blocklyArea.toolbox-collapsed.hover-active .blocklyToolbox {
   transform: translateX(0);
 }
 
@@ -3202,7 +3203,7 @@ textarea#fileEditorTextarea {
 }
 
 @media screen and (max-width: 768px) {
-  .blocklyToolboxDiv {
+  .blocklyToolbox {
     width: 230px !important;
     min-width: 230px !important;
     max-width: 230px !important;
@@ -3233,7 +3234,7 @@ textarea#fileEditorTextarea {
 }
 
 @media screen and (max-width: 480px) {
-  .blocklyToolboxDiv {
+  .blocklyToolbox {
     width: 80vw !important;
     min-width: 200px !important;
     max-width: 320px !important;

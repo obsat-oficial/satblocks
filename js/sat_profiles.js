@@ -1559,7 +1559,8 @@ window.SatProfiles = (function() {
       if (ws) {
         try {
           ws.clear();
-          const dom = Blockly.Xml.textToDom(xml);
+          const parseXml = Blockly.Xml.textToDom || (Blockly.utils && Blockly.utils.xml && Blockly.utils.xml.textToDom);
+          const dom = parseXml(xml);
           Blockly.Xml.domToWorkspace(dom, ws);
           if (typeof SatBlocksApp.updateGeneratedCode === 'function') {
             SatBlocksApp.updateGeneratedCode();
