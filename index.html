@@ -318,6 +318,7 @@
           </button>
           <button class="sat-btn" id="btnSaveProject" style="padding: 4px 7px; font-size: 11px;" title="Salvar Projeto (.satblocks)">💾 Salvar</button>
           <button class="sat-btn" id="btnOpenProject" style="padding: 4px 7px; font-size: 11px;" title="Abrir Projeto">📂 Abrir</button>
+          <button class="sat-btn" id="btnShareProject" style="padding: 4px 7px; font-size: 11px;" title="Gerar um link para compartilhar este projeto e o Painel IOT">🔗 Compartilhar</button>
           <input type="file" id="fileInputProject" accept=".satblocks,.xml" style="display: none;">
         </div>
       </div>
@@ -875,6 +876,46 @@
         <div style="display: flex; justify-content: flex-end; margin-top: 6px;">
           <button class="sat-btn" onclick="document.getElementById('modalStorageManagerOverlay').style.display='none'">Fechar</button>
         </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: COMPARTILHAR PROJETO E PAINEL IOT -->
+  <div class="sat-modal-overlay" id="modalShareOverlay" style="display: none;">
+    <div class="sat-modal" style="max-width: 560px;">
+      <div class="sat-modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 18px;">🔗</span>
+          <h3 style="font-size: 15px; font-weight: 700; color: #0f172a;">Compartilhar Projeto</h3>
+        </div>
+        <button class="sat-btn sat-modal-close" onclick="document.getElementById('modalShareOverlay').style.display='none'" style="padding: 4px 10px;">✕</button>
+      </div>
+      <div class="sat-modal-body" style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+
+        <div id="shareModalLoading" style="text-align: center; padding: 20px; color: #64748b; font-size: 13px;">
+          Gerando link de compartilhamento...
+        </div>
+
+        <div id="shareModalResult" style="display: none; flex-direction: column; gap: 16px;">
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">📂 Abrir projeto completo (blocos + Painel IOT):</label>
+            <div style="display: flex; gap: 6px;">
+              <input type="text" id="shareLinkProject" class="sat-input-pill" readonly style="width: 100%; padding: 8px 12px; font-size: 12px;">
+              <button class="sat-btn primary" id="btnCopyShareProject" style="padding: 8px 12px; font-size: 12px; white-space: nowrap;">Copiar</button>
+            </div>
+          </div>
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">📊 Ver só o Painel IOT ao vivo (sem editar blocos):</label>
+            <div style="display: flex; gap: 6px;">
+              <input type="text" id="shareLinkDashboard" class="sat-input-pill" readonly style="width: 100%; padding: 8px 12px; font-size: 12px;">
+              <button class="sat-btn primary" id="btnCopyShareDashboard" style="padding: 8px 12px; font-size: 12px; white-space: nowrap;">Copiar</button>
+            </div>
+          </div>
+          <div style="font-size: 11px; color: #94a3b8;">Qualquer pessoa com o link consegue abrir — não é preciso senha, mas o link também não fica listado em nenhum lugar público.</div>
+        </div>
+
+        <div id="shareModalError" style="display: none; color: #dc2626; font-size: 13px; text-align: center; padding: 20px;"></div>
 
       </div>
     </div>
@@ -1978,7 +2019,7 @@
   <script src="js/sat_profiles.js?v=20260915-3"></script>
   <script src="js/sat_reference.js?v=20260915-4"></script>
   <script src="js/satblocks_tour.js?v=20260915-4"></script>
-  <script src="js/satblocks_app.js?v=20260915-4"></script>
+  <script src="js/satblocks_app.js?v=20260915-5"></script>
 
   <script src="js/sat_capture.js?v=20260911-600"></script>
 </body>

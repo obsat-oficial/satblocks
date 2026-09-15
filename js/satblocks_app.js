@@ -458,8 +458,11 @@ window.SatBlocksApp = (function() {
       }
     }
 
-    // Programa inicial padrão
-    if (!loadWorkspaceFromStorage()) {
+    // Programa inicial padrão (ou projeto recebido via link de compartilhamento)
+    const sharedId = new URLSearchParams(window.location.search).get('compartilhado');
+    if (sharedId) {
+      loadSharedProject(sharedId);
+    } else if (!loadWorkspaceFromStorage()) {
       loadInitialProgram();
     }
 
@@ -924,6 +927,121 @@ window.SatBlocksApp = (function() {
     reader.readAsText(file);
   }
 
+  // Carrega um projeto (blocos + Painel IOT) a partir de um link de
+  // compartilhamento (?compartilhado=<id>), gerado por shareProject().
+  async function loadSharedProject(id) {
+    try {
+      const resp = await fetch(`telemetria/share_get.php?id=${encodeURIComponent(id)}`);
+      const result = await resp.json();
+      if (!result || result.status !== 'sucesso' || !result.data) {
+        alert('Este link de projeto compartilhado não foi encontrado ou expirou.');
+        loadInitialProgram();
+        return;
+      }
+
+      const { blocklyXml, databoard, iotToken } = result.data;
+      if (blocklyXml) {
+        const parser = Blockly.Xml.textToDom || (Blockly.utils && Blockly.utils.xml && Blockly.utils.xml.textToDom);
+        const dom = parser(blocklyXml);
+        workspace.clear();
+        Blockly.Xml.domToWorkspace(dom, workspace);
+        updateGeneratedCode();
+        saveWorkspaceToStorage();
+      }
+
+      if (databoard && window.SatDataboard && window.SatDataboard.Workspaces) {
+        window.SatDataboard.Workspaces.importProjectData(databoard);
+      }
+      if (iotToken && window.SatDataboard && window.SatDataboard.IotBridge) {
+        window.SatDataboard.IotBridge.setToken(iotToken);
+        window.SatDataboard.IotBridge.start();
+        const iotInput = document.getElementById('iotEquipeInput');
+        if (iotInput) iotInput.value = iotToken;
+      }
+
+      if (window.SatFiles && window.SatFiles.showDriverToast) {
+        window.SatFiles.showDriverToast('🔗 Projeto compartilhado carregado com sucesso!');
+      }
+    } catch (err) {
+      console.warn('Erro ao carregar projeto compartilhado:', err);
+      alert('Não foi possível carregar o projeto compartilhado. Verifique sua conexão.');
+      loadInitialProgram();
+    }
+  }
+
+  // Publica o projeto atual (blocos + layout do Painel IOT + token IoT)
+  // e devolve os dois links: um para reabrir o projeto completo na IDE,
+  // outro só para visualizar o Painel IOT ao vivo (sem editar blocos).
+  async function shareProject() {
+    const modal = document.getElementById('modalShareOverlay');
+    const loadingEl = document.getElementById('shareModalLoading');
+    const resultEl = document.getElementById('shareModalResult');
+    const errorEl = document.getElementById('shareModalError');
+    if (!modal) return;
+
+    modal.style.display = 'flex';
+    if (loadingEl) loadingEl.style.display = 'block';
+    if (resultEl) resultEl.style.display = 'none';
+    if (errorEl) errorEl.style.display = 'none';
+
+    try {
+      const dom = Blockly.Xml.workspaceToDom(workspace);
+      const blocklyXml = Blockly.Xml.domToText(dom);
+      const databoard = (window.SatDataboard && window.SatDataboard.Workspaces)
+        ? window.SatDataboard.Workspaces.exportProjectData()
+        : null;
+      const iotToken = localStorage.getItem('satblocks_iot_session_token') || '';
+
+      const payload = { blocklyXml, databoard, iotToken };
+
+      const resp = await fetch('telemetria/share_save.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const result = await resp.json();
+
+      if (!resp.ok || result.status !== 'sucesso') {
+        throw new Error(result.erro || `HTTP ${resp.status}`);
+      }
+
+      const base = window.location.href.split('?')[0];
+      const baseDir = base.substring(0, base.lastIndexOf('/') + 1);
+      const projectLink = `${base}?compartilhado=${result.id}`;
+      const dashboardLink = `${baseDir}painel_iot_compartilhado.html?id=${result.id}`;
+
+      const projectInput = document.getElementById('shareLinkProject');
+      const dashboardInput = document.getElementById('shareLinkDashboard');
+      if (projectInput) projectInput.value = projectLink;
+      if (dashboardInput) dashboardInput.value = dashboardLink;
+
+      if (loadingEl) loadingEl.style.display = 'none';
+      if (resultEl) resultEl.style.display = 'flex';
+    } catch (err) {
+      if (loadingEl) loadingEl.style.display = 'none';
+      if (errorEl) {
+        errorEl.style.display = 'block';
+        errorEl.innerText = 'Erro ao gerar link de compartilhamento: ' + err.message;
+      }
+    }
+  }
+
+  function copyShareLinkFrom(inputId) {
+    const input = document.getElementById(inputId);
+    if (!input || !input.value) return;
+    input.select();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(input.value).catch(() => {
+        document.execCommand('copy');
+      });
+    } else {
+      document.execCommand('copy');
+    }
+    if (window.SatFiles && window.SatFiles.showDriverToast) {
+      window.SatFiles.showDriverToast('🔗 Link copiado!');
+    }
+  }
+
   function highlightPythonCode(code) {
     if (!code) return '<span class="py-comment"># Nenhum bloco no workspace</span>';
 
@@ -1262,6 +1380,20 @@ window.SatBlocksApp = (function() {
           fileInputProj.value = '';
         }
       });
+    }
+
+    // Compartilhar Projeto (link para reabrir + link só do Painel IOT)
+    const btnShareProj = document.getElementById('btnShareProject');
+    if (btnShareProj) {
+      btnShareProj.addEventListener('click', () => shareProject());
+    }
+    const btnCopyProj = document.getElementById('btnCopyShareProject');
+    if (btnCopyProj) {
+      btnCopyProj.addEventListener('click', () => copyShareLinkFrom('shareLinkProject'));
+    }
+    const btnCopyDash = document.getElementById('btnCopyShareDashboard');
+    if (btnCopyDash) {
+      btnCopyDash.addEventListener('click', () => copyShareLinkFrom('shareLinkDashboard'));
     }
 
     // Executar Programa no Satélite

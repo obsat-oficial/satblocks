@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel IOT Compartilhado — SatBlocks</title>
+
+  <link rel="stylesheet" href="css/satblocks_theme.css?v=20260915-6">
+  <link rel="icon" type="image/x-icon" href="media/favicon.ico">
+
+  <script src="core/chart.umd.min.js?v=2026.2"></script>
+  <script src="core/muuri.min.js?v=2026.2"></script>
+
+  <style>
+    body {
+      background: var(--bg-app, #f1f5f9);
+      padding: 16px;
+    }
+    /* Página é só leitura: esconde tudo relacionado a editar/organizar/remover */
+    .widget-controls-box,
+    #btnToggleEditGrid,
+    #btnAddWidgetBipes,
+    #btnOpenStorageManager,
+    #btnClearDataboardData,
+    #btnNewWorkspace,
+    #btnEmptyAddWidget {
+      display: none !important;
+    }
+    .shared-view-banner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(2, 132, 199, 0.1);
+      border: 1px solid rgba(2, 132, 199, 0.3);
+      color: #0284c7;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px 14px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="shared-view-banner">
+    <span>📊</span>
+    <span>Você está vendo um Painel IOT compartilhado, somente leitura, ao vivo — os dados são atualizados automaticamente.</span>
+  </div>
+
+  <div class="databoard-page-container">
+    <div class="databoard-topbar">
+      <div class="databoard-header-left">
+        <div class="databoard-brand-box">
+          <div class="bipes-logo-official" style="background: rgba(50, 152, 220, 0.15); border: 1.5px solid rgba(50, 152, 220, 0.4); padding: 4px 6px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="#3298dc">
+              <path d="m 16.66,4.52 2.83,2.83 -2.83,2.83 -2.83,-2.83 2.83,-2.83 M 9,5 V 9 H 5 V 5 h 4 m 10,10 v 4 h -4 v -4 h 4 M 9,15 v 4 H 5 V 15 H 9 M 16.66,1.69 11,7.34 16.66,13 22.32,7.34 Z M 11,3 H 3 v 8 h 8 z m 10,10 h -8 v 8 h 8 z M 11,13 H 3 v 8 h 8 z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="databoard-title-row">
+              <span class="databoard-title">Painel IOT Compartilhado</span>
+              <span class="databoard-version-tag">Ao Vivo</span>
+            </div>
+            <span class="databoard-subtitle" id="sharedDashboardSubtitle">Carregando...</span>
+          </div>
+        </div>
+
+        <div class="databoard-control-pill">
+          <span style="font-size: 11px; font-weight: 700; color: #64748b;">📊 Workspace:</span>
+          <select id="bipesWorkspaceSelect" class="databoard-select"></select>
+        </div>
+      </div>
+
+      <div class="databoard-header-right">
+        <a class="sat-btn primary" href="index.html" target="_blank" rel="noopener" style="text-decoration: none;">
+          <span>🧩</span> Abrir no SatBlocks
+        </a>
+      </div>
+    </div>
+
+    <div class="databoard-content-wrapper" id="databoardContentWrapper">
+      <div class="databoard-empty-state" id="databoardEmptyState" style="display: none;">
+        <div class="databoard-empty-card">
+          <div class="empty-icon">🛰️</div>
+          <h3>Nenhum widget neste painel</h3>
+          <p>Quem compartilhou este link ainda não tinha nenhum gráfico configurado.</p>
+        </div>
+      </div>
+
+      <div class="bipes-muuri-grid" id="bipesGridContainer"></div>
+    </div>
+  </div>
+
+  <!-- Campo interno usado pelo motor do Painel IOT (não editável aqui, preenchido pelo token do link) -->
+  <input type="hidden" id="iotEquipeInput">
+
+  <script src="js/sat_databoard.js?v=20260915-8"></script>
+  <script>
+    (function () {
+      function getSharedId() {
+        return new URLSearchParams(window.location.search).get('id');
+      }
+
+      async function loadSharedDashboard() {
+        const id = getSharedId();
+        const subtitleEl = document.getElementById('sharedDashboardSubtitle');
+        if (!id) {
+          if (subtitleEl) subtitleEl.innerText = 'Nenhum link de compartilhamento informado.';
+          return;
+        }
+
+        try {
+          const resp = await fetch(`telemetria/share_get.php?id=${encodeURIComponent(id)}`);
+          const result = await resp.json();
+          if (!result || result.status !== 'sucesso' || !result.data) {
+            if (subtitleEl) subtitleEl.innerText = 'Este link não foi encontrado ou expirou.';
+            return;
+          }
+
+          const { databoard, iotToken } = result.data;
+          if (databoard && window.SatDataboard && window.SatDataboard.Workspaces) {
+            window.SatDataboard.Workspaces.importProjectData(databoard);
+          }
+          if (iotToken && window.SatDataboard && window.SatDataboard.IotBridge) {
+            window.SatDataboard.IotBridge.setToken(iotToken);
+            window.SatDataboard.IotBridge.start();
+          }
+
+          if (subtitleEl) subtitleEl.innerText = 'Telemetria & Painel IoT ao vivo';
+        } catch (err) {
+          if (subtitleEl) subtitleEl.innerText = 'Erro ao carregar o painel compartilhado.';
+          console.warn('[Painel Compartilhado] Erro:', err);
+        }
+      }
+
+      // Dá tempo do auto-init padrão do SatDataboard (workspace/preset OBSAT
+      // de exemplo) rodar antes de sobrescrever com os dados compartilhados.
+      document.addEventListener('DOMContentLoaded', () => setTimeout(loadSharedDashboard, 200));
+    })();
+  </script>
+</body>
+</html>
