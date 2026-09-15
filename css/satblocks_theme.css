@@ -1707,6 +1707,25 @@ textarea#fileEditorTextarea {
   flex-wrap: wrap;
 }
 
+/* Abaixo de ~900px, o cabeçalho do Painel IOT (marca+workspace+IoT de um
+   lado, botões de ação do outro) não cabe mais numa linha só. Em vez de
+   deixar isso como um efeito colateral do flex-wrap (que pode quebrar de
+   forma inconsistente dependendo do tamanho do nome do workspace), força
+   um empilhamento vertical deliberado, com uma linha divisória clara
+   entre os dois grupos. */
+@media screen and (max-width: 900px) {
+  .databoard-topbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .databoard-header-right {
+    border-top: 1px solid var(--border-color);
+    padding-top: 12px;
+    margin-top: 2px;
+    width: 100%;
+  }
+}
+
 .databoard-header-left {
   display: flex;
   align-items: center;
