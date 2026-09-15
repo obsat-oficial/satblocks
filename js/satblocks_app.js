@@ -1075,7 +1075,8 @@ window.SatBlocksApp = (function() {
         if (SatConnection.isConnected && SatConnection.isConnected()) {
           SatConnection.disconnect();
         }
-        await SatConnection.connectSerial(115200);
+        const ok = await SatConnection.connectSerial(115200);
+        if (ok) onSatConnected();
       });
     }
 
@@ -1086,7 +1087,8 @@ window.SatBlocksApp = (function() {
         if (SatConnection.isConnected && SatConnection.isConnected()) {
           SatConnection.disconnect();
         }
-        await SatConnection.connectBluetooth();
+        const ok = await SatConnection.connectBluetooth();
+        if (ok) onSatConnected();
       });
     }
 
@@ -1179,6 +1181,7 @@ window.SatBlocksApp = (function() {
       if (success) {
         modalConn.style.display = 'none';
         modalConn.classList.remove('active');
+        onSatConnected();
       }
     });
 
@@ -1187,6 +1190,7 @@ window.SatBlocksApp = (function() {
       if (success) {
         modalConn.style.display = 'none';
         modalConn.classList.remove('active');
+        onSatConnected();
       }
     });
 
@@ -1197,6 +1201,7 @@ window.SatBlocksApp = (function() {
       if (success) {
         modalConn.style.display = 'none';
         modalConn.classList.remove('active');
+        onSatConnected();
       }
     });
 
@@ -1564,6 +1569,16 @@ window.SatBlocksApp = (function() {
     }
   });
 
+  function onSatConnected() {
+    // Se já estiver na aba Arquivos ao conectar, busca a lista da Flash
+    // automaticamente (sem precisar clicar em "Atualizar").
+    const filesPage = document.getElementById('tab_page_files');
+    const isFilesTabActive = filesPage && !filesPage.classList.contains('tab-hidden');
+    if (isFilesTabActive && window.SatFiles && typeof window.SatFiles.fetchFilesFromHardware === 'function') {
+      window.SatFiles.fetchFilesFromHardware();
+    }
+  }
+
   function switchMainTab(tabName) {
     document.querySelectorAll('.sat-tab-btn, .sat-main-tab').forEach(b => {
       b.classList.toggle('active', b.dataset.tab === tabName);
@@ -1600,6 +1615,12 @@ window.SatBlocksApp = (function() {
     } else if (tabName === 'files') {
       if (window.SatFiles && typeof window.SatFiles.openFile === 'function') {
         window.SatFiles.openFile('main.py');
+      }
+      // Já conectado? Busca a lista de arquivos da Flash automaticamente,
+      // sem precisar clicar em "Atualizar".
+      if (window.SatConnection && SatConnection.isConnected && SatConnection.isConnected() &&
+          window.SatFiles && typeof window.SatFiles.fetchFilesFromHardware === 'function') {
+        window.SatFiles.fetchFilesFromHardware();
       }
     } else if (tabName === 'iot') {
       setTimeout(() => {
