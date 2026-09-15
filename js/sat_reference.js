@@ -1040,12 +1040,12 @@ wlan.connect(<span class="str">"obsat-server"</span>, <span class="str">"obsatse
             <div class="sat-ref-code-box">
               <div class="sat-ref-code-content">
                 <button class="btn-copy-snip" onclick="SatReference.copySnippet(this)">Copiar</button>
-                <pre><code>_iot_url = <span class="str">"https://obsat.org.br/satblocks/telemetria/iot_publish.php?equipe="</span> + <span class="fn">str</span>(IOT_ID) + <span class="str">"&amp;canal=temperatura&amp;valor="</span> + <span class="fn">str</span>(leitura)
+                <pre><code>_iot_url = <span class="str">"https://obsat.org.br/satblocks/telemetria/iot_publish.php?equipe="</span> + <span class="fn">str</span>(IOT_ID) + <span class="str">"&amp;canal=temperatura&amp;valor="</span> + <span class="fn">str</span>(leitura) + <span class="str">"&amp;token="</span> + IOT_TOKEN
 urequests.get(_iot_url)
 <span class="fn">print</span>(<span class="str">"temperatura publicado:"</span>, leitura)</code></pre>
               </div>
             </div>
-            <p>O <code>IOT_ID</code> vem do campo "ID IoT" do bloco <b>Dados do Projeto</b> — é ele que identifica de qual equipe são os dados, para que o Painel IOT saiba quais canais mostrar. Não existe um broker MQTT de verdade aqui: é uma requisição HTTP comum, o que a torna mais robusta em redes de escola/evento e mais simples de depurar quando algo falha.</p>
+            <p>O <code>IOT_ID</code> vem do campo "ID IoT" do bloco <b>Dados do Projeto</b>, mas é só um rótulo de exibição — quem realmente separa os dados de cada equipe é o <code>IOT_TOKEN</code>, gerado sozinho pelo navegador (o aluno nunca digita ou escolhe esse valor) e embutido automaticamente no código. Por isso, duas equipes podem usar o mesmo número de ID IoT sem que seus canais se misturem. Não existe um broker MQTT de verdade aqui: é uma requisição HTTP comum, o que a torna mais robusta em redes de escola/evento e mais simples de depurar quando algo falha.</p>
           `
         }
       ],

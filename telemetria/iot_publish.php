@@ -1,7 +1,15 @@
 <?php
 // Canal de Telemetria IoT do SatBlocks (Painel IOT)
-// Recebe um valor nomeado (canal/tópico) publicado por uma equipe e grava
-// para consulta incremental pelo Painel IOT (ver iot_get.php / iot_topics.php).
+// Recebe um valor nomeado (canal/tópico) publicado por uma sessão do
+// navegador e grava para consulta incremental pelo Painel IOT (ver
+// iot_get.php / iot_topics.php).
+//
+// A separação real dos dados é feita pelo "token" (gerado sozinho pelo
+// navegador que gera o código, guardado em localStorage — o aluno nunca
+// digita nem escolhe esse valor). O "equipe" (campo "ID IoT" do bloco
+// Dados do Projeto) é só um rótulo de exibição: como não é usado para
+// separar os dados, duas equipes podem coincidentemente usar o mesmo
+// número sem que os canais se misturem.
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
@@ -20,10 +28,11 @@ $data = !empty($_POST) ? $_POST : $_GET;
 $equipe = trim(strval($data['equipe'] ?? $data['team'] ?? ''));
 $canal = trim(strval($data['canal'] ?? $data['topic'] ?? ''));
 $valor = strval($data['valor'] ?? $data['value'] ?? '');
+$token = trim(strval($data['token'] ?? ''));
 
-if ($equipe === '' || $canal === '') {
+if ($canal === '' || $token === '') {
     http_response_code(422);
-    echo json_encode(["status" => "erro", "erro" => "Os campos 'equipe' e 'canal' são obrigatórios."], JSON_UNESCAPED_UNICODE);
+    echo json_encode(["status" => "erro", "erro" => "Os campos 'canal' e 'token' são obrigatórios."], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -31,6 +40,7 @@ if ($equipe === '' || $canal === '') {
 $equipe = substr($equipe, 0, 50);
 $canal = substr($canal, 0, 100);
 $valor = substr($valor, 0, 255);
+$token = substr($token, 0, 64);
 
 if (!$con) {
     http_response_code(503);
@@ -40,15 +50,21 @@ if (!$con) {
 
 $con->query("CREATE TABLE IF NOT EXISTS satblocks_iot_canais (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    equipe VARCHAR(50) NOT NULL,
+    token VARCHAR(64) NOT NULL,
+    equipe VARCHAR(50) NOT NULL DEFAULT '',
     canal VARCHAR(100) NOT NULL,
     valor VARCHAR(255) NOT NULL,
     datetimea DATETIME DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_equipe_canal (equipe, canal, id)
+    INDEX idx_token_canal (token, canal, id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-$stmt = $con->prepare("INSERT INTO satblocks_iot_canais (equipe, canal, valor) VALUES (?, ?, ?)");
-$stmt->bind_param("sss", $equipe, $canal, $valor);
+// Migração best-effort para quem já tinha a tabela antiga (sem token) —
+// falhas aqui são silenciosas de propósito (coluna/índice já existente).
+@$con->query("ALTER TABLE satblocks_iot_canais ADD COLUMN token VARCHAR(64) NOT NULL DEFAULT '' AFTER id");
+@$con->query("ALTER TABLE satblocks_iot_canais ADD INDEX idx_token_canal (token, canal, id)");
+
+$stmt = $con->prepare("INSERT INTO satblocks_iot_canais (token, equipe, canal, valor) VALUES (?, ?, ?, ?)");
+$stmt->bind_param("ssss", $token, $equipe, $canal, $valor);
 $stmt->execute();
 $id = $stmt->insert_id;
 $stmt->close();

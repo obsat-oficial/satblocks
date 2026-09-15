@@ -15,13 +15,13 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
 
 require_once __DIR__ . '/db_config.php';
 
-$equipe = trim(strval($_GET['equipe'] ?? ''));
+$token = trim(strval($_GET['token'] ?? ''));
 $canal = trim(strval($_GET['canal'] ?? ''));
 $desde = isset($_GET['desde']) && $_GET['desde'] !== '' ? intval($_GET['desde']) : null;
 
-if ($equipe === '' || $canal === '') {
+if ($token === '' || $canal === '') {
     http_response_code(422);
-    echo json_encode(["success" => false, "result" => "Os campos 'equipe' e 'canal' são obrigatórios."], JSON_UNESCAPED_UNICODE);
+    echo json_encode(["success" => false, "result" => "Os campos 'token' e 'canal' são obrigatórios."], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -37,11 +37,11 @@ if (!$tableCheck || $tableCheck->num_rows === 0) {
 }
 
 if ($desde !== null) {
-    $stmt = $con->prepare("SELECT valor, UNIX_TIMESTAMP(datetimea) AS ts FROM satblocks_iot_canais WHERE equipe = ? AND canal = ? AND UNIX_TIMESTAMP(datetimea) >= ? ORDER BY id ASC LIMIT 500");
-    $stmt->bind_param("ssi", $equipe, $canal, $desde);
+    $stmt = $con->prepare("SELECT valor, UNIX_TIMESTAMP(datetimea) AS ts FROM satblocks_iot_canais WHERE token = ? AND canal = ? AND UNIX_TIMESTAMP(datetimea) >= ? ORDER BY id ASC LIMIT 500");
+    $stmt->bind_param("ssi", $token, $canal, $desde);
 } else {
-    $stmt = $con->prepare("SELECT valor, UNIX_TIMESTAMP(datetimea) AS ts FROM satblocks_iot_canais WHERE equipe = ? AND canal = ? ORDER BY id ASC LIMIT 500");
-    $stmt->bind_param("ss", $equipe, $canal);
+    $stmt = $con->prepare("SELECT valor, UNIX_TIMESTAMP(datetimea) AS ts FROM satblocks_iot_canais WHERE token = ? AND canal = ? ORDER BY id ASC LIMIT 500");
+    $stmt->bind_param("ss", $token, $canal);
 }
 $stmt->execute();
 $result = $stmt->get_result();

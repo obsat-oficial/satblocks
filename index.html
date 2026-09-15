@@ -32,7 +32,7 @@
 
   <!-- Biblioteca Aeroespacial SatBlocks -->
   <script src="satblocks/block_definitions.js?v=20260915-4"></script>
-  <script src="satblocks/generator_python.js?v=20260915-4"></script>
+  <script src="satblocks/generator_python.js?v=20260915-5"></script>
 
   <!-- Bibliotecas do BIPES Databoard Oficial (Chart.js e Muuri Grid Offline) -->
   <script src="core/chart.umd.min.js?v=2026.2"></script>
@@ -652,10 +652,10 @@
             <button class="sat-btn-icon" id="btnNewWorkspace" title="Criar Novo Workspace" style="width: 24px; height: 24px;">➕</button>
           </div>
 
-          <!-- EQUIPE / CANAL IOT MONITORADO -->
-          <div class="databoard-control-pill" style="gap: 4px; padding: 4px 8px;" title="Equipe cujos canais IoT (publicados pelo bloco 'Publicar no Painel IoT') este painel deve buscar. Use o mesmo valor do campo 'ID IoT' do bloco Dados do Projeto.">
+          <!-- TOKEN DE SESSÃO IOT MONITORADO -->
+          <div class="databoard-control-pill" style="gap: 4px; padding: 4px 8px;" title="Token gerado automaticamente por este navegador — é ele quem separa de verdade os canais de cada equipe (o 'ID IoT' é só um rótulo). Já vem preenchido sozinho; só troque este valor para acompanhar a sessão de outro computador.">
             <span style="font-size: 11px; font-weight: 700; color: #64748b;">📡 IoT:</span>
-            <input type="text" id="iotEquipeInput" class="sat-input-pill" style="width: 40px; padding: 3px 6px; font-size: 12px;" placeholder="ID">
+            <input type="text" id="iotEquipeInput" class="sat-input-pill" style="width: 92px; padding: 3px 6px; font-size: 11px; font-family: monospace;" placeholder="token">
           </div>
         </div>
 
@@ -1962,9 +1962,9 @@
   <!-- Scripts da Aplicação -->
   <script src="js/sat_connection.js?v=20260911-600"></script>
   <script src="js/sat_files.js?v=20260915-1"></script>
-  <script src="js/sat_databoard.js?v=20260915-4"></script>
+  <script src="js/sat_databoard.js?v=20260915-5"></script>
   <script src="js/sat_profiles.js?v=20260915-2"></script>
-  <script src="js/sat_reference.js?v=20260915-3"></script>
+  <script src="js/sat_reference.js?v=20260915-4"></script>
   <script src="js/satblocks_tour.js?v=20260915-4"></script>
   <script src="js/satblocks_app.js?v=20260915-4"></script>
 

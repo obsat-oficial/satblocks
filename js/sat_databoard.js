@@ -246,34 +246,56 @@ window.SatDataboard = (function() {
 
   const DataStorage = new DataStorageEngine();
 
+  // Mesmo token gerado em satblocks/generator_python.js (mesma chave de
+  // localStorage) — é ele, e não o "ID IoT" digitado pelo aluno, que
+  // separa de verdade os dados de cada equipe no servidor. Por padrão o
+  // Painel IOT usa o token deste MESMO navegador (preenchido sozinho); só
+  // é preciso digitar algo aqui para acompanhar a sessão de outra pessoa.
+  function getOrCreateIotSessionToken() {
+    const KEY = 'satblocks_iot_session_token';
+    try {
+      let token = localStorage.getItem(KEY);
+      if (!token) {
+        token = (typeof crypto !== 'undefined' && crypto.randomUUID)
+          ? crypto.randomUUID().replace(/-/g, '')
+          : Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+        localStorage.setItem(KEY, token);
+      }
+      return token;
+    } catch (e) {
+      return '';
+    }
+  }
+
   /* =========================================================================
    * 1b. PONTE IOT (Polling HTTP dos canais publicados pelos blocos IoT)
    *
    * Não existe broker MQTT: os blocos "Publicar no Painel IoT" fazem uma
    * requisição HTTP simples para telemetria/iot_publish.php. Esta ponte
-   * pergunta periodicamente por equipe (telemetria/iot_topics.php) quais
-   * canais existem e busca incrementalmente (telemetria/iot_get.php) o que
-   * chegou de novo, alimentando o mesmo DataStorage que os gráficos usam.
+   * pergunta periodicamente por token de sessão (telemetria/iot_topics.php)
+   * quais canais existem e busca incrementalmente (telemetria/iot_get.php)
+   * o que chegou de novo, alimentando o mesmo DataStorage que os gráficos
+   * usam.
    * ========================================================================= */
   class IotBridgeEngine {
     constructor() {
-      this.equipe = localStorage.getItem('satblocks_iot_equipe') || '';
+      this.token = localStorage.getItem('satblocks_iot_watch_token') || getOrCreateIotSessionToken();
       this.knownChannels = {}; // canal -> próximo timestamp (unix) a buscar
       this.timer = null;
       this.pollIntervalMs = 4000;
       this.inFlight = false;
     }
 
-    setEquipe(equipe) {
-      const novo = String(equipe || '').trim();
-      if (novo === this.equipe) return;
-      this.equipe = novo;
+    setToken(token) {
+      const novo = String(token || '').trim();
+      if (novo === this.token) return;
+      this.token = novo;
       this.knownChannels = {};
-      localStorage.setItem('satblocks_iot_equipe', this.equipe);
+      localStorage.setItem('satblocks_iot_watch_token', this.token);
     }
 
-    getEquipe() {
-      return this.equipe;
+    getToken() {
+      return this.token;
     }
 
     getKnownChannels() {
@@ -294,7 +316,7 @@ window.SatDataboard = (function() {
     }
 
     async pollOnce() {
-      if (!this.equipe || this.inFlight) return;
+      if (!this.token || this.inFlight) return;
       this.inFlight = true;
       try {
         await this.discoverChannels();
@@ -310,7 +332,7 @@ window.SatDataboard = (function() {
     }
 
     async discoverChannels() {
-      const resp = await fetch(`telemetria/iot_topics.php?equipe=${encodeURIComponent(this.equipe)}`);
+      const resp = await fetch(`telemetria/iot_topics.php?token=${encodeURIComponent(this.token)}`);
       const data = await resp.json();
       if (!data || !data.success || !Array.isArray(data.result)) return;
       data.result.forEach(canal => {
@@ -322,7 +344,7 @@ window.SatDataboard = (function() {
 
     async fetchChannel(canal) {
       const since = this.knownChannels[canal];
-      const url = `telemetria/iot_get.php?equipe=${encodeURIComponent(this.equipe)}&canal=${encodeURIComponent(canal)}` +
+      const url = `telemetria/iot_get.php?token=${encodeURIComponent(this.token)}&canal=${encodeURIComponent(canal)}` +
         (since ? `&desde=${since}` : '');
       const resp = await fetch(url);
       const data = await resp.json();
@@ -807,22 +829,19 @@ window.SatDataboard = (function() {
       const input = document.getElementById('iotEquipeInput');
       if (!input) return;
 
-      if (!IotBridge.getEquipe()) {
-        const detected = this.detectIotIdFromWorkspace();
-        if (detected) IotBridge.setEquipe(detected);
-      }
-
-      input.value = IotBridge.getEquipe();
+      // Por padrão já vem preenchido com o token deste próprio navegador
+      // (o mesmo embutido no código Python pelos blocos IoT) — nenhuma
+      // digitação é necessária no caso comum. Editar o campo só é preciso
+      // para acompanhar a sessão de outra pessoa/computador.
+      input.value = IotBridge.getToken();
       input.onchange = () => {
-        IotBridge.setEquipe(input.value);
-        if (IotBridge.getEquipe()) {
+        IotBridge.setToken(input.value);
+        if (IotBridge.getToken()) {
           IotBridge.start();
         }
       };
 
-      if (IotBridge.getEquipe()) {
-        IotBridge.start();
-      }
+      IotBridge.start();
     }
 
     // Acrescenta ao datalist do editor de widget os canais reais já descobertos
@@ -840,26 +859,6 @@ window.SatDataboard = (function() {
         opt.innerText = `${canal} (canal IoT ao vivo)`;
         datalist.appendChild(opt);
       });
-    }
-
-    // Tenta descobrir o "ID IoT" já preenchido no bloco Dados do Projeto,
-    // para não obrigar o aluno a digitar o mesmo número duas vezes. Só
-    // funciona quando o campo é um número simples (caso mais comum); em
-    // qualquer outro caso, o aluno preenche manualmente o campo Equipe IoT.
-    detectIotIdFromWorkspace() {
-      try {
-        const workspace = window.SatBlocksApp && window.SatBlocksApp.getWorkspace && window.SatBlocksApp.getWorkspace();
-        if (!workspace) return null;
-        const projectBlock = workspace.getAllBlocks(false).find(b => b.type === 'project_info');
-        if (!projectBlock) return null;
-        const iotIdInput = projectBlock.getInput('project_iot_id');
-        const target = iotIdInput && iotIdInput.connection && iotIdInput.connection.targetBlock();
-        if (target && target.type === 'math_number') {
-          const value = target.getFieldValue('NUM');
-          if (value !== null && value !== '') return String(value);
-        }
-      } catch (e) {}
-      return null;
     }
 
     restoreWorkspaces() {

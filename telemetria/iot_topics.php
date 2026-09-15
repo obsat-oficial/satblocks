@@ -1,7 +1,7 @@
 <?php
-// Lista os canais IoT com atividade recente de uma equipe (usado pelo Painel IOT
-// para descobrir automaticamente quais datasets existem, sem precisar cadastrar
-// nada manualmente).
+// Lista os canais IoT com atividade recente de um token de sessão (usado
+// pelo Painel IOT para descobrir automaticamente quais datasets existem,
+// sem precisar cadastrar nada manualmente).
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
@@ -15,10 +15,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
 
 require_once __DIR__ . '/db_config.php';
 
-$equipe = trim(strval($_GET['equipe'] ?? ''));
-if ($equipe === '') {
+$token = trim(strval($_GET['token'] ?? ''));
+if ($token === '') {
     http_response_code(422);
-    echo json_encode(["success" => false, "result" => "O campo 'equipe' é obrigatório."], JSON_UNESCAPED_UNICODE);
+    echo json_encode(["success" => false, "result" => "O campo 'token' é obrigatório."], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -33,8 +33,8 @@ if (!$tableCheck || $tableCheck->num_rows === 0) {
     exit;
 }
 
-$stmt = $con->prepare("SELECT DISTINCT canal FROM satblocks_iot_canais WHERE equipe = ? AND datetimea > NOW() - INTERVAL 3 HOUR ORDER BY canal ASC");
-$stmt->bind_param("s", $equipe);
+$stmt = $con->prepare("SELECT DISTINCT canal FROM satblocks_iot_canais WHERE token = ? AND datetimea > NOW() - INTERVAL 3 HOUR ORDER BY canal ASC");
+$stmt->bind_param("s", $token);
 $stmt->execute();
 $result = $stmt->get_result();
 

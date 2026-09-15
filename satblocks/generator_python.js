@@ -1445,10 +1445,33 @@ def obsat_led_mcp(pin=0, state=1):
     }
   }
 
+  // Token gerado automaticamente por este navegador (não é algo que o aluno
+  // escolhe ou digita) — persiste em localStorage e é embutido no código
+  // gerado. É esse token, e não o "ID IoT" digitado pelo aluno, que de fato
+  // separa os dados de cada equipe no servidor: duas equipes podem usar o
+  // mesmo número de ID IoT (é só um rótulo) sem que seus canais se
+  // misturem, porque cada navegador tem o seu próprio token.
+  function getOrCreateIotSessionToken() {
+    const KEY = 'satblocks_iot_session_token';
+    try {
+      let token = localStorage.getItem(KEY);
+      if (!token) {
+        token = (typeof crypto !== 'undefined' && crypto.randomUUID)
+          ? crypto.randomUUID().replace(/-/g, '')
+          : Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+        localStorage.setItem(KEY, token);
+      }
+      return token;
+    } catch (e) {
+      return 'sessao_sem_localstorage';
+    }
+  }
+
   Blockly.Python['sat_iot_publish'] = function(block) {
     const canal = (block.getFieldValue('CANAL') || 'valor').replace(/[^a-zA-Z0-9_]/g, '_');
     const valor = Blockly.Python.valueToCode(block, 'VALOR', Blockly.Python.ORDER_NONE) || '0';
     ensureIotIdDefault();
+    Blockly.Python.definitions_['00c_iot_token'] = `IOT_TOKEN = "${getOrCreateIotSessionToken()}"`;
 
     if (isRp2040()) {
       return `print("[Painel IoT] ${canal} =", str(${valor}))\n`;
@@ -1457,10 +1480,13 @@ def obsat_led_mcp(pin=0, state=1):
     Blockly.Python.definitions_['import_urequests'] = 'import urequests';
     return `try:\n` +
            `    if urequests is not None:\n` +
-           `        _iot_url = "https://obsat.org.br/satblocks/telemetria/iot_publish.php?equipe=" + str(IOT_ID) + "&canal=${canal}&valor=" + str(${valor})\n` +
+           `        _iot_url = "https://obsat.org.br/satblocks/telemetria/iot_publish.php?equipe=" + str(IOT_ID) + "&canal=${canal}&valor=" + str(${valor}) + "&token=" + IOT_TOKEN\n` +
            `        _iot_res = urequests.get(_iot_url)\n` +
+           `        if _iot_res.status_code != 200:\n` +
+           `            print("[Painel IoT] Falha ao publicar ${canal}, status:", _iot_res.status_code)\n` +
+           `        else:\n` +
+           `            print("[Painel IoT] ${canal} publicado:", str(${valor}))\n` +
            `        _iot_res.close()\n` +
-           `    print("[Painel IoT] ${canal} publicado:", str(${valor}))\n` +
            `except Exception as _e:\n` +
            `    print("[Painel IoT] Erro ao publicar:", _e)\n`;
   };
@@ -1468,13 +1494,14 @@ def obsat_led_mcp(pin=0, state=1):
   Blockly.Python['sat_iot_read'] = function(block) {
     const canal = (block.getFieldValue('CANAL') || 'comando').replace(/[^a-zA-Z0-9_]/g, '_');
     ensureIotIdDefault();
+    Blockly.Python.definitions_['00c_iot_token'] = `IOT_TOKEN = "${getOrCreateIotSessionToken()}"`;
     Blockly.Python.definitions_['import_urequests'] = 'import urequests';
     Blockly.Python.definitions_['func_iot_read'] =
 `def _iot_ler_canal(canal):
     try:
         if urequests is None:
             return ""
-        _r = urequests.get("https://obsat.org.br/satblocks/telemetria/iot_get.php?equipe=" + str(IOT_ID) + "&canal=" + canal)
+        _r = urequests.get("https://obsat.org.br/satblocks/telemetria/iot_get.php?token=" + IOT_TOKEN + "&canal=" + canal)
         _j = _r.json()
         _r.close()
         if _j.get("success") and len(_j.get("result", [])) > 0:
