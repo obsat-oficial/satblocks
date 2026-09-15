@@ -362,7 +362,19 @@ window.SatDataboard = (function() {
       const resp = await fetch(`telemetria/iot_topics.php?token=${encodeURIComponent(this.token)}`);
       const data = await resp.json();
       if (!data || !data.success || !Array.isArray(data.result)) return;
+
+      // Quando este navegador está observando o PRÓPRIO token (caso padrão,
+      // não uma sessão compartilhada de outra pessoa), os canais canônicos
+      // OBSAT (obsat_temperatura, etc.) já chegam direto via USB/BLE em
+      // processTelemetryLine — que também os encaminha para este mesmo
+      // canal HTTP, só para viabilizar o link compartilhado. Sem este
+      // filtro, o polling buscaria de volta o que acabou de ser enviado,
+      // duplicando cada ponto no gráfico local.
+      const watchingOwnToken = this.token === getOrCreateIotSessionToken();
+      const reservedLocalChannels = ['obsat_temperatura', 'obsat_pressao', 'obsat_altitude', 'obsat_bateria'];
+
       data.result.forEach(canal => {
+        if (watchingOwnToken && reservedLocalChannels.includes(canal)) return;
         if (!(canal in this.knownChannels)) {
           this.knownChannels[canal] = 0;
         }
