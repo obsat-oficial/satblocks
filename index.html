@@ -37,6 +37,7 @@
   <!-- Bibliotecas do BIPES Databoard Oficial (Chart.js e Muuri Grid Offline) -->
   <script src="core/chart.umd.min.js?v=2026.2"></script>
   <script src="core/muuri.min.js?v=2026.2"></script>
+  <script src="core/qrcode.min.js?v=2026.1"></script>
 </head>
 <body>
 
@@ -677,6 +678,10 @@
             <span>💾</span> Datasets / CSV
           </button>
 
+          <button class="sat-btn" id="btnShareProjectIot" title="Compartilhar: gerar um link (e QR Code) para este projeto e o Painel IOT">
+            <span>🔗</span>
+          </button>
+
           <div class="databoard-status-pill" id="databoardTelemetryStatus" title="Status da telemetria recebida via Cabo USB/BLE (pacote JSON do satélite) — canal separado dos canais IoT via HTTP configurados ao lado.">
             <span class="telemetry-status-dot"></span>
             <span id="telemetryStatusText">Aguardando Satélite (USB/BLE)</span>
@@ -903,14 +908,18 @@
             <div style="display: flex; gap: 6px;">
               <input type="text" id="shareLinkProject" class="sat-input-pill" readonly style="width: 100%; padding: 8px 12px; font-size: 12px;">
               <button class="sat-btn primary" id="btnCopyShareProject" style="padding: 8px 12px; font-size: 12px; white-space: nowrap;">Copiar</button>
+              <button class="sat-btn" id="btnQrShareProject" title="Mostrar QR Code" style="padding: 8px 10px; font-size: 12px; white-space: nowrap;">📷</button>
             </div>
+            <div id="qrShareProject" style="display: none; margin-top: 10px; text-align: center; background: #fff; padding: 10px; border-radius: 8px; width: 180px;"></div>
           </div>
           <div>
             <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">📊 Ver só o Painel IOT ao vivo (sem editar blocos):</label>
             <div style="display: flex; gap: 6px;">
               <input type="text" id="shareLinkDashboard" class="sat-input-pill" readonly style="width: 100%; padding: 8px 12px; font-size: 12px;">
               <button class="sat-btn primary" id="btnCopyShareDashboard" style="padding: 8px 12px; font-size: 12px; white-space: nowrap;">Copiar</button>
+              <button class="sat-btn" id="btnQrShareDashboard" title="Mostrar QR Code" style="padding: 8px 10px; font-size: 12px; white-space: nowrap;">📷</button>
             </div>
+            <div id="qrShareDashboard" style="display: none; margin-top: 10px; text-align: center; background: #fff; padding: 10px; border-radius: 8px; width: 180px;"></div>
           </div>
           <div style="font-size: 11px; color: #94a3b8;">Qualquer pessoa com o link consegue abrir — não é preciso senha, mas o link também não fica listado em nenhum lugar público.</div>
         </div>
@@ -2019,7 +2028,7 @@
   <script src="js/sat_profiles.js?v=20260915-3"></script>
   <script src="js/sat_reference.js?v=20260915-4"></script>
   <script src="js/satblocks_tour.js?v=20260915-4"></script>
-  <script src="js/satblocks_app.js?v=20260915-5"></script>
+  <script src="js/satblocks_app.js?v=20260915-6"></script>
 
   <script src="js/sat_capture.js?v=20260911-600"></script>
 </body>

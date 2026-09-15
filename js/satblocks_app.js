@@ -983,6 +983,10 @@ window.SatBlocksApp = (function() {
     if (loadingEl) loadingEl.style.display = 'block';
     if (resultEl) resultEl.style.display = 'none';
     if (errorEl) errorEl.style.display = 'none';
+    ['qrShareProject', 'qrShareDashboard'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.style.display = 'none'; el.innerHTML = ''; }
+    });
 
     try {
       const dom = Blockly.Xml.workspaceToDom(workspace);
@@ -1024,6 +1028,26 @@ window.SatBlocksApp = (function() {
         errorEl.innerText = 'Erro ao gerar link de compartilhamento: ' + err.message;
       }
     }
+  }
+
+  function toggleShareQrCode(inputId, containerId) {
+    const input = document.getElementById(inputId);
+    const container = document.getElementById(containerId);
+    if (!input || !container || !input.value) return;
+
+    const isVisible = container.style.display !== 'none';
+    if (isVisible) {
+      container.style.display = 'none';
+      return;
+    }
+
+    container.innerHTML = '';
+    if (typeof QRCode === 'undefined') {
+      container.innerText = 'QR Code indisponível.';
+    } else {
+      new QRCode(container, { text: input.value, width: 160, height: 160 });
+    }
+    container.style.display = 'block';
   }
 
   function copyShareLinkFrom(inputId) {
@@ -1394,6 +1418,20 @@ window.SatBlocksApp = (function() {
     const btnCopyDash = document.getElementById('btnCopyShareDashboard');
     if (btnCopyDash) {
       btnCopyDash.addEventListener('click', () => copyShareLinkFrom('shareLinkDashboard'));
+    }
+    const btnQrProj = document.getElementById('btnQrShareProject');
+    if (btnQrProj) {
+      btnQrProj.addEventListener('click', () => toggleShareQrCode('shareLinkProject', 'qrShareProject'));
+    }
+    const btnQrDash = document.getElementById('btnQrShareDashboard');
+    if (btnQrDash) {
+      btnQrDash.addEventListener('click', () => toggleShareQrCode('shareLinkDashboard', 'qrShareDashboard'));
+    }
+
+    // Botão de Compartilhar também disponível direto no Painel IOT
+    const btnShareIot = document.getElementById('btnShareProjectIot');
+    if (btnShareIot) {
+      btnShareIot.addEventListener('click', () => shareProject());
     }
 
     // Executar Programa no Satélite
