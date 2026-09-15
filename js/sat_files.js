@@ -1615,8 +1615,10 @@ print("[OBSAT] Missao iniciada na memoria Flash")
     }
   }
 
-  function installAllDrivers() {
-    OFFICIAL_DRIVERS.forEach(driver => {
+  async function installAllDrivers() {
+    const connected = !!(window.SatConnection && SatConnection.isConnected && SatConnection.isConnected());
+
+    for (const driver of OFFICIAL_DRIVERS) {
       let exist = deviceFiles.find(f => f.name === driver.name);
       if (exist) {
         exist.content = driver.content;
@@ -1629,10 +1631,14 @@ print("[OBSAT] Missao iniciada na memoria Flash")
         });
       }
 
-      if (window.SatConnection && SatConnection.isConnected && SatConnection.isConnected()) {
-        uploadFileToBoard(driver.name, driver.content);
+      if (connected) {
+        // Grava um arquivo de cada vez — enviar tudo em paralelo (Promise.all/
+        // forEach sem await) faz duas gravações disputarem o mesmo
+        // WritableStream serial ao mesmo tempo ("Cannot create writer when
+        // WritableStream is locked") e a instalação falha silenciosamente.
+        await uploadFileToBoard(driver.name, driver.content);
       }
-    });
+    }
 
     renderFileList();
     showDriverToast(`🚀 Todos os ${OFFICIAL_DRIVERS.length} drivers oficiais foram instalados!`);
