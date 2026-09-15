@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Export Mission PNGs - SatBlocks</title>
+  <script src="core/blockly/blockly_compressed.js?v=2026.2"></script>
+  <script src="core/blockly/blocks_compressed.js?v=2026.2"></script>
+  <script src="core/blockly/python_compressed.js?v=2026.2"></script>
+  <script src="core/blockly/javascript_compressed.js?v=2026.2"></script>
+  <script src="core/msg/pt-br.js?v=2026.2"></script>
+  <script src="satblocks/block_definitions.js?v=20260911-1000"></script>
+  <script src="satblocks/generator_python.js?v=20260911-1000"></script>
+  <script src="js/sat_profiles.js?v=20260911-1000"></script>
+  <script src="js/sat_capture.js?v=20260911-1000"></script>
+  <style>
+    body { font-family: sans-serif; margin: 20px; background: #f8fafc; }
+    #blocklyDiv { width: 1400px; height: 1200px; border: 1px solid #cbd5e1; background: white; }
+    #log { font-family: monospace; margin-top: 15px; padding: 10px; background: #e2e8f0; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <h2>Exportador Automático de Blocos das Missões (SatBlocks)</h2>
+  <div id="status">INICIANDO...</div>
+  <div id="log"></div>
+  <div id="blocklyDiv"></div>
+
+  <xml id="toolbox" style="display: none">
+    <category name="SatBlocks" colour="#0284c7"></category>
+  </xml>
+
+  <script>
+    function log(msg) {
+      const el = document.getElementById('log');
+      el.innerHTML += msg + '<br>';
+      console.log(msg);
+    }
+
+    async function blobToDataUrl(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    async function runExport() {
+      try {
+        log('Inicializando Workspace Blockly...');
+        const workspace = Blockly.inject('blocklyDiv', {
+          toolbox: document.getElementById('toolbox'),
+          scrollbars: true,
+          zoom: { controls: false, wheel: false }
+        });
+
+        const missions = [
+          { id: 'oficina1_minimo', filename: 'bloco_oficina1_programa_minimo.png' },
+          { id: 'oficina1_beacon', filename: 'bloco_oficina1_beacon_tempo.png' },
+          { id: 'oficina1_farol', filename: 'bloco_oficina1_leds_navegacao.png' },
+          { id: 'oficina1_bmp280', filename: 'bloco_oficina1_bmp280_temperatura.png' },
+          { id: 'oficina1_telemetria', filename: 'bloco_oficina1_pacote_telemetria.png' }
+        ];
+
+        for (const m of missions) {
+          log('Exportando: ' + m.id + ' -> ' + m.filename);
+          workspace.clear();
+          
+          const profile = window.SatProfiles.getProfile(m.id);
+          if (!profile || !profile.xml) {
+            throw new Error('Perfil não encontrado: ' + m.id);
+          }
+
+          const xmlDom = Blockly.Xml.textToDom(profile.xml);
+          Blockly.Xml.domToWorkspace(xmlDom, workspace);
+          
+          // Espera para layout e renderização dos blocos no DOM
+          await new Promise(r => setTimeout(r, 400));
+
+          const blob = await window.SatCapture.createPng(workspace);
+          log('  PNG gerado, tamanho: ' + blob.size + ' bytes');
+
+          const dataUrl = await blobToDataUrl(blob);
+          const resp = await fetch('save_png.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ filename: m.filename, dataUrl: dataUrl })
+          });
+          const text = await resp.text();
+          log('  Servidor salvou: ' + text);
+        }
+
+        document.getElementById('status').innerText = 'TUDO_CONCLUIDO_COM_SUCESSO';
+        log('<b>Todas as missões foram exportadas e salvas com sucesso!</b>');
+      } catch (err) {
+        document.getElementById('status').innerText = 'ERRO: ' + err.message;
+        log('<b>ERRO: ' + err.message + '</b>');
+        console.error(err);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(runExport, 300);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "name": "ESP32 DevKit V1 (Padrão CanSat OBSAT)",
+  "id": "esp32_devkit",
+  "mcu": "ESP32-D0WDQ6 Dual Core 240MHz",
+  "flash": "4MB Flash / 520KB SRAM",
+  "wireless": "Wi-Fi 802.11 b/g/n + Bluetooth 4.2 BLE",
+  "pins": [
+    { "pin": "GPIO 21", "func": "I2C SDA (BMP280 / MPU6050)", "type": "i2c" },
+    { "pin": "GPIO 22", "func": "I2C SCL (BMP280 / MPU6050)", "type": "i2c" },
+    { "pin": "GPIO 18", "func": "SPI SCK / PWM Servo Paraquedas", "type": "spi_pwm" },
+    { "pin": "GPIO 19", "func": "SPI MISO / Sensor DHT22", "type": "spi_gpio" },
+    { "pin": "GPIO 23", "func": "SPI MOSI (LoRa SX1276)", "type": "spi" },
+    { "pin": "GPIO 5",  "func": "LoRa CS / NSS", "type": "gpio" },
+    { "pin": "GPIO 2",  "func": "LoRa DIO0 / LED Status", "type": "gpio_led" },
+    { "pin": "GPIO 4",  "func": "LoRa RESET / DHT", "type": "gpio" },
+    { "pin": "GPIO 34", "func": "ADC1 (LDR Luz Solar)", "type": "adc" },
+    { "pin": "GPIO 35", "func": "ADC1 (Radiação UV)", "type": "adc" },
+    { "pin": "GPIO 36", "func": "ADC1 VP (Divisor Tensão Bateria)", "type": "adc" },
+    { "pin": "GPIO 25", "func": "PWM Buzzer Localizador", "type": "pwm" },
+    { "pin": "GPIO 16", "func": "UART2 RX (GPS NEO-6M)", "type": "uart" },
+    { "pin": "GPIO 17", "func": "UART2 TX (GPS NEO-6M)", "type": "uart" }
+  ]
+}

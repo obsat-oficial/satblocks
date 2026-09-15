@@ -1,0 +1,21 @@
+{
+  "name": "ESP32-C3 SuperMini (PocketQube / MiniSat OBSAT)",
+  "id": "esp32_c3_supermini",
+  "mcu": "ESP32-C3 RISC-V 160MHz",
+  "flash": "4MB Flash / 400KB SRAM",
+  "wireless": "Wi-Fi 2.4GHz + BLE 5.0",
+  "pins": [
+    { "pin": "GPIO 8", "func": "I2C SDA (BMP280)", "type": "i2c" },
+    { "pin": "GPIO 9", "func": "I2C SCL (BMP280)", "type": "i2c" },
+    { "pin": "GPIO 4", "func": "SPI SCK / LoRa", "type": "spi" },
+    { "pin": "GPIO 5", "func": "SPI MISO / LoRa", "type": "spi" },
+    { "pin": "GPIO 6", "func": "SPI MOSI / LoRa", "type": "spi" },
+    { "pin": "GPIO 7", "func": "LoRa CS / NSS", "type": "gpio" },
+    { "pin": "GPIO 0", "func": "ADC1 (Sensor de Luz / Bateria)", "type": "adc" },
+    { "pin": "GPIO 1", "func": "ADC1 (Sensor UV)", "type": "adc" },
+    { "pin": "GPIO 2", "func": "PWM Servo / Buzzer", "type": "pwm" },
+    { "pin": "GPIO 3", "func": "LED Onboard / Status", "type": "led" },
+    { "pin": "GPIO 20", "func": "UART RX (GPS)", "type": "uart" },
+    { "pin": "GPIO 21", "func": "UART TX (GPS)", "type": "uart" }
+  ]
+}

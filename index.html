@@ -1,4 +1,1907 @@
-<html>
-<head> <meta http-equiv="refresh" content="2;url=ui/"> </head>
-<body>Redirecting...</html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SatBlocks by BIPES — Ambiente Espacial OBSAT</title>
+  
+  <!-- Estilos e Fontes -->
+  <link rel="stylesheet" href="css/satblocks_theme.css?v=20260911-700">
+  <link rel="stylesheet" href="css/tour.css?v=20260911-500">
+  <style>
+    .sat-modal-overlay.active,
+    .sat-modal-overlay.show {
+      display: flex !important;
+    }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Favicon Oficial com Ícone do Satélite -->
+  <link rel="icon" type="image/x-icon" href="media/favicon.ico">
+  <link rel="shortcut icon" href="media/favicon.ico">
+
+  <!-- Core Google Blockly Oficial para Navegador / Offline -->
+  <script src="core/blockly/blockly_compressed.js?v=2026.2"></script>
+  <script src="core/blockly/blocks_compressed.js?v=2026.2"></script>
+  <script src="core/blockly/python_compressed.js?v=2026.2"></script>
+  <script src="core/blockly/javascript_compressed.js?v=2026.2"></script>
+  <script src="core/msg/pt-br.js?v=2026.2"></script>
+
+  <!-- Biblioteca Aeroespacial SatBlocks -->
+  <script src="satblocks/block_definitions.js?v=20260911-1000"></script>
+  <script src="satblocks/generator_python.js?v=20260911-1000"></script>
+
+  <!-- Bibliotecas do BIPES Databoard Oficial (Chart.js e Muuri Grid Offline) -->
+  <script src="core/chart.umd.min.js?v=2026.2"></script>
+  <script src="core/muuri.min.js?v=2026.2"></script>
+</head>
+<body>
+
+  <!-- HEADER / TOPBAR GLOBAL SATBLOCKS -->
+  <header class="sat-topbar">
+    <div class="sat-topbar-left" style="display: flex; align-items: center; gap: 10px; white-space: nowrap; flex-shrink: 0;">
+      <div class="satblock-brand" style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer;" onclick="SatBlocksApp.switchMainTab('blocks')">
+        <!-- ÍCONE .ICO DO SATÉLITE ESTILO SANCABOT (CUBESAT AEROESPACIAL) -->
+        <div class="satblock-logo-badge" style="width: 32px; height: 32px; background: #0f172a; border: 2px solid #38bdf8; border-radius: 9px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(56, 189, 248, 0.25);">
+          <img src="media/favicon.ico" alt="SatBlocks" style="width: 20px; height: 20px; object-fit: contain;">
+        </div>
+
+        <!-- TEXTO SATBLOCKS NO ESTILO SANCABOT -->
+        <div style="display: inline-flex; align-items: baseline; gap: 2px;">
+          <span style="font-size: 19px; font-weight: 900; color: #0f172a; letter-spacing: -0.6px; font-family: 'Inter', -apple-system, sans-serif;">Sat</span><span style="font-size: 19px; font-weight: 900; color: #0284c7; letter-spacing: -0.6px; font-family: 'Inter', -apple-system, sans-serif;">Blocks</span>
+          <span style="font-size: 13px; font-weight: 700; color: #64748b; margin-left: 6px; margin-right: 4px; font-style: italic;">by</span>
+        </div>
+
+        <!-- SÍMBOLO OFICIAL DO BIPES (VETOR OFICIAL DOS 4 BLOCOS) -->
+        <div class="bipes-logo-official" title="Plataforma BIPES Oficial" style="display: inline-flex; align-items: center; justify-content: center; background: rgba(50, 152, 220, 0.1); border: 1.5px solid rgba(50, 152, 220, 0.35); padding: 4px 6px; border-radius: 8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#3298dc">
+            <path d="m 16.66,4.52 2.83,2.83 -2.83,2.83 -2.83,-2.83 2.83,-2.83 M 9,5 V 9 H 5 V 5 h 4 m 10,10 v 4 h -4 v -4 h 4 M 9,15 v 4 H 5 V 15 H 9 M 16.66,1.69 11,7.34 16.66,13 22.32,7.34 Z M 11,3 H 3 v 8 h 8 z m 10,10 h -8 v 8 h 8 z M 11,13 H 3 v 8 h 8 z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- NAVEGAÇÃO DE ABAS: MODO DESKTOP (BOTÕES) & MODO COMPACTO (DROPDOWN / TOGGLE) -->
+    <nav class="sat-tabs-nav">
+      <!-- MODO COMPACTO / DROPDOWN TOGGLE (VISÍVEL EM TELAS MENORES) -->
+      <div class="sat-tabs-dropdown-container" id="satTabsDropdownContainer">
+        <button class="sat-tab-dropdown-btn" id="satTabDropdownBtn" title="Mudar Aba de Trabalho" onclick="SatBlocksApp.toggleTabsDropdown(event)">
+          <span class="dropdown-icon-badge" id="currentTabIcon">🧩</span>
+          <span class="dropdown-tab-text" id="currentTabLabel">Blocos</span>
+          <svg class="dropdown-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+        <div class="sat-tabs-dropdown-menu" id="satTabsDropdownMenu">
+          <div class="sat-dropdown-item active" data-tab="blocks" onclick="SatBlocksApp.switchMainTab('blocks')">
+            <span class="item-icon">🧩</span> <span class="item-label">Blocos</span>
+          </div>
+          <div class="sat-dropdown-item" data-tab="console" onclick="SatBlocksApp.switchMainTab('console')">
+            <span class="item-icon">💻</span> <span class="item-label">Console</span>
+          </div>
+          <div class="sat-dropdown-item" data-tab="files" onclick="SatBlocksApp.switchMainTab('files')">
+            <span class="item-icon">📁</span> <span class="item-label">Arquivos</span>
+          </div>
+          <div class="sat-dropdown-item" data-tab="device" onclick="SatBlocksApp.switchMainTab('device')">
+            <span class="item-icon">📍</span> <span class="item-label">Dispositivo</span>
+          </div>
+          <div class="sat-dropdown-item" data-tab="iot" onclick="SatBlocksApp.switchMainTab('iot')">
+            <span class="item-icon">📊</span> <span class="item-label">Painel IOT</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODO EXPANDIDO / TABS EM LINHA (VISÍVEL EM TELAS LARGAS) -->
+      <div class="sat-tabs-desktop-list">
+        <button class="sat-tab-btn active" data-tab="blocks" title="Programação em Blocos">
+          <span class="tab-icon">🧩</span> <span class="tab-label">Blocos</span>
+        </button>
+        <button class="sat-tab-btn" data-tab="console" title="Console e Terminal REPL">
+          <span class="tab-icon">💻</span> <span class="tab-label">Console</span>
+        </button>
+        <button class="sat-tab-btn" data-tab="files" title="Gerenciador de Arquivos Flash/SD">
+          <span class="tab-icon">📁</span> <span class="tab-label">Arquivos</span>
+        </button>
+        <button class="sat-tab-btn" data-tab="device" title="Dispositivo e Pinagem de Hardware">
+          <span class="tab-icon">📍</span> <span class="tab-label">Dispositivo</span>
+        </button>
+        <button class="sat-tab-btn" data-tab="iot" title="Painel IOT e Telemetria de Voo">
+          <span class="tab-icon">📊</span> <span class="tab-label">Painel IOT</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- BARRA DE CONEXÃO E EXECUÇÃO ELEGANTE ESTILO OBSAT / BIPES -->
+    <div class="sat-topbar-right">
+      <!-- Pílula de Conexão com Canais Separados (USB Serial / BLE Bluetooth / Status) -->
+      <div id="channel_connect" class="channel-connect-pill" title="Gerenciador de Conexão com o Satélite">
+        <button class="channel-pill-btn active" id="btnSelectUsb" title="Conexão Física Cabo Serial USB">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <circle cx="12" cy="18" r="1.5" fill="currentColor"></circle>
+            <line x1="12" y1="16.5" x2="12" y2="3"></line>
+            <polygon points="12,2 9,6 15,6" fill="currentColor"></polygon>
+            <rect x="7" y="6" width="3" height="3" fill="currentColor"></rect>
+            <circle cx="15.5" cy="6.5" r="1.5" fill="currentColor"></circle>
+          </svg>
+          <span class="channel-btn-text">USB</span>
+        </button>
+
+        <span class="pill-divider"></span>
+
+        <button class="channel-pill-btn" id="btnSelectBle" title="Conexão Sem Fio Bluetooth Low Energy">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5"></polyline>
+          </svg>
+          <span class="channel-btn-text">BLE</span>
+        </button>
+
+        <span class="pill-divider"></span>
+
+        <button class="connect-status-btn" id="connectButton" title="Conectar / Desconectar Satélite">
+          <span class="status-dot" id="connLedDot"></span>
+          <span id="connStatusText">Conectar</span>
+        </button>
+      </div>
+
+      <!-- Pílula de Dispositivo & Execução com Play -->
+      <div id="deviceSelect" title="Dispositivo e Execução de Voo">
+        <!-- Ícone Chip Microcontrolador Oficial BIPES -->
+        <span class="mcu-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="5" width="14" height="14" rx="2" fill="none"></rect>
+            <rect x="8" y="8" width="3" height="3" fill="#2563eb"></rect>
+            <rect x="13" y="8" width="3" height="3" fill="#2563eb"></rect>
+            <rect x="8" y="13" width="3" height="3" fill="#2563eb"></rect>
+            <rect x="13" y="13" width="3" height="3" fill="#2563eb"></rect>
+            <line x1="2" y1="9" x2="5" y2="9"></line>
+            <line x1="2" y1="15" x2="5" y2="15"></line>
+            <line x1="19" y1="9" x2="22" y2="9"></line>
+            <line x1="19" y1="15" x2="22" y2="15"></line>
+            <line x1="9" y1="2" x2="9" y2="5"></line>
+            <line x1="15" y1="2" x2="15" y2="5"></line>
+            <line x1="9" y1="19" x2="9" y2="22"></line>
+            <line x1="15" y1="19" x2="15" y2="22"></line>
+          </svg>
+        </span>
+        <select id="device_selector" title="Selecione o Microcontrolador / Placa">
+          <option value="pion_cubesat" selected>PION CubeSat</option>
+          <option value="esp32_devkit">ESP32 DevKit V1</option>
+          <option value="esp32_c3_supermini">ESP32-C3 SuperMini</option>
+          <option value="esp32_cam">ESP32-CAM</option>
+          <option value="rp2040_zero">Waveshare RP2040-Zero</option>
+        </select>
+        <button id="runButton" title="Executar código no Satélite">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#ffffff">
+            <polygon points="6 3 20 12 6 21 6 3"/>
+          </svg>
+        </button>
+      </div>
+
+      <button class="sat-btn studio" id="btnOpenMissionsModal" onclick="window.SatProfiles ? window.SatProfiles.openMissionsModal() : (document.getElementById('modalMissionsOverlay').style.display='flex')" title="Catálogo de Missões Oficiais das Oficinas OBSAT 2026" style="background: rgba(124, 58, 237, 0.2); border-color: rgba(168, 85, 247, 0.5); color: #c084fc; font-weight: 600; cursor: pointer;">
+        <span>🚀</span> <span class="studio-label">Missões Oficiais</span>
+      </button>
+
+      <button class="sat-btn studio" id="btnOpenFlasher" onclick="window.open('flasher.html', '_blank')" title="Gravar Firmware MicroPython na ESP32 / ESP32-CAM via Web Serial" style="background: rgba(219, 39, 119, 0.15); border-color: rgba(219, 39, 119, 0.4); color: #f472b6;">
+        <span>⚡</span> <span class="studio-label">Flasher Firmware</span>
+      </button>
+
+      
+        <button class="sat-btn studio" id="btnOpenTelemetria" onclick="window.open('telemetria/', '_blank')" title="Abrir Servidor de Testes de Telemetria OBSAT 2026" style="background: rgba(2, 132, 199, 0.15); border-color: rgba(2, 132, 199, 0.4); color: #38bdf8;">
+          <span>📡</span> <span class="studio-label">Telemetria</span>
+        </button>
+        <button class="sat-btn studio" id="btnOpenStudio" onclick="window.open('studio.html', '_blank')" title="Criar novos blocos e exportar imagens / drivers">
+        <span>🛠️</span> <span class="studio-label">SatBlocks Studio</span>
+      </button>
+
+      <!-- AVATAR DO USUÁRIO ESTILO BIPES (ROSTINHO) -->
+      <button class="sat-user-avatar-btn" id="btnBipesUserAvatar" onclick="SatProfiles.toggleAccountPanel(event)" title="Projetos &amp; Perfil da Equipe">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ACCOUNT PANEL OFICIAL DO BIPES (COMPATIBILIDADE E DESIGN REFINADO) -->
+  <div class="account-panel" id="bipesAccountPanel">
+    <span>
+      <span id="account_header">Olá, <span id="account_user" role="textbox" contenteditable>Equipe</span>!</span>
+      <details open>
+        <summary>
+          <h2>Projetos</h2>
+          <button id="newProjectButton" title="Criar novo projeto / missão">+</button>
+        </summary>
+        <div id="ProjectList"></div>
+      </details>
+    </span>
+    <details open>
+      <summary>
+        <h2>Configurações</h2>
+      </summary>
+      <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+        <span style="font-size: 14px;">🌐</span>
+        <select id="languageMenu" class="sat-select" style="width: 100%; font-size: 11px; padding: 4px 8px; background: #ffffff; color: #0f172a; border-color: #cbd5e1;">
+          <option value="pt-br" selected>Português (BR)</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+    </details>
+  </div>
+
+  <!-- ==========================================
+       CONTEÚDO DAS ABAS (PAGES)
+       ========================================== -->
+
+  <!-- 1. ABA BLOCOS & WORKSPACE -->
+  <section class="sat-tab-page" id="tab_page_blocks">
+    <div id="blocklyArea">
+      <!-- BOTÃO MINIMALISTA DE RECOLHER / FIXAR BARRA LATERAL (ÍCONE APENAS) -->
+      <button class="sat-toolbox-toggle-btn" id="btnToggleToolbox" title="Recolher / Fixar Barra Lateral" onclick="SatBlocksApp.toggleToolbox()">
+        <svg class="toggle-icon-collapse" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        <svg class="toggle-icon-expand" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+
+      <!-- ZONA DE GATILHO HOVER LATERAL QUANDO RECOLHIDO -->
+      <div class="sat-toolbox-hover-trigger" id="toolboxHoverTrigger"></div>
+
+      <button type="button" id="btnCaptureBlocks" class="sat-btn"
+        title="Capturar todos os blocos como PNG transparente (Ctrl+Shift+E / ⌘+Shift+E)"
+        aria-label="Capturar blocos como PNG transparente" aria-keyshortcuts="Control+Shift+E Meta+Shift+E"
+        style="position:absolute;top:12px;right:12px;z-index:20;padding:7px 10px;background:#fff;color:#0f172a;border:1px solid #cbd5e1;border-radius:6px;cursor:pointer;font-size:12px;">
+        Capturar blocos <small>(Ctrl+Shift+E)</small>
+      </button>
+      <div id="blocklyDiv"></div>
+    </div>
+
+    <!-- RESIZER ARRASTÁVEL COM SETAS PARA AJUSTE LIVRE DE LARGURA -->
+    <div class="sat-panel-resizer" id="panelResizer" title="Arraste para ajustar o tamanho do código lateral (ou duplo clique para alternar)">
+      <div class="resizer-handle">
+        <span class="resizer-arrow">‹</span>
+        <span class="resizer-arrow">›</span>
+      </div>
+    </div>
+
+    <aside class="sat-side-panel" id="sidePanel">
+      <div class="panel-header">
+        <div class="panel-header-left">
+          <div class="side-panel-tabs">
+            <button class="side-tab-btn active" id="tabSideCode" title="Código MicroPython Gerado">
+              <span class="tab-icon">🐍</span>
+              <span>MicroPython</span>
+            </button>
+            <button class="side-tab-btn" id="tabSideRef" title="Guia Didático & Relação Blocos e Python (Estilo Micro:bit)">
+              <span class="tab-icon">📘</span>
+              <span>Referência</span>
+            </button>
+          </div>
+          <button class="sat-btn-icon" id="btnToggleSidePanelSize" title="Expandir / Reduzir Painel de Código">⤢</button>
+        </div>
+        <div class="panel-header-actions" id="sideCodeActions">
+          <button class="sat-btn primary" id="btnRunSatellite" style="padding: 4px 9px; font-size: 11px;" title="Gravar e Executar no Satélite">
+            ⚡ Executar
+          </button>
+          <button class="sat-btn" id="btnSaveProject" style="padding: 4px 7px; font-size: 11px;" title="Salvar Projeto (.satblocks)">💾 Salvar</button>
+          <button class="sat-btn" id="btnOpenProject" style="padding: 4px 7px; font-size: 11px;" title="Abrir Projeto">📂 Abrir</button>
+          <input type="file" id="fileInputProject" accept=".satblocks,.xml" style="display: none;">
+        </div>
+      </div>
+      <div class="panel-content" id="sideCodeView">
+        <!-- BARRA SUPERIOR DENTRO DO BLOCO DE CÓDIGO -->
+        <div class="code-block-bar">
+          <span class="code-block-lang">Python (MicroPython ESP32)</span>
+          <button class="code-copy-btn" id="btnCopyPythonCode" title="Copiar código Python completo">
+            <svg class="copy-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span class="copy-label">Copiar</span>
+          </button>
+        </div>
+        <pre id="pythonCodeView"># Gerando código MicroPython...</pre>
+      </div>
+
+      <!-- VISÃO 2: GUIA DE REFERÊNCIA DIDÁTICA ESTILO MICRO:BIT -->
+      <div class="panel-content ref-view" id="sideRefView" style="display: none;">
+        <div class="sat-ref-nav-wrapper">
+          <div class="sat-ref-nav-row" title="Estruturas de Controle e Lógica de Programação">
+            <span class="ref-row-label">Lógica:</span>
+            <button class="ref-nav-chip active" onclick="SatReference.showTopic('loops')">🔄 Loops</button>
+            <button class="ref-nav-chip" onclick="SatReference.showTopic('logic')">🧠 Lógica</button>
+            <button class="ref-nav-chip" onclick="SatReference.showTopic('math')">🔢 Matemática</button>
+            <button class="ref-nav-chip" onclick="SatReference.showTopic('text')">📝 Textos</button>
+            <button class="ref-nav-chip" onclick="SatReference.showTopic('lists')">📑 Listas</button>
+            <button class="ref-nav-chip" onclick="SatReference.showTopic('timing')">⏱️ Temporização</button>
+            <button class="ref-nav-chip" onclick="SatReference.showTopic('python_adv')">🐍 Python</button>
+            <button class="ref-nav-chip" onclick="SatReference.showTopic('variables')">📦 Variáveis</button>
+            <button class="ref-nav-chip" onclick="SatReference.showTopic('functions')">🧩 Funções</button>
+          </div>
+          <div class="sat-ref-nav-row" title="Hardware, Sensores e Telecomunicações">
+            <span class="ref-row-label">Hardware:</span>
+            <button class="ref-nav-chip" onclick="SatReference.showTopic('mission')">🛰️ Missão</button>
+            <button class="ref-nav-chip" onclick="SatReference.showTopic('sensors')">🌡️ Sensores</button>
+            <button class="ref-nav-chip" onclick="SatReference.showTopic('imu')">🧭 Inércia</button>
+            <button class="ref-nav-chip" onclick="SatReference.showTopic('gps')">📍 GPS</button>
+            <button class="ref-nav-chip" onclick="SatReference.showTopic('telemetry')">📦 Telemetria</button>
+            <button class="ref-nav-chip" onclick="SatReference.showTopic('lora')">📻 LoRa</button>
+            <button class="ref-nav-chip" onclick="SatReference.showTopic('wifi')">🌐 Wi-Fi</button>
+            <button class="ref-nav-chip" onclick="SatReference.showTopic('mqtt')">☁️ EasyMQTT</button>
+            <button class="ref-nav-chip" onclick="SatReference.showTopic('camera')">📷 Câmera</button>
+            <button class="ref-nav-chip" onclick="SatReference.showTopic('eps')">⚡ EPS</button>
+            <button class="ref-nav-chip" onclick="SatReference.showTopic('files')">📁 Arquivos</button>
+          </div>
+        </div>
+        <div id="refTopicContent" class="ref-topic-container"></div>
+      </div>
+    </aside>
+  </section>
+
+  <!-- 2. ABA CONSOLE / TERMINAL REPL -->
+  <section class="sat-tab-page" id="tab_page_console">
+    <div class="terminal-window">
+      <!-- CABEÇALHO ESTILO JANELA ESPACIAL -->
+      <div class="terminal-window-header">
+        <div class="terminal-window-controls">
+          <span class="window-dot close"></span>
+          <span class="window-dot minimize"></span>
+          <span class="window-dot maximize"></span>
+          <span class="terminal-title-text" style="margin-left: 8px;">
+            🛰️ SatBlocks Ground Station — MicroPython REPL
+          </span>
+          <span class="terminal-baud-badge" id="terminalBaudBadge">115200 BAUD</span>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="sat-btn" id="btnClearTerminal" style="padding: 3px 8px; font-size: 11px;">🧹 Limpar</button>
+          <button class="sat-btn" id="btnStopProgramDevice" style="padding: 3px 8px; font-size: 11px;" title="Interromper execução (Ctrl+C)">⏹️ Parar (Ctrl+C)</button>
+          <button class="sat-btn" id="btnSoftResetDevice" style="padding: 3px 8px; font-size: 11px;" title="Reiniciar interpretador MicroPython (Ctrl+D)">🔄 Soft Reset</button>
+          <button class="sat-btn" id="btnHardResetDevice" style="padding: 3px 8px; font-size: 11px;" title="Disparar pulso de Reset físico via DTR/RTS">⚡ Hard Reset</button>
+        </div>
+      </div>
+
+      <!-- BARRA DE ATALHOS RÁPIDOS DE COMANDOS ESPACIAIS -->
+      <div class="terminal-quick-bar">
+        <span style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">Atalhos:</span>
+        <button class="terminal-quick-btn" onclick="SatBlocksApp.sendQuickCmd('help()')">help()</button>
+        <button class="terminal-quick-btn" onclick="SatBlocksApp.sendQuickCmd('import os; os.listdir()')">📁 os.listdir()</button>
+        <button class="terminal-quick-btn" onclick="SatBlocksApp.sendQuickCmd('import gc; gc.collect(); print(gc.mem_free(), \'bytes livres\')')">🧠 gc.mem_free()</button>
+        <button class="terminal-quick-btn" onclick="SatBlocksApp.sendQuickCmd('import machine; machine.reset()')">⚡ machine.reset()</button>
+        <button class="terminal-quick-btn" onclick="SatBlocksApp.sendQuickCmd('import time; print(\'Timestamp:\', time.ticks_ms())')">⏱️ time.ticks_ms()</button>
+      </div>
+
+      <!-- TELA DE SAÍDA DE LOGS DO TERMINAL -->
+      <div class="terminal-screen-container" id="terminalScreenScroll">
+        <pre id="terminalFullLogs"><span class="term-sys">[SISTEMA] SatBlocks Ground Station pronta.</span>
+<span class="term-comment"># Conecte seu satélite via USB Serial ou Bluetooth para iniciar a comunicação ao vivo.</span>
+</pre>
+      </div>
+
+      <!-- PROMPT DE ENTRADA ELEGANTE -->
+      <div class="terminal-prompt-bar">
+        <span class="terminal-prompt-symbol">&gt;&gt;&gt;</span>
+        <input type="text" class="terminal-prompt-input" id="terminalCmdInput" placeholder="Digitar comando Python (ex: print('Ola Satelite'), 2 + 2, bmp.temperature)..." autocomplete="off" spellcheck="false">
+        <button class="terminal-send-btn" id="btnSendTerminalCmd">
+          <span>Enviar</span>
+          <span>↵</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. ABA ARQUIVOS (FILES & FLASH DO SATÉLITE) -->
+  <section class="sat-tab-page" id="tab_page_files">
+    <div class="files-sidebar">
+      <div style="padding: 12px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="font-size: 14px;">💾</span>
+          <span style="font-size: 13px; font-weight: 800; color: #0f172a;">Arquivos na Flash</span>
+        </div>
+        <div style="display: flex; gap: 4px;">
+          <button class="sat-btn" id="btnRefreshDeviceFiles" style="padding: 3px 8px; font-size: 11px;" title="Atualizar lista da Flash">🔄</button>
+          <button class="sat-btn" id="btnNewDeviceFile" style="padding: 3px 8px; font-size: 11px;" title="Novo Arquivo">➕</button>
+          <label class="sat-btn" style="padding: 3px 8px; font-size: 11px; cursor: pointer;" title="Upload do Computador para a Flash">
+            ⬆️
+            <input type="file" id="inputUploadDeviceFile" style="display: none;">
+          </label>
+        </div>
+      </div>
+      <div class="files-list-container" id="deviceFileList">
+        <!-- Lista dinâmica de arquivos da Flash -->
+      </div>
+    </div>
+    <div class="files-editor-area">
+      <div class="files-editor-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 13px; font-weight: 700; color: #64748b;">Arquivo:</span>
+          <input type="text" id="fileEditorName" class="sat-input-pill" style="width: 180px; font-weight: 800; color: #0284c7;" value="main.py">
+        </div>
+        <div style="display: flex; gap: 6px;">
+          <button class="sat-btn" id="btnDownloadFileToPc" title="Baixar este arquivo para o meu computador (.py)">📥 Baixar para o PC</button>
+          <button class="sat-btn primary" id="btnSaveFileToDevice" title="Gravar arquivo na Flash do Satélite">💾 Gravar no Satélite</button>
+          <button class="sat-btn success" id="btnRunDeviceFile" title="Executar arquivo no satélite">⚡ Executar</button>
+          <button class="sat-btn danger" id="btnDeleteDeviceFile" title="Excluir arquivo da Flash">🗑️ Excluir</button>
+        </div>
+      </div>
+      <div class="files-code-editor-container">
+        <pre class="files-code-highlight" id="fileEditorHighlighted"></pre>
+        <textarea id="fileEditorTextarea" placeholder="# Escreva ou edite código Python para ser gravado na Flash..." spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. ABA DISPOSITIVO (DEVICE & PINOUT COMPLETO ESTILO BIPES) -->
+  <section class="sat-tab-page" id="tab_page_device">
+    <div class="device-container">
+      
+      <!-- COLUNA PRINCIPAL: MAPA DE PINAGEM & DIAGRAMA DA PLACA -->
+      <div class="device-main-col">
+        <div class="device-card">
+          <div class="device-card-header">
+            <div class="device-card-title">
+              <span>📍</span>
+              <span>Pinout &amp; Mapa de Barramentos do Satélite</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 11px; color: #94a3b8;">Placa / Hardware:</span>
+              <select id="deviceBoardSelect" class="sat-select" style="padding: 4px 10px; font-size: 12px; background: #1e293b; color: #38bdf8; font-weight: 700; border-color: #0284c7;">
+                <option value="pion_cubesat" selected>🛰️ PION CubeSat</option>
+                <option value="esp32_devkit">🛰️ ESP32 DevKit V1</option>
+                <option value="esp32_c3_supermini">🛰️ ESP32-C3 SuperMini</option>
+                <option value="esp32_cam">🛰️ ESP32-CAM</option>
+                <option value="rp2040_zero">🛰️ Waveshare RP2040-Zero</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- DIAGRAMA VISUAL TÉCNICO OFICIAL DO HARDWARE -->
+          <div id="deviceDiagramWrapper" style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; display: flex; justify-content: center; align-items: center; min-height: 280px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);">
+            <img id="deviceBoardImage" src="media/pion_cubesat_pinout.png" alt="Diagrama e Pinout do PION CubeSat" style="max-width: 100%; max-height: 420px; object-fit: contain; border-radius: 8px;">
+          </div>
+
+          <!-- TABELA DETALHADA DE PINOS -->
+          <div style="max-height: 420px; overflow-y: auto;">
+            <table class="device-pin-table" id="devicePinTable">
+              <thead>
+                <tr>
+                  <th style="width: 70px; text-align: center;">Terminal</th>
+                  <th>Pino / GPIO</th>
+                  <th>Descrição / Função</th>
+                  <th>Barramento / Tipo</th>
+                  <th>Sensor / Aplicação Recomendada</th>
+                </tr>
+              </thead>
+              <tbody id="devicePinTableBody">
+                <!-- Populado dinamicamente -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLUNA LATERAL: ESPECIFICAÇÕES DO DEVICE & DIAGNÓSTICO -->
+      <div class="device-side-col">
+        <!-- ESPECIFICAÇÕES DA PLACA -->
+        <div class="device-card">
+          <div class="device-card-header">
+            <div class="device-card-title">
+              <span>⚙️</span>
+              <span>Especificações do Microcontrolador</span>
+            </div>
+            <span class="terminal-baud-badge" id="deviceStatusBadge">ESP32 ATIVO</span>
+          </div>
+
+          <div class="device-specs-grid">
+            <div class="device-spec-box">
+              <span class="device-spec-label">Processador / MCU</span>
+              <span class="device-spec-value" id="deviceMcuText">ESP32 Dual Core 240MHz</span>
+            </div>
+            <div class="device-spec-box">
+              <span class="device-spec-label">Memória Flash</span>
+              <span class="device-spec-value" id="deviceFlashText">4 MB Flash SPI</span>
+            </div>
+            <div class="device-spec-box">
+              <span class="device-spec-label">Memória SRAM</span>
+              <span class="device-spec-value" id="deviceRamText">520 KB SRAM</span>
+            </div>
+            <div class="device-spec-box">
+              <span class="device-spec-label">Firmware</span>
+              <span class="device-spec-value" style="color: #10b981;">MicroPython v1.26.1</span>
+            </div>
+            <div class="device-spec-box">
+              <span class="device-spec-label">Barramento I2C Padrão</span>
+              <span class="device-spec-value" style="color: #38bdf8;">I2C0 (SCL: 22, SDA: 21)</span>
+            </div>
+            <div class="device-spec-box">
+              <span class="device-spec-label">Barramento SPI Padrão</span>
+              <span class="device-spec-value" style="color: #f59e0b;">SPI2 (SCK: 18, MISO: 19, MOSI: 23)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- DIAGNÓSTICO E CONTROLE DE HARDWARE -->
+        <div class="device-card">
+          <div class="device-card-header">
+            <div class="device-card-title">
+              <span>⚡</span>
+              <span>Diagnóstico de Hardware &amp; Barramentos</span>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <button class="sat-btn primary" id="btnScanI2CDevice" style="justify-content: flex-start; padding: 8px 14px;">
+              <span>🔍</span> Escanear Barramento I2C (i2c.scan())
+            </button>
+            <button class="sat-btn accent" id="btnCheckMemDevice" style="justify-content: flex-start; padding: 8px 14px;">
+              <span>🧠</span> Verificar Memória Livre (gc.mem_free())
+            </button>
+            <button class="sat-btn danger" id="btnResetBoardDevice" style="justify-content: flex-start; padding: 8px 14px;">
+              <span>🔄</span> Reiniciar Placa / Hard Reset (machine.reset())
+            </button>
+            <a href="boards/WAVESHARE-RP2040-Board/WAVESHARE-RP2040-20260609-v1.29.0-4MB.uf2" download="WAVESHARE-RP2040-20260609-v1.29.0-4MB.uf2" class="sat-btn success" id="btnDownloadRp2040Uf2" style="justify-content: flex-start; padding: 8px 14px; text-decoration: none; display: none;">
+              <span>📥</span> Baixar Firmware Waveshare RP2040 (.UF2 Oficial)
+            </a>
+            <button class="sat-btn primary" id="btnLoadRp2040MensaProgram" style="justify-content: flex-start; padding: 8px 14px; display: none; background: linear-gradient(135deg, #0284c7, #0369a1);">
+              <span>🎓</span> Carregar Missão Oficina Mensa (Waveshare RP2040-Zero + BMP280 + MPU6050 + Wi-Fi)
+            </button>
+            <button class="sat-btn primary" id="btnLoadRp2040ObsatProgram" style="justify-content: flex-start; padding: 8px 14px; display: none; background: linear-gradient(135deg, #7c3aed, #6d28d9);">
+              <span>🛰️</span> Carregar Missão Oficial Edital OBSAT (RP2040 Completo)
+            </button>
+
+            <!-- ATALHOS RÁPIDOS PARA MISSÕES DAS OFICINAS -->
+            <div style="margin-top: 8px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 6px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                <span style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase;">🚀 Missões das Oficinas OBSAT:</span>
+                <button class="sat-btn" onclick="SatProfiles.openMissionsModal()" style="font-size: 10px; padding: 2px 6px;">Ver Todas</button>
+              </div>
+              <button class="sat-btn primary" onclick="SatProfiles.loadOfficialMission('oficina1_minimo')" style="justify-content: flex-start; padding: 6px 12px; font-size: 12px; background: #0284c7;">
+                <span>🛰️</span> Oficina 1: Programa Mínimo (Olá, Terra!)
+              </button>
+              <button class="sat-btn primary" onclick="SatProfiles.loadOfficialMission('oficina1_farol')" style="justify-content: flex-start; padding: 6px 12px; font-size: 12px; background: #d97706;">
+                <span>💡</span> Oficina 1: Farol de Bordo (LED GPIO 2)
+              </button>
+              <button class="sat-btn primary" onclick="SatProfiles.loadOfficialMission('oficina1_telemetria')" style="justify-content: flex-start; padding: 6px 12px; font-size: 12px; background: #e11d48;">
+                <span>📦</span> Oficina 1: Telemetria Oficial &amp; Painel IoT
+              </button>
+              <button class="sat-btn primary" onclick="SatProfiles.loadOfficialMission('oficina2_serie')" style="justify-content: flex-start; padding: 6px 12px; font-size: 12px; background: #7c3aed;">
+                <span>🌪️</span> Oficina 2: Série Temporal Atmosférica
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 5. ABA IOT / BIPES DATABOARD OFICIAL (OBSAT 2026) -->
+  <section class="sat-tab-page" id="tab_page_iot">
+    <div class="databoard-page-container">
+      
+      <!-- TOPBAR DO BIPES DATABOARD -->
+      <div class="databoard-topbar">
+        <div class="databoard-header-left">
+          <div class="databoard-brand-box">
+            <div class="bipes-logo-official" style="background: rgba(50, 152, 220, 0.15); border: 1.5px solid rgba(50, 152, 220, 0.4); padding: 4px 6px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#3298dc">
+                <path d="m 16.66,4.52 2.83,2.83 -2.83,2.83 -2.83,-2.83 2.83,-2.83 M 9,5 V 9 H 5 V 5 h 4 m 10,10 v 4 h -4 v -4 h 4 M 9,15 v 4 H 5 V 15 H 9 M 16.66,1.69 11,7.34 16.66,13 22.32,7.34 Z M 11,3 H 3 v 8 h 8 z m 10,10 h -8 v 8 h 8 z M 11,13 H 3 v 8 h 8 z"/>
+              </svg>
+            </div>
+            <div>
+              <div class="databoard-title-row">
+                <span class="databoard-title">BIPES Databoard</span>
+                <span class="databoard-version-tag">v2.1 Real-Time</span>
+              </div>
+              <span class="databoard-subtitle">🛰️ Telemetria &amp; Painel IoT — Missão OBSAT 2026</span>
+            </div>
+          </div>
+          
+          <!-- SELETOR DE WORKSPACES -->
+          <div class="databoard-control-pill">
+            <span style="font-size: 11px; font-weight: 700; color: #64748b;">📊 Workspace:</span>
+            <select id="bipesWorkspaceSelect" class="databoard-select"></select>
+            <button class="sat-btn-icon" id="btnNewWorkspace" title="Criar Novo Workspace" style="width: 24px; height: 24px;">➕</button>
+          </div>
+        </div>
+
+        <div class="databoard-header-right">
+          <button class="sat-btn" id="btnLoadOficinaTelemetryInIot" onclick="SatProfiles.loadOfficialMission('oficina1_telemetria')" title="Carregar Missão Oficial de Telemetria da Oficina no workspace" style="background: rgba(225, 29, 72, 0.18); border-color: rgba(225, 29, 72, 0.4); color: #fb7185; font-weight: 600;">
+            <span>🛰️</span> Missão Oficina 1 (IoT)
+          </button>
+
+          <button class="sat-btn" id="btnToggleEditGrid" title="Ativar/Desativar modo de reorganização e arraste dos cartões">
+            <span id="editGridIcon">✏️</span> <span id="editGridText">Organizar Grid</span>
+          </button>
+
+          <button class="sat-btn primary" id="btnAddWidgetBipes" title="Adicionar novo gráfico ou controle ao dashboard">
+            <span>➕</span> Adicionar Widget
+          </button>
+
+          <button class="sat-btn" id="btnOpenStorageManager" title="Gerenciador de Datasets e Arquivos CSV">
+            <span>💾</span> Datasets / CSV
+          </button>
+
+          <div class="databoard-status-pill" id="databoardTelemetryStatus" title="Status de Recepção de Dados do Satélite">
+            <span class="telemetry-status-dot"></span>
+            <span id="telemetryStatusText">Aguardando Satélite</span>
+          </div>
+
+          <button class="sat-btn danger" id="btnClearDataboardData" title="Limpar todos os dados e histórico dos gráficos">
+            <span>🧹</span> Limpar
+          </button>
+        </div>
+      </div>
+
+      <!-- ÁREA PRINCIPAL DO GRID MUURI -->
+      <div class="databoard-content-wrapper" id="databoardContentWrapper">
+        
+        <!-- ESTADO VAZIO (QUANDO NÃO HOUVER WIDGETS NO WORKSPACE) -->
+        <div class="databoard-empty-state" id="databoardEmptyState" style="display: none;">
+          <div class="databoard-empty-card">
+            <div class="empty-icon">🛰️</div>
+            <h3>Workspace Sem Widgets</h3>
+            <p>Adicione novos gráficos Chart.js em tempo real ou carregue os sensores padrão da missão OBSAT 2026.</p>
+            <div class="empty-actions">
+              <button class="sat-btn primary" id="btnEmptyAddWidget">
+                <span>➕</span> Criar Primeiro Widget
+              </button>
+              <button class="sat-btn" id="btnEmptyLoadObsatPreset">
+                <span>📊</span> Carregar Sensores Padrão OBSAT
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- GRID CONTAINER OFICIAL MUURI -->
+        <div class="bipes-muuri-grid" id="bipesGridContainer"></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- MODAL 1: CRIAR / EDITAR WIDGET DO BIPES DATABOARD -->
+  <div class="sat-modal-overlay" id="modalWidgetEditorOverlay" style="display: none;">
+    <div class="sat-modal" style="max-width: 580px;">
+      <div class="sat-modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 18px;">📊</span>
+          <h3 style="font-size: 15px; font-weight: 700; color: #0f172a;" id="widgetModalTitle">Novo Widget do Databoard</h3>
+        </div>
+        <button class="sat-btn sat-modal-close" onclick="document.getElementById('modalWidgetEditorOverlay').style.display='none'" style="padding: 4px 10px;">✕</button>
+      </div>
+      <div class="sat-modal-body" style="padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+        
+        <div>
+          <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">1. Tipo de Widget:</label>
+          <select id="widgetTypeSelect" class="sat-select" style="width: 100%; padding: 8px 12px; font-size: 13px;">
+            <option value="chart" selected>📈 Gráfico Chart.js (Linhas, Barras, Radar)</option>
+            <option value="switch">🔘 Interruptor / Chave de Comando HTTP</option>
+            <option value="stream">🎥 Câmera / Stream de Vídeo (MJPEG)</option>
+          </select>
+        </div>
+
+        <!-- CAMPOS ESPECÍFICOS DE GRÁFICO -->
+        <div id="widgetChartFields" style="display: flex; flex-direction: column; gap: 12px;">
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">2. Tópico / Dataset (Fonte de Dados):</label>
+            <select id="widgetDatasetSelect" class="sat-select" style="width: 100%; padding: 8px 12px; font-size: 13px;">
+              <option value="obsat_altitude" selected>⛰️ obsat_altitude (Altitude Barométrica / Apogeu)</option>
+              <option value="obsat_temperatura">🌡️ obsat_temperatura (SHT20 &amp; BMP280)</option>
+              <option value="obsat_pressao">🌪️ obsat_pressao (Pressão Atmosférica hPa)</option>
+              <option value="obsat_bateria">🔋 obsat_bateria (Tensão &amp; Carga %)</option>
+              <option value="obsat_giroscopio">🧭 obsat_giroscopio (Eixos X, Y, Z)</option>
+              <option value="obsat_acelerometro">🚀 obsat_acelerometro (G-Force X, Y, Z)</option>
+            </select>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+              <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">3. Tipo de Gráfico:</label>
+              <select id="widgetChartType" class="sat-select" style="width: 100%; padding: 8px 12px; font-size: 13px;">
+                <option value="line" selected>Linha (Line)</option>
+                <option value="bar">Barras (Bar)</option>
+                <option value="radar">Radar / Polar</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">4. Limite de Pontos:</label>
+              <input type="number" id="widgetLimitPoints" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="50" min="5" max="500">
+            </div>
+          </div>
+
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">5. Título do Gráfico:</label>
+            <input type="text" id="widgetTitleInput" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="Altitude de Voo (m)">
+          </div>
+
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">6. Rótulos das Séries (separados por vírgula):</label>
+            <input type="text" id="widgetLabelsInput" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="Altitude (m)">
+          </div>
+        </div>
+
+        <!-- CAMPOS ESPECÍFICOS DE SWITCH -->
+        <div id="widgetSwitchFields" style="display: none; flex-direction: column; gap: 12px;">
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Título do Botão:</label>
+            <input type="text" id="widgetSwitchTitle" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="Acionar Servofreio">
+          </div>
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">URL de Ativação (ON):</label>
+            <input type="text" id="widgetSwitchOnUrl" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="http://192.168.4.1/actuator/on">
+          </div>
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">URL de Desativação (OFF):</label>
+            <input type="text" id="widgetSwitchOffUrl" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="http://192.168.4.1/actuator/off">
+          </div>
+        </div>
+
+        <!-- CAMPOS ESPECÍFICOS DE STREAM -->
+        <div id="widgetStreamFields" style="display: none; flex-direction: column; gap: 12px;">
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Endereço Stream MJPEG / Câmera:</label>
+            <input type="text" id="widgetStreamUrl" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="http://192.168.4.1:81/stream">
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+          <button class="sat-btn" onclick="document.getElementById('modalWidgetEditorOverlay').style.display='none'">Cancelar</button>
+          <button class="sat-btn primary" id="btnConfirmSaveWidget"><span>💾</span> Salvar Widget</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: GERENCIADOR DE DATASTORAGE & EXPORTAÇÃO CSV -->
+  <div class="sat-modal-overlay" id="modalStorageManagerOverlay" style="display: none;">
+    <div class="sat-modal" style="max-width: 650px;">
+      <div class="sat-modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 18px;">💾</span>
+          <h3 style="font-size: 15px; font-weight: 700; color: #0f172a;">Gerenciador de Datasets &amp; CSV (DataStorage)</h3>
+        </div>
+        <button class="sat-btn sat-modal-close" onclick="document.getElementById('modalStorageManagerOverlay').style.display='none'" style="padding: 4px 10px;">✕</button>
+      </div>
+      <div class="sat-modal-body" style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+          <div>
+            <div style="font-size: 13px; font-weight: 800; color: #0f172a;">Banco de Dados Local (localStorage)</div>
+            <div style="font-size: 11px; color: #64748b;">Datasets coletados em tempo real durante a missão</div>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <label class="sat-btn" style="cursor: pointer; padding: 5px 10px; font-size: 12px;" title="Importar arquivo CSV de voo">
+              <span>⬆️</span> Importar CSV
+              <input type="file" id="inputUploadCsvStorage" accept=".csv" style="display: none;">
+            </label>
+            <button class="sat-btn primary" id="btnExportAllCsv" style="padding: 5px 10px; font-size: 12px;" title="Baixar relatório completo de voo da OBSAT em CSV">
+              <span>⬇️</span> Baixar Todos (CSV)
+            </button>
+          </div>
+        </div>
+
+        <div id="storageDatasetsList" style="display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto;">
+          <!-- Lista dinâmica de datasets com botões de download e exclusão -->
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; margin-top: 6px;">
+          <button class="sat-btn" onclick="document.getElementById('modalStorageManagerOverlay').style.display='none'">Fechar</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ==  <!-- MODAL: PINOUT E MAPA DE HARDWARE REAL -->
+  <div class="sat-modal-overlay" id="modalPinoutOverlay" style="display: none;">
+    <div class="sat-modal" style="max-width: 820px; max-height: 90vh; overflow-y: auto;">
+      <div class="sat-modal-header" style="position: sticky; top: 0; background: #0f172a; z-index: 10;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 16px;">📍</span>
+          <h3 style="font-size: 15px; font-weight: 700; color: #f8fafc;">Pinout &amp; Diagrama de Pinos - CubeSat/CanSat PION</h3>
+        </div>
+        <button class="sat-btn sat-modal-close" onclick="document.getElementById('modalPinoutOverlay').style.display='none'" style="padding: 4px 10px;">✕</button>
+      </div>
+
+      <div class="sat-modal-body" style="padding: 20px;">
+        
+        <!-- SELETOR DE PLACA -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <span style="font-size: 12px; color: #94a3b8; font-weight: 600;">Selecione o modelo do microcontrolador:</span>
+          <select id="pinoutBoardSelect" class="sat-select" style="padding: 6px 12px; font-size: 12px; background: #1e293b; color: #fff; border: 1px solid #334155; border-radius: 8px;" onchange="SatBlocksApp.switchPinoutImage(this.value)">
+            <option value="media/boards/ESP32-Pinout.jpg" selected>ESP32 DevKit V1 (30 Pinos — Kit OBSAT Padrão)</option>
+            <option value="media/boards/ESP32-LoRa.jpg">ESP32 TTGO T-Beam / LoRa SX1276 (Satélite &amp; Solo)</option>
+            <option value="media/boards/esp32-oled.png">ESP32 com Display OLED Integrado (0.96")</option>
+            <option value="media/boards/Node-MCU-ESP.jpg">NodeMCU ESP8266 (Wi-Fi IoT)</option>
+            <option value="media/boards/RPI_Pico.svg">Raspberry Pi Pico (RP2040)</option>
+          </select>
+        </div>
+
+        <!-- FOTO REAL DO HARDWARE / PINOUT OFICIAL -->
+        <div style="text-align: center; background: #020617; padding: 16px; border-radius: 12px; border: 1px solid #1e293b; margin-bottom: 20px; box-shadow: inset 0 0 20px rgba(0,0,0,0.6);">
+          <img id="pinoutImageDisplay" src="media/boards/ESP32-Pinout.jpg" alt="Pinout Oficial ESP32" style="max-width: 100%; height: auto; border-radius: 8px; max-height: 380px; object-fit: contain;">
+        </div>
+
+        <!-- TABELA 1: SENSORES, FAIXA DE OPERAÇÃO E ENDEREÇO I2C (OFICIAL OBSAT/PION) -->
+        <h4 style="font-size: 13px; font-weight: 700; color: #38bdf8; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+          <span>🛰️</span> Sensores, Descrição, Faixa de Operação e Endereço I2C:
+        </h4>
+
+        <div style="overflow-x: auto; margin-bottom: 24px;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; background: #0b101b; border: 1px solid #1e293b; border-radius: 8px; overflow: hidden;">
+            <thead>
+              <tr style="background: #111827; color: #cbd5e1; border-bottom: 1px solid #1e293b;">
+                <th style="padding: 10px 12px;">Sensor</th>
+                <th style="padding: 10px 12px;">Descrição e Faixa de Operação</th>
+                <th style="padding: 10px 12px;">Pino ou Endereço I2C</th>
+              </tr>
+            </thead>
+            <tbody style="color: #94a3b8;">
+              <tr style="border-bottom: 1px solid #1e293b;">
+                <td style="padding: 8px 12px; color: #f1f5f9; font-weight: 600;">Temperatura</td>
+                <td style="padding: 8px 12px;">Sensor I2C SHT20 / BMP280 (Faixa: -40 a 125°C)</td>
+                <td style="padding: 8px 12px; color: #38bdf8; font-weight: 700; font-family: var(--font-mono);">0x40 / 0x76</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #1e293b;">
+                <td style="padding: 8px 12px; color: #f1f5f9; font-weight: 600;">Umidade relativa do ar</td>
+                <td style="padding: 8px 12px;">Sensor I2C SHT20 (Faixa: 0 - 100 %)</td>
+                <td style="padding: 8px 12px; color: #38bdf8; font-weight: 700; font-family: var(--font-mono);">0x40</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #1e293b;">
+                <td style="padding: 8px 12px; color: #f1f5f9; font-weight: 600;">Pressão atmosférica</td>
+                <td style="padding: 8px 12px;">Sensor barométrico I2C BMP280 (Faixa: 300 - 1100 hPa)</td>
+                <td style="padding: 8px 12px; color: #38bdf8; font-weight: 700; font-family: var(--font-mono);">0x76</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #1e293b;">
+                <td style="padding: 8px 12px; color: #f1f5f9; font-weight: 600;">Nível de Bateria</td>
+                <td style="padding: 8px 12px;">Leitura direta de uma entrada analógica com o conversor analógico-digital (ADC)</td>
+                <td style="padding: 8px 12px; color: #f59e0b; font-weight: 700; font-family: var(--font-mono);">GPIO35</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #1e293b;">
+                <td style="padding: 8px 12px; color: #f1f5f9; font-weight: 600;">Luminosidade</td>
+                <td style="padding: 8px 12px;">Sensor analógico ALS-PT19-315C (Leitura direta ADC, Faixa: 0 - 100 %)</td>
+                <td style="padding: 8px 12px; color: #f59e0b; font-weight: 700; font-family: var(--font-mono);">GPIO34</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #1e293b;">
+                <td style="padding: 8px 12px; color: #f1f5f9; font-weight: 600;">CO₂ (Gás Carbônico)</td>
+                <td style="padding: 8px 12px;">Sensor I2C CCS811 (Faixa: 400 - 29206 ppm)</td>
+                <td style="padding: 8px 12px; color: #10b981; font-weight: 700; font-family: var(--font-mono);">0x5A</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #1e293b;">
+                <td style="padding: 8px 12px; color: #f1f5f9; font-weight: 600;">Giroscópio</td>
+                <td style="padding: 8px 12px;">Módulo I2C MPU-9250 / MPU-6050 (Faixa: ±250, ±500, ±1000, e ±2000°/seg)</td>
+                <td style="padding: 8px 12px; color: #a855f7; font-weight: 700; font-family: var(--font-mono);">0x68</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #1e293b;">
+                <td style="padding: 8px 12px; color: #f1f5f9; font-weight: 600;">Acelerômetro</td>
+                <td style="padding: 8px 12px;">Módulo I2C MPU-9250 / MPU-6050 (Faixa: ±2g, ±4g, ±8g e ±16g)</td>
+                <td style="padding: 8px 12px; color: #a855f7; font-weight: 700; font-family: var(--font-mono);">0x68</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #1e293b;">
+                <td style="padding: 8px 12px; color: #f1f5f9; font-weight: 600;">Magnetômetro</td>
+                <td style="padding: 8px 12px;">Módulo I2C MPU-9250 (Faixa: ±4800 µT)</td>
+                <td style="padding: 8px 12px; color: #a855f7; font-weight: 700; font-family: var(--font-mono);">0x68</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #1e293b;">
+                <td style="padding: 8px 12px; color: #f1f5f9; font-weight: 600;">I/O Expander - LEDs</td>
+                <td style="padding: 8px 12px;">MCP23017 com 16 saídas ligadas a LEDs RGB espalhados na placa de interface</td>
+                <td style="padding: 8px 12px; color: #38bdf8; font-weight: 700; font-family: var(--font-mono);">0x20</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 12px; color: #f1f5f9; font-weight: 600;">SD Card</td>
+                <td style="padding: 8px 12px;">Slot para cartão microSD SPI (MOSI: 23, MISO: 19, SCK: 18, ChipSelect: 15)</td>
+                <td style="padding: 8px 12px; color: #ea580c; font-weight: 700; font-family: var(--font-mono);">SPI VSPI</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- TABELA 2: PINOUT COMPLETO DOS 40 TERMINAIS DO CONECTOR PION -->
+        <h4 style="font-size: 13px; font-weight: 700; color: #38bdf8; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+          <span>🔌</span> Conector de 40 Terminais — CanSat / CubeSat Pion:
+        </h4>
+
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 11px; text-align: left; background: #0b101b; border: 1px solid #1e293b; border-radius: 8px; overflow: hidden;">
+            <thead>
+              <tr style="background: #111827; color: #cbd5e1; border-bottom: 1px solid #1e293b;">
+                <th style="padding: 8px 10px;">Terminal</th>
+                <th style="padding: 8px 10px;">Descrição</th>
+                <th style="padding: 8px 10px;">Terminal</th>
+                <th style="padding: 8px 10px;">Descrição</th>
+                <th style="padding: 8px 10px;">Terminal</th>
+                <th style="padding: 8px 10px;">Descrição</th>
+                <th style="padding: 8px 10px;">Terminal</th>
+                <th style="padding: 8px 10px;">Descrição</th>
+              </tr>
+            </thead>
+            <tbody style="color: #cbd5e1;">
+              <tr style="border-bottom: 1px solid #1e293b;">
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">1</td><td style="padding: 6px 10px; color: #f59e0b;">3V3</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">11</td><td style="padding: 6px 10px; color: #64748b;">N/C - Não Conectado</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">21</td><td style="padding: 6px 10px; color: #64748b;">N/C - Não Conectado</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">31</td><td style="padding: 6px 10px;">GPI34 - Sensor Luminosidade</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #1e293b;">
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">2</td><td style="padding: 6px 10px; color: #f59e0b;">3V3</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">12</td><td style="padding: 6px 10px;">GPIO4 - ADC2_0</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">22</td><td style="padding: 6px 10px; color: #64748b;">N/C - Não Conectado</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">32</td><td style="padding: 6px 10px; color: #38bdf8;">GPIO22 - I2C SCL</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #1e293b;">
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">3</td><td style="padding: 6px 10px;">GPIO19 - VSPI MISO</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">13</td><td style="padding: 6px 10px;">GPI35 - Sensor de Bateria</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">23</td><td style="padding: 6px 10px; color: #94a3b8;">GND</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">33</td><td style="padding: 6px 10px; color: #94a3b8;">GND</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #1e293b;">
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">4</td><td style="padding: 6px 10px;">GPIO23 - VSPI MOSI</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">14</td><td style="padding: 6px 10px; color: #ef4444;">GPIO25 - Buzzer (Sirene)</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">24</td><td style="padding: 6px 10px; color: #94a3b8;">GND</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">34</td><td style="padding: 6px 10px; color: #94a3b8;">GND</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #1e293b;">
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">5</td><td style="padding: 6px 10px;">GPIO18 - VSPI SCK</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">15</td><td style="padding: 6px 10px;">GPIO27 - ADC2_7</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">25</td><td style="padding: 6px 10px; color: #64748b;">N/C - Não Conectado</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">35</td><td style="padding: 6px 10px;">GPIO26 - ADC2_9 - DAC2</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #1e293b;">
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">6</td><td style="padding: 6px 10px; color: #64748b;">N/C - Não Conectado</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">16</td><td style="padding: 6px 10px;">GPIO14 - ADC2_6</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">26</td><td style="padding: 6px 10px; color: #64748b;">N/C - Não Conectado</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">36</td><td style="padding: 6px 10px; color: #64748b;">N/C - Não Conectado</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #1e293b;">
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">7</td><td style="padding: 6px 10px; color: #94a3b8;">GND</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">17</td><td style="padding: 6px 10px;">GPI36 - ADC1_0</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">27</td><td style="padding: 6px 10px; color: #10b981;">VBUS - 5V USB</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">37</td><td style="padding: 6px 10px; color: #64748b;">N/C - Não Conectado</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #1e293b;">
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">8</td><td style="padding: 6px 10px; color: #94a3b8;">GND</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">18</td><td style="padding: 6px 10px;">GPIO13 - ADC2_4</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">28</td><td style="padding: 6px 10px; color: #10b981;">VBUS - 5V USB</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">38</td><td style="padding: 6px 10px;">GPIO5 - VSPI CS</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #1e293b;">
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">9</td><td style="padding: 6px 10px; color: #64748b;">N/C - Não Conectado</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">19</td><td style="padding: 6px 10px; color: #10b981;">GPIO16 - UART2 RX</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">29</td><td style="padding: 6px 10px; color: #64748b;">N/C - Não Conectado</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">39</td><td style="padding: 6px 10px; color: #f59e0b;">VBAT - Tensão Bateria</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">10</td><td style="padding: 6px 10px;">GPIO2 - ADC2_2</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">20</td><td style="padding: 6px 10px; color: #10b981;">GPIO17 - UART2 TX</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">30</td><td style="padding: 6px 10px; color: #38bdf8;">GPIO21 - I2C SDA</td>
+                <td style="padding: 6px 10px; color: #38bdf8; font-weight: 700;">40</td><td style="padding: 6px 10px; color: #f59e0b;">VBAT - Tensão Bateria</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL MODERNO DE CONEXÃO AO SATÉLITE
+       ========================================== -->
+  <div class="sat-modal-overlay" id="modalConnectionOverlay">
+    <div class="sat-modal connection-modal">
+      <div class="sat-modal-header">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="modal-header-icon-box">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M16 7V3h-2v4h-4V3H8v4a5 5 0 0 0-4 4.9V14h3v7h2v-7h2v7h2v-7h3v-2.1A5 5 0 0 0 16 7z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 style="font-size: 16px; font-weight: 800; color: #0f172a; margin: 0;">Conectar Satélite</h3>
+            <p style="font-size: 12px; color: #64748b; margin: 2px 0 0 0;">Escolha o canal de comunicação para enviar código e telemetria</p>
+          </div>
+        </div>
+        <button class="sat-modal-close-btn sat-modal-close" title="Fechar">✕</button>
+      </div>
+
+      <div class="sat-modal-body">
+        
+        <!-- CANAL 1: CABO SERIAL USB -->
+        <div class="channel-option-card active">
+          <div class="channel-card-icon usb">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2">
+              <circle cx="12" cy="18" r="1.5" fill="#2563eb"></circle>
+              <line x1="12" y1="16.5" x2="12" y2="3"></line>
+              <polygon points="12,2 9,6 15,6" fill="#2563eb"></polygon>
+              <rect x="7" y="6" width="3" height="3" fill="#2563eb"></rect>
+              <circle cx="15.5" cy="6.5" r="1.5" fill="#2563eb"></circle>
+            </svg>
+          </div>
+          <div class="channel-card-content">
+            <div class="channel-card-header-row">
+              <span class="channel-card-title">Cabo Serial USB</span>
+              <span class="channel-badge recommended">Recomendado</span>
+            </div>
+            <p class="channel-card-desc">Conexão direta de alta velocidade via Web Serial (CP2102, CH340, FTDI).</p>
+            <div class="channel-card-controls">
+              <span style="font-size: 11px; font-weight: 700; color: #64748b;">Velocidade:</span>
+              <select id="serialBaudSelect" class="sat-select-pill">
+                <option value="115200" selected>115200 baud (Padrão ESP32)</option>
+                <option value="9600">9600 baud</option>
+                <option value="57600">57600 baud</option>
+              </select>
+            </div>
+          </div>
+          <button class="channel-action-btn primary" id="btnConnSerial">
+            <span>Conectar</span>
+            <span>➔</span>
+          </button>
+        </div>
+
+        <!-- CANAL 2: BLUETOOTH BLE -->
+        <div class="channel-option-card">
+          <div class="channel-card-icon ble">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9333ea" stroke-width="2.2">
+              <polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5"></polyline>
+            </svg>
+          </div>
+          <div class="channel-card-content">
+            <div class="channel-card-header-row">
+              <span class="channel-card-title">Bluetooth Sem Fio (BLE)</span>
+              <span class="channel-badge wireless">Sem Fio</span>
+            </div>
+            <p class="channel-card-desc">Comunicação sem cabos via Web Bluetooth para satélites em bancada.</p>
+          </div>
+          <button class="channel-action-btn purple" id="btnConnBle">
+            <span>Parear BLE</span>
+            <span>➔</span>
+          </button>
+        </div>
+
+        <!-- CANAL 3: WEBREPL WI-FI -->
+        <div class="channel-option-card">
+          <div class="channel-card-icon wifi">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.2">
+              <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+              <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+              <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+              <line x1="12" y1="20" x2="12.01" y2="20"></line>
+            </svg>
+          </div>
+          <div class="channel-card-content">
+            <div class="channel-card-header-row">
+              <span class="channel-card-title">Rede Wi-Fi (WebREPL)</span>
+              <span class="channel-badge wifi">Rede Local</span>
+            </div>
+            <p class="channel-card-desc">Conexão via WebSocket para CubeSats em rede local.</p>
+            <div class="channel-card-controls" style="margin-top: 6px;">
+              <input type="text" id="webreplUrlInput" class="sat-input-pill" value="ws://192.168.4.1:8266/" placeholder="ws://192.168.4.1:8266/">
+              <input type="password" id="webreplPassInput" class="sat-input-pill" value="bipes" placeholder="Senha" style="width: 90px;">
+            </div>
+          </div>
+          <button class="channel-action-btn green" id="btnConnWebRepl">
+            <span>Conectar</span>
+            <span>➔</span>
+          </button>
+        </div>
+
+      </div>
+
+      <div class="sat-modal-footer">
+        <div style="font-size: 11px; color: #64748b; display: flex; align-items: center; gap: 6px;">
+          <span>💡 Conexões USB Serial e Bluetooth BLE funcionam nativamente no Chrome e Edge.</span>
+        </div>
+        <button class="sat-btn sat-modal-close" style="border-radius: 10px; padding: 6px 14px;">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL DE PINOUT
+       ========================================== -->
+  <div class="sat-modal-overlay" id="satModalOverlay">
+    <div class="sat-modal">
+      <div class="sat-modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <h3 id="modalTitle" style="font-size: 16px; font-weight: 700;">📍 Pinout Oficial da Placa</h3>
+          <select class="sat-select" id="boardSelector" style="font-size: 11px;">
+            <option value="pion_cubesat">PION CubeSat (Aeroespacial)</option>
+            <option value="esp32_devkit" selected>ESP32 DevKit (CanSat Padrão)</option>
+            <option value="esp32_c3_supermini">ESP32-C3 SuperMini (PocketQube)</option>
+            <option value="esp32_cam">ESP32-CAM (Sensoriamento Remoto)</option>
+            <option value="rp2040_zero">Waveshare RP2040-Zero (Raspberry Pi RP2040)</option>
+          </select>
+        </div>
+        <button class="sat-btn sat-modal-close" style="padding: 4px 8px;">✕</button>
+      </div>
+      <div class="sat-modal-body" id="modalBody">
+        <!-- Conteúdo dinâmico -->
+      </div>
+      <div class="sat-modal-footer">
+        <button class="sat-btn primary sat-modal-close">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL DE GERENCIADOR DE MISSÕES & PERFIS
+       ========================================== -->
+  <div class="sat-modal-overlay" id="modalMissionsOverlay" onclick="if(event.target===this){ this.style.display='none'; this.classList.remove('active'); this.classList.remove('show'); }">
+    <div class="sat-modal" style="max-width: 780px; width: 92%; border-radius: 20px;" onclick="event.stopPropagation()">
+      
+      <div class="sat-modal-header">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="modal-header-icon-box" style="background: rgba(2, 132, 199, 0.12); border: 1px solid rgba(2, 132, 199, 0.25); color: #0284c7;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>
+              <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path>
+              <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path>
+              <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path>
+            </svg>
+          </div>
+          <div>
+            <h3 style="font-size: 16px; font-weight: 800; color: #0f172a; margin: 0;">Catálogo de Missões Oficiais OBSAT 2026</h3>
+            <p style="font-size: 12px; color: #64748b; margin: 2px 0 0 0;">Programas prontos das Oficinas 1 e 2, telemetria de voo e missões avançadas</p>
+          </div>
+        </div>
+        <button class="sat-modal-close-btn sat-modal-close" onclick="SatProfiles.closeMissionsModal()" title="Fechar">✕</button>
+      </div>
+
+      <div class="sat-modal-body" style="padding: 16px 22px; max-height: calc(85vh - 130px); overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #f0f9ff; border: 1.5px solid #bae6fd; border-radius: 14px; margin-bottom: 8px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 16px;">💡</span>
+            <span style="font-size: 12px; color: #0369a1; font-weight: 600;">Selecione qualquer missão para carregar seus blocos e código MicroPython diretamente na bancada.</span>
+          </div>
+          <button id="btnCreateNewMission" class="channel-action-btn" style="background: #ffffff; border: 1.5px solid #0284c7; color: #0284c7; font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 10px; cursor: pointer; box-shadow: 0 1px 4px rgba(2, 132, 199, 0.1);">➕ Nova Missão em Branco</button>
+        </div>
+
+        <div id="missionsListCards">
+          <!-- Renderizado dinamicamente via cards oficiais -->
+        </div>
+      </div>
+
+      <div class="sat-modal-footer">
+        <div style="font-size: 11px; color: #64748b; display: flex; align-items: center; gap: 6px;">
+          <span>🛰️ Todas as alterações são salvas automaticamente no armazenamento local.</span>
+        </div>
+        <button class="sat-btn sat-modal-close" onclick="SatProfiles.closeMissionsModal()" style="border-radius: 10px; padding: 6px 16px; font-size: 12px; font-weight: 700;">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       TOOLBOX XML EMBUTIDA (GARANTIA 100% OFFLINE)
+       ========================================== -->
+  <xml xmlns="https://developers.google.com/blockly/xml" id="toolbox" style="display: none">
+    <category name="📦 Drivers &amp; Bibliotecas" colour="#475569">
+      <button text="⚡ Instalar Todos os Drivers Oficiais (OBSAT)" callbackKey="INSTALL_ALL_DRIVERS"></button>
+      <button text="🌡️ Instalar Driver SHT20 (sht20.py)" callbackKey="INSTALL_SHT20"></button>
+      <button text="🏔️ Instalar Driver BMP280 (bmp280.py)" callbackKey="INSTALL_BMP280"></button>
+      <button text="🧭 Instalar Driver MPU-9250 (mpu9250.py)" callbackKey="INSTALL_MPU9250"></button>
+      <button text="📐 Instalar Driver MPU-6050 (mpu6050.py)" callbackKey="INSTALL_MPU6050"></button>
+      <button text="🌐 Instalar Driver HTTP urequests (urequests.py)" callbackKey="INSTALL_UREQUESTS"></button>
+      <button text="📶 Instalar Módulo Rede Offline (network.py)" callbackKey="INSTALL_NETWORK"></button>
+      <button text="🍃 Instalar Driver CCS811 CO2 (ccs811.py)" callbackKey="INSTALL_CCS811"></button>
+      <button text="📍 Instalar Driver GPS (micropyGPS.py)" callbackKey="INSTALL_GPS"></button>
+      <button text="💡 Instalar Expansor LEDs (mcp23017.py)" callbackKey="INSTALL_MCP23017"></button>
+      <button text="📂 Abrir Gerenciador de Arquivos Flash" callbackKey="OPEN_FLASH_FILES"></button>
+    </category>
+
+    <category name="🛰️ Missão &amp; Satélite" colour="#7c3aed">
+      <block type="project_info">
+        <value name="project_author">
+          <shadow type="text">
+            <field name="TEXT">Equipe 41</field>
+          </shadow>
+        </value>
+        <value name="project_iot_id">
+          <shadow type="math_number">
+            <field name="NUM">41</field>
+          </shadow>
+        </value>
+        <value name="project_description">
+          <shadow type="text">
+            <field name="TEXT">obsat_teste</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="sat_mission_start"><field name="MISSION_NAME">CANSAT_OBSAT_01</field></block>
+      <block type="sat_emit_beep"><field name="COUNT">3</field><field name="INTERVAL">500</field></block>
+      <block type="sat_wait"><field name="TIME">1</field><field name="UNIT">SEC</field></block>
+      <block type="sat_watchdog_feed"></block>
+      <block type="sat_deploy_antenna"><field name="BURN_TIME">2000</field></block>
+      <block type="sat_mission_end"></block>
+    </category>
+
+    <category name="🌡️ Sensores Ambientais" colour="#0284c7">
+      <label text="─── BMP280: Barômetro, Pressão &amp; Altitude (I2C 0x76) ───"></label>
+      <block type="sat_sensor_bmp280_temp"></block>
+      <block type="sat_sensor_bmp280_press"></block>
+      <block type="sat_sensor_bmp280_alt"><field name="SEA_LEVEL">1013.25</field></block>
+      <sep gap="16"></sep>
+
+      <label text="─── SHT20: Higrômetro &amp; Temperatura de Precisão (I2C 0x40) ───"></label>
+      <block type="sat_sensor_sht20_temp"></block>
+      <block type="sat_sensor_sht20_hum"></block>
+      <sep gap="16"></sep>
+
+      <label text="─── DHT11 / DHT22: Sensor de Umidade do Ar (Pino Digital) ───"></label>
+      <block type="sat_sensor_dht_hum"><field name="PIN">4</field></block>
+      <sep gap="16"></sep>
+
+      <label text="─── BH1750 &amp; LDR: Intensidade de Luz Solar &amp; Lux ───"></label>
+      <block type="sat_sensor_bh1750_lux"></block>
+      <block type="sat_sensor_light_ldr"><field name="PIN">34</field></block>
+      <block type="sat_sensor_als_light"></block>
+      <sep gap="16"></sep>
+
+      <label text="─── CCS811 &amp; MQ-135: Qualidade do Ar, CO2 &amp; Gases ───"></label>
+      <block type="sat_sensor_ccs811_co2"></block>
+      <block type="sat_sensor_air_mq135"><field name="PIN">34</field></block>
+      <sep gap="16"></sep>
+
+      <label text="─── MLX90614: Temperatura Infravermelha da Terra (Sem Contato) ───"></label>
+      <block type="sat_sensor_mlx90614_ir"></block>
+      <sep gap="16"></sep>
+
+      <label text="─── Radiação Solar Ultravioleta (Sensor UV) ───"></label>
+      <block type="sat_sensor_uv_index"><field name="PIN">35</field></block>
+      <sep gap="16"></sep>
+
+      <label text="─── MCP23017: Expansor I2C para LEDs RGB de Status ───"></label>
+      <block type="sat_mcp23017_leds"></block>
+    </category>
+
+    <category name="🧭 Inércia &amp; ADCS" colour="#0891b2">
+      <label text="─── MPU6050 / MPU9250: Giroscópio &amp; Acelerômetro 3D (I2C 0x68) ───"></label>
+      <block type="sat_imu_mpu6050_accel"><field name="AXIS">total</field></block>
+      <block type="sat_imu_accel_vector"></block>
+      <block type="sat_imu_mpu6050_gyro"><field name="AXIS">z</field></block>
+      <block type="sat_imu_gyro_vector"></block>
+      <sep gap="16"></sep>
+
+      <label text="─── Bússola Digital &amp; Detecção de Apogeu/Queda Livre ───"></label>
+      <block type="sat_mag_heading"></block>
+      <block type="sat_imu_detect_freefall"><field name="THRESHOLD">0.15</field></block>
+    </category>
+
+    <category name="📍 Navegação &amp; GPS" colour="#059669">
+      <label text="─── Módulo GPS NEO-6M / NEO-8M (UART) ───"></label>
+      <block type="sat_gps_lat"></block>
+      <block type="sat_gps_lng"></block>
+      <block type="sat_gps_alt"></block>
+      <block type="sat_gps_speed"></block>
+      <block type="sat_gps_time_utc"></block>
+    </category>
+
+    <category name="📡 Comunicação &amp; LoRa" colour="#ea580c">
+      <label text="─── Telemetria Oficial OBSAT (HTTP / Servidor de Testes) ───"></label>
+      <block type="sat_obsat_telemetry_packet">
+        <mutation items="6" keys="[&quot;equipe&quot;,&quot;temperatura&quot;,&quot;pressao&quot;,&quot;altitude&quot;,&quot;bateria&quot;,&quot;payload&quot;]" labels="[&quot;Equipe ID&quot;,&quot;Temperatura (°C)&quot;,&quot;Pressão (hPa)&quot;,&quot;Altitude (m)&quot;,&quot;Bateria (%)&quot;,&quot;Payload Extra&quot;]"></mutation>
+      </block>
+      <sep gap="16"></sep>
+      <block type="sat_http_send_obsat_telemetry"></block>
+      <sep gap="16"></sep>
+      <block type="sat_json_object_builder">
+        <mutation items="7" keys="[&quot;equipe&quot;,&quot;bateria&quot;,&quot;temperatura&quot;,&quot;pressao&quot;,&quot;giroscopio&quot;,&quot;acelerometro&quot;,&quot;payload&quot;]"></mutation>
+      </block>
+      <sep gap="16"></sep>
+      <block type="sat_obsat_payload_builder"></block>
+      <sep gap="16"></sep>
+      <block type="sat_telemetry_packet_builder">
+        <mutation items="4" labels="[&quot;ID&quot;,&quot;Temp&quot;,&quot;Pressao&quot;,&quot;Bateria&quot;]"></mutation>
+        <field name="FORMAT">CSV</field>
+      </block>
+      <sep gap="16"></sep>
+      <block type="sat_vector_3d"></block>
+      <block type="sat_json_dumps"></block>
+      <sep gap="16"></sep>
+
+      <label text="─── Rádio LoRa SX1276 / SX1278 (SPI) ───"></label>
+      <block type="sat_lora_setup"><field name="FREQ">915.0</field><field name="POWER">20</field><field name="SF">7</field></block>
+      <block type="sat_lora_send_packet"></block>
+      <block type="sat_lora_receive_cmd"></block>
+      <block type="sat_mqtt_publish"><field name="TOPIC">obsat/satelite01/telemetria</field></block>
+    </category>
+
+    <category name="🌐 Rede &amp; Internet (HTTP &amp; Wi-Fi)" colour="#4338ca">
+      <label text="─── Wi-Fi &amp; Ponto de Acesso (Hotspot) ───"></label>
+      <block type="sat_wifi_ap_start"><field name="SSID">ESP32CAM_OBSAT</field><field name="PASSWORD">12345678</field></block>
+      <block type="sat_wifi_ap_ip"></block>
+      <block type="sat_wifi_connect"><field name="SSID">OBSAT_WIFI</field></block>
+      <sep gap="16"></sep>
+
+      <label text="─── Requisições HTTP Cliente &amp; API ───"></label>
+      <block type="sat_http_send_obsat_telemetry"></block>
+      <block type="sat_http_post_json"><value name="URL"><shadow type="text"><field name="TEXT">https://obsat.org.br/servidor_testes/envio.php</field></shadow></value></block>
+      <block type="sat_http_post_data"><value name="URL"><shadow type="text"><field name="TEXT">https://obsat.org.br/servidor_testes/envio_bipes.php</field></shadow></value><value name="DATA"><shadow type="text"><field name="TEXT">temp=24.5&amp;press=1013</field></shadow></value></block>
+      <block type="sat_http_get"><value name="URL"><shadow type="text"><field name="TEXT">https://obsat.org.br/servidor_testes/envio_bipes.php</field></shadow></value></block>
+      <block type="sat_http_status_code"></block>
+      <block type="sat_http_response_text"></block>
+      <sep gap="16"></sep>
+
+      <label text="─── Servidor Web Local MicroPython (Porta 80) ───"></label>
+      <block type="sat_http_server_start"><field name="PORT">80</field></block>
+      <block type="sat_http_server_wait_client"></block>
+      <block type="sat_http_server_requested_page"></block>
+      <block type="sat_http_server_send_html"><value name="HTML"><shadow type="text"><field name="TEXT">&lt;h1&gt;SatBlocks OBSAT WebServer&lt;/h1&gt;</field></shadow></value></block>
+      <block type="sat_http_server_send_jpg"></block>
+      <block type="sat_http_server_close"></block>
+    </category>
+
+    <category name="☁️ IoT: EasyMQTT &amp; Nuvem" colour="#0284c7">
+      <label text="─── Plataforma IoT EasyMQTT (BIPES Nuvem) ───"></label>
+      <block type="sat_easymqtt_start_session"><field name="SESSION_ID">zi6pi</field></block>
+      <block type="sat_easymqtt_publish_val"><value name="TOPIC"><shadow type="text"><field name="TEXT">temperatura</field></shadow></value><value name="VALUE"><shadow type="math_number"><field name="NUM">24.5</field></shadow></value></block>
+      <block type="sat_easymqtt_publish_http"><value name="SESSION"><shadow type="text"><field name="TEXT">zi6pi</field></shadow></value><value name="TOPIC"><shadow type="text"><field name="TEXT">altitude</field></shadow></value><value name="VALUE"><shadow type="math_number"><field name="NUM">450</field></shadow></value></block>
+      <block type="sat_easymqtt_subscribe_event"><value name="TOPIC"><shadow type="text"><field name="TEXT">telecomando</field></shadow></value></block>
+    </category>
+
+    <category name="🔌 Barramentos: I2C &amp; UART" colour="#10b981">
+      <label text="─── Comunicação Serial UART (Pinos TX/RX) ───"></label>
+      <block type="sat_uart_init"><field name="PORT">2</field><field name="BAUD">115200</field></block>
+      <block type="sat_uart_send"><value name="DATA"><shadow type="text"><field name="TEXT">PING_GROUND_STATION</field></shadow></value></block>
+      <block type="sat_uart_readline"></block>
+      <block type="sat_uart_readall"></block>
+      <block type="sat_uart_read_bytes"><value name="BYTES"><shadow type="math_number"><field name="NUM">10</field></shadow></value></block>
+      <block type="sat_uart_any"></block>
+      <sep gap="16"></sep>
+
+      <label text="─── Barramento I2C Hardware (SCL/SDA) ───"></label>
+      <block type="sat_i2c_init"><field name="SCL">22</field><field name="SDA">21</field><field name="FREQ">400000</field></block>
+      <block type="sat_i2c_scan"></block>
+      <block type="sat_i2c_writeto"><field name="ADDR">0x76</field></block>
+      <block type="sat_i2c_readfrom"><field name="ADDR">0x76</field><field name="NBYTES">2</field></block>
+      <block type="sat_i2c_readfrom_mem"><field name="ADDR">0x68</field><field name="MEMADDR">0x3B</field><field name="NBYTES">6</field></block>
+      <block type="sat_i2c_writeto_mem"><field name="ADDR">0x68</field><field name="MEMADDR">0x6B</field></block>
+    </category>
+
+    <category name="⚡ Energia &amp; EPS" colour="#d97706">
+      <block type="sat_battery_adc"></block>
+      <block type="sat_eps_battery_voltage"></block>
+      <block type="sat_eps_solar_current"></block>
+      <block type="sat_sensor_ina219_power"></block>
+      <block type="sat_eps_battery_percent"></block>
+      <block type="sat_eps_deepsleep"><field name="SECONDS">10</field></block>
+    </category>
+
+    <category name="📷 Câmera &amp; Payload" colour="#db2777">
+      <block type="sat_camera_init_advanced">
+        <field name="FRAMESIZE">FRAMESIZE_QVGA</field>
+        <field name="QUALITY">12</field>
+        <field name="EFFECT">0</field>
+        <field name="ROTATE">0</field>
+      </block>
+      <block type="sat_camera_flash_intensity"><field name="BRIGHTNESS">100</field></block>
+      <block type="sat_camera_status_led"><field name="STATE">1</field></block>
+      <block type="sat_camera_capture"><field name="FILENAME">foto_obsat_%d.jpg</field></block>
+      <block type="sat_camera_capture_base64"></block>
+      <block type="sat_camera_webserver_start">
+        <field name="PORT">80</field>
+        <field name="TITLE">ESP32-CAM Estação OBSAT</field>
+      </block>
+      <block type="sat_camera_webserver_handle"></block>
+      <block type="sat_camera_lora_send_chunks"><field name="CHUNK_SIZE">200</field></block>
+      <block type="sat_camera_deinit"></block>
+      <block type="sat_sd_write_log"><field name="FILENAME">telemetria.csv</field></block>
+    </category>
+
+    <category name="⚙️ Atuadores &amp; Ejeção" colour="#dc2626">
+      <block type="sat_actuator_buzzer"><field name="PIN">25</field><field name="FREQ">2000</field><field name="DURATION">300</field></block>
+      <block type="sat_actuator_mcp23017_led">
+        <value name="PIN">
+          <shadow type="math_number">
+            <field name="NUM">0</field>
+          </shadow>
+        </value>
+        <field name="STATE">1</field>
+      </block>
+      <block type="sat_actuator_led_status"><field name="PIN">2</field><field name="STATE">1</field></block>
+      <block type="sat_actuator_servo_release"><field name="PIN">18</field><field name="ANGLE">90</field></block>
+    </category>
+
+    <category name="📁 Arquivos &amp; Flash" colour="#5b67a5">
+      <block type="file_open">
+        <value name="file_name">
+          <shadow type="text">
+            <field name="TEXT">file.txt</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="file_open_write">
+        <value name="filename">
+          <shadow type="text">
+            <field name="TEXT">file.txt</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="file_open_read">
+        <value name="filename">
+          <shadow type="text">
+            <field name="TEXT">file.txt</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="file_write">
+        <value name="data">
+          <shadow type="text">
+            <field name="TEXT">contents</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="file_write_line">
+        <value name="data">
+          <shadow type="text">
+            <field name="TEXT">line contents</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="file_write_byte">
+        <value name="data">
+          <shadow type="math_number">
+            <field name="NUM">80</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="file_read"></block>
+      <block type="file_close"></block>
+      <sep></sep>
+      <block type="files_list"></block>
+      <block type="uos_mkdir">
+        <value name="pIn">
+          <shadow type="text">
+            <field name="TEXT">file.txt</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="uos_remove">
+        <value name="pIn">
+          <shadow type="text">
+            <field name="TEXT">file.txt</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="uos_rmdir">
+        <value name="pIn">
+          <shadow type="text">
+            <field name="TEXT">pasta</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="uos_chdir">
+        <value name="pIn">
+          <shadow type="text">
+            <field name="TEXT">/sd</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="uos_getcwd"></block>
+    </category>
+
+    <sep></sep>
+
+    <category name="🧠 Lógica &amp; Condição" colour="#3b82f6">
+      <label text="─── Tomada de Decisão (if / elif / else) ───"></label>
+      <block type="controls_if"></block>
+      <block type="controls_ifelse"></block>
+      <sep gap="16"></sep>
+
+      <label text="─── Operadores de Comparação (==, !=, &lt;, &gt;) ───"></label>
+      <block type="logic_compare"></block>
+      <sep gap="16"></sep>
+
+      <label text="─── Operadores Lógicos (and / or / not) ───"></label>
+      <block type="logic_operation"></block>
+      <block type="logic_negate"></block>
+      <sep gap="16"></sep>
+
+      <label text="─── Valores Booleanos &amp; Nulos (True / False / None) ───"></label>
+      <block type="logic_boolean"></block>
+      <block type="logic_null"></block>
+      <block type="logic_ternary"></block>
+    </category>
+
+    <category name="🔄 Laços de Repetição" colour="#10b981">
+      <label text="─── Laço Infinito ou Condicional (while True: / while cond:) ───"></label>
+      <block type="controls_whileUntil"></block>
+      <sep gap="16"></sep>
+
+      <label text="─── Repetição por Contagem (for i in range(N):) ───"></label>
+      <block type="controls_repeat_ext">
+        <value name="TIMES">
+          <shadow type="math_number">
+            <field name="NUM">10</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="controls_for">
+        <value name="FROM">
+          <shadow type="math_number">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+        <value name="TO">
+          <shadow type="math_number">
+            <field name="NUM">10</field>
+          </shadow>
+        </value>
+        <value name="BY">
+          <shadow type="math_number">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+      </block>
+      <sep gap="16"></sep>
+
+      <label text="─── Iterar em Coleções (for item in lista:) ───"></label>
+      <block type="controls_forEach"></block>
+      <sep gap="16"></sep>
+
+      <label text="─── Controle de Fluxo (break / continue) ───"></label>
+      <block type="controls_flow_statements"></block>
+    </category>
+
+    <category name="🔢 Matemática &amp; Cálculos" colour="#6366f1">
+      <label text="─── Números e Operações Básicas (+, -, *, /, **) ───"></label>
+      <block type="math_number">
+        <field name="NUM">123</field>
+      </block>
+      <block type="math_arithmetic">
+        <value name="A">
+          <shadow type="math_number">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+        <value name="B">
+          <shadow type="math_number">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="math_modulo">
+        <value name="DIVIDEND">
+          <shadow type="math_number">
+            <field name="NUM">64</field>
+          </shadow>
+        </value>
+        <value name="DIVISOR">
+          <shadow type="math_number">
+            <field name="NUM">10</field>
+          </shadow>
+        </value>
+      </block>
+      <sep gap="16"></sep>
+
+      <label text="─── Funções Matemáticas &amp; Trigonometria (math.sqrt, sin, cos) ───"></label>
+      <block type="math_single">
+        <value name="NUM">
+          <shadow type="math_number">
+            <field name="NUM">9</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="math_trig">
+        <value name="NUM">
+          <shadow type="math_number">
+            <field name="NUM">45</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="math_constant"></block>
+      <block type="math_round">
+        <value name="NUM">
+          <shadow type="math_number">
+            <field name="NUM">3.14</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="math_on_list"></block>
+      <sep gap="16"></sep>
+
+      <label text="─── Valores Aleatórios &amp; Limites (random.randint, constrain) ───"></label>
+      <block type="math_random_int">
+        <value name="FROM">
+          <shadow type="math_number">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+        <value name="TO">
+          <shadow type="math_number">
+            <field name="NUM">100</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="math_random_float"></block>
+      <block type="math_constrain">
+        <value name="VALUE">
+          <shadow type="math_number">
+            <field name="NUM">50</field>
+          </shadow>
+        </value>
+        <value name="LOW">
+          <shadow type="math_number">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+        <value name="HIGH">
+          <shadow type="math_number">
+            <field name="NUM">100</field>
+          </shadow>
+        </value>
+      </block>
+      <sep gap="16"></sep>
+
+      <label text="─── Conversão de Tipos (int(), float()) ───"></label>
+      <block type="sat_math_to_int"></block>
+      <block type="sat_math_to_float"></block>
+    </category>
+
+    <category name="📝 Textos &amp; Mensagens" colour="#14b8a6">
+      <label text="─── Criação e Concatenação de Strings (str + str) ───"></label>
+      <block type="text"></block>
+      <block type="text_join"></block>
+      <block type="text_append">
+        <value name="TEXT">
+          <shadow type="text"></shadow>
+        </value>
+      </block>
+      <sep gap="16"></sep>
+
+      <label text="─── Propriedades e Busca (len(str), find, in) ───"></label>
+      <block type="text_length">
+        <value name="VALUE">
+          <shadow type="text">
+            <field name="TEXT">abc</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="text_isEmpty">
+        <value name="VALUE">
+          <shadow type="text">
+            <field name="TEXT"></field>
+          </shadow>
+        </value>
+      </block>
+      <block type="text_indexOf">
+        <value name="VALUE">
+          <block type="variables_get">
+            <field name="VAR">texto</field>
+          </block>
+        </value>
+        <value name="FIND">
+          <shadow type="text">
+            <field name="TEXT">abc</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="text_charAt">
+        <value name="VALUE">
+          <block type="variables_get">
+            <field name="VAR">texto</field>
+          </block>
+        </value>
+      </block>
+      <block type="text_getSubstring">
+        <value name="STRING">
+          <block type="variables_get">
+            <field name="VAR">texto</field>
+          </block>
+        </value>
+      </block>
+      <sep gap="16"></sep>
+
+      <label text="─── Modificação e Saída no Terminal (print(), upper/lower) ───"></label>
+      <block type="text_changeCase">
+        <value name="TEXT">
+          <shadow type="text">
+            <field name="TEXT">abc</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="text_trim">
+        <value name="TEXT">
+          <shadow type="text">
+            <field name="TEXT">abc</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="text_print">
+        <value name="TEXT">
+          <shadow type="text">
+            <field name="TEXT">SatBlocks OBSAT</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="sat_text_to_str"></block>
+    </category>
+
+    <category name="📑 Listas &amp; Coleções" colour="#8b5cf6">
+      <label text="─── Criação de Listas (lista = [1, 2, 3]) ───"></label>
+      <block type="lists_create_empty"></block>
+      <block type="lists_create_with"></block>
+      <block type="lists_repeat">
+        <value name="NUM">
+          <shadow type="math_number">
+            <field name="NUM">5</field>
+          </shadow>
+        </value>
+      </block>
+      <sep gap="16"></sep>
+
+      <label text="─── Tamanho e Verificação (len(lista), if not lista:) ───"></label>
+      <block type="lists_length"></block>
+      <block type="lists_isEmpty"></block>
+      <block type="lists_indexOf">
+        <value name="VALUE">
+          <block type="variables_get">
+            <field name="VAR">lista</field>
+          </block>
+        </value>
+      </block>
+      <sep gap="16"></sep>
+
+      <label text="─── Obter e Alterar Itens (lista[i], lista[i] = val) ───"></label>
+      <block type="lists_getIndex">
+        <value name="VALUE">
+          <block type="variables_get">
+            <field name="VAR">lista</field>
+          </block>
+        </value>
+      </block>
+      <block type="lists_setIndex">
+        <value name="LIST">
+          <block type="variables_get">
+            <field name="VAR">lista</field>
+          </block>
+        </value>
+      </block>
+      <block type="lists_getSublist">
+        <value name="LIST">
+          <block type="variables_get">
+            <field name="VAR">lista</field>
+          </block>
+        </value>
+      </block>
+      <sep gap="16"></sep>
+
+      <label text="─── Divisão, Junção e Ordenação (split(), join(), sort()) ───"></label>
+      <block type="lists_split">
+        <value name="DELIM">
+          <shadow type="text">
+            <field name="TEXT">,</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="lists_sort"></block>
+      <block type="lists_reverse"></block>
+    </category>
+
+    <category name="⏱️ Temporização &amp; Relógio" colour="#7c3aed">
+      <label text="─── Pausas e Delays (time.sleep, time.sleep_ms) ───"></label>
+      <block type="delay">
+        <value name="TIME">
+          <shadow type="math_number">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+      </block>
+      <sep gap="16"></sep>
+
+      <label text="─── Cronômetros de Alta Precisão (time.ticks_ms, ticks_diff) ───"></label>
+      <block type="utime.vars"></block>
+      <block type="utime.ticks_add">
+        <value name="TIME1">
+          <shadow type="utime.vars"></shadow>
+        </value>
+        <value name="TIME2">
+          <shadow type="math_number">
+            <field name="NUM">100</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="utime.ticks_diff">
+        <value name="TIME1">
+          <shadow type="utime.vars"></shadow>
+        </value>
+        <value name="TIME2">
+          <shadow type="math_number">
+            <field name="NUM">0</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="timer"></block>
+      <block type="stop_timer">
+        <value name="timerNumber">
+          <shadow type="math_number">
+            <field name="NUM">0</field>
+          </shadow>
+        </value>
+      </block>
+      <sep gap="16"></sep>
+
+      <label text="─── Relógio RTC e Economia de Energia (machine.RTC, deep_sleep) ───"></label>
+      <block type="esp32_set_rtc">
+        <value name="year"><shadow type="math_number"><field name="NUM">2026</field></shadow></value>
+        <value name="month"><shadow type="math_number"><field name="NUM">8</field></shadow></value>
+        <value name="day"><shadow type="math_number"><field name="NUM">27</field></shadow></value>
+        <value name="hour"><shadow type="math_number"><field name="NUM">12</field></shadow></value>
+        <value name="minute"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+        <value name="second"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+      </block>
+      <block type="esp32_get_rtc"></block>
+      <block type="esp32_deep_sleep">
+        <value name="interval">
+          <shadow type="math_number">
+            <field name="NUM">60</field>
+          </shadow>
+        </value>
+      </block>
+    </category>
+
+    <category name="🐍 Python &amp; Avançado" colour="#3776ab">
+      <label text="─── Tratamento de Exceções e Falhas (try / except) ───"></label>
+      <block type="try_catch"></block>
+      <sep gap="16"></sep>
+
+      <label text="─── Executar Código Python Puro (Script Inline) ───"></label>
+      <block type="exec_python">
+        <value name="command">
+          <shadow type="text">
+            <field name="TEXT">print("SatBlocks OBSAT")</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="exec_python_output">
+        <value name="command">
+          <shadow type="text">
+            <field name="TEXT">time.ticks_ms()</field>
+          </shadow>
+        </value>
+      </block>
+      <sep gap="16"></sep>
+
+      <label text="─── Interrupções de Hardware e Comentários (Pin.irq) ───"></label>
+      <block type="inter_init">
+        <value name="pin">
+          <shadow type="math_number">
+            <field name="NUM">0</field>
+          </shadow>
+        </value>
+        <value name="Nome">
+          <shadow type="text">
+            <field name="TEXT">botao_ejecao</field>
+          </shadow>
+        </value>
+        <value name="Função">
+          <shadow type="text">
+            <field name="TEXT">ao_pressionar</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="sat_python_comment"></block>
+    </category>
+
+    <category name="📦 Variáveis" colour="#f59e0b" custom="VARIABLE"></category>
+    <category name="🧩 Funções &amp; Rotinas" colour="#8b5cf6" custom="PROCEDURE"></category>
+  </xml>
+
+  <!-- Scripts da Aplicação -->
+  <script src="js/sat_connection.js?v=20260911-600"></script>
+  <script src="js/sat_files.js?v=20260911-1000"></script>
+  <script src="js/sat_databoard.js?v=20260911-600"></script>
+  <script src="js/sat_profiles.js?v=20260911-1000"></script>
+  <script src="js/sat_reference.js?v=20260911-600"></script>
+  <script src="js/satblocks_tour.js?v=20260911-600"></script>
+  <script src="js/satblocks_app.js?v=20260911-600"></script>
+
+  <script src="js/sat_capture.js?v=20260911-600"></script>
+</body>
 </html>

@@ -1,0 +1,15 @@
+# Credenciais e configuração local (NUNCA versionar)
+db_config.local.php
+*.local.php
+.env
+
+# Dados de execução (telemetria ao vivo, não é código-fonte)
+telemetria_db.json
+
+# Sistema operacional / editor
+.DS_Store
+Thumbs.db
+*.swp
+
+# Logs
+*.log
