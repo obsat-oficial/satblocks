@@ -1734,7 +1734,9 @@ textarea#fileEditorTextarea {
   display: flex;
   align-items: center;
   gap: 16px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .databoard-brand-box {
@@ -1797,7 +1799,9 @@ textarea#fileEditorTextarea {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .databoard-status-pill {
