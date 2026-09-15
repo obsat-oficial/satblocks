@@ -1456,9 +1456,8 @@ window.SatBlocksApp = (function() {
         cmdHistory.push(cmd);
         historyIndex = cmdHistory.length;
 
-        // Eco limpo no terminal
-        appendTerminalLog(`>>> ${cmd}\n`);
-
+        // Não ecoa manualmente aqui: o REPL da placa já ecoa de volta
+        // os caracteres recebidos, e um eco duplicado aparecia como ">>> >>> comando".
         SatConnection.send(cmd + '\r\n');
         input.value = '';
       }
@@ -2066,7 +2065,7 @@ window.SatBlocksApp = (function() {
   }
 
   function sendQuickCmd(cmd) {
-    appendTerminalLog(`>>> ${cmd}\n`);
+    // O REPL da placa já ecoa o comando recebido; não duplicar aqui.
     SatConnection.send(cmd + '\r\n');
   }
 
