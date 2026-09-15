@@ -81,11 +81,21 @@ window.SatDataboard = (function() {
       this._subscribers = this._subscribers.filter(s => s !== chartInstance && s.uid !== chartInstance.uid);
     }
 
+    // Converte um timestamp (epoch em ms) para "HH:MM:SS"; se já vier como
+    // string (dado legado gravado antes desta mudança, ou fonte externa),
+    // devolve como está em vez de tentar reformatar.
+    formatEpoch(value) {
+      if (typeof value !== 'number') return value;
+      const d = new Date(value);
+      return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}:${d.getSeconds().toString().padStart(2, '0')}`;
+    }
+
     notifySubscribers(dataset, coordinates) {
       this._subscribers.forEach(chart => {
         if (chart.dataset === dataset && chart.chartJs) {
           const c = chart.chartJs;
-          const label = coordinates[0];
+          const rawX = coordinates[0];
+          const label = (chart.timeseries && typeof rawX === 'number') ? rawX : this.formatEpoch(rawX);
 
           c.data.labels.push(label);
           for (let i = 1; i < coordinates.length; i++) {
@@ -120,13 +130,19 @@ window.SatDataboard = (function() {
       const numSeries = rows.length > 0 ? rows[0].length - 1 : 1;
       const seriesData = Array.from({ length: Math.max(1, numSeries) }, () => []);
 
+      // Eixo temporal real só é possível quando todo o histórico já é
+      // timestamp numérico (epoch ms); dado legado gravado como string
+      // "HH:MM:SS" formatada cai automaticamente para o eixo de categorias.
+      const useTimeAxis = !!setup.timeseries && rows.every(r => typeof r[0] === 'number');
+
       rows.forEach(row => {
-        labels.push(row[0]);
+        labels.push(useTimeAxis ? row[0] : this.formatEpoch(row[0]));
         for (let i = 1; i < row.length; i++) {
           seriesData[i - 1].push(row[i]);
         }
       });
 
+      const isScatter = setup.chartType === 'scatter';
       const labelNames = (setup.labels || 'Valor').split(',').map(s => s.trim());
       const datasets = seriesData.map((data, idx) => {
         const color = PALETTE[idx % PALETTE.length];
@@ -137,12 +153,13 @@ window.SatDataboard = (function() {
           backgroundColor: color.bg,
           borderWidth: 2,
           fill: setup.chartType === 'line',
+          showLine: !isScatter,
           tension: 0.3,
-          pointRadius: setup.chartType === 'line' ? 2 : 4
+          pointRadius: setup.chartType === 'line' ? 2 : (isScatter ? 5 : 4)
         };
       });
 
-      return { labels, datasets };
+      return { labels, datasets, useTimeAxis };
     }
 
     getAllDatasets() {
@@ -153,6 +170,16 @@ window.SatDataboard = (function() {
       delete this._data[dataset];
       this._keys = this._keys.filter(k => k !== dataset);
       localStorage.removeItem(`datastorage:${dataset}`);
+
+      // Zera também qualquer gráfico que já esteja exibindo esse dataset,
+      // em vez de deixá-lo mostrando dados antigos que só existiam em memória.
+      this._subscribers.forEach(chart => {
+        if (chart.dataset === dataset && chart.chartJs) {
+          chart.chartJs.data.labels = [];
+          chart.chartJs.data.datasets.forEach(ds => ds.data = []);
+          chart.chartJs.update();
+        }
+      });
     }
 
     clearAll() {
@@ -168,10 +195,17 @@ window.SatDataboard = (function() {
       });
     }
 
+    // Formata o timestamp para CSV: data+hora completas quando é epoch
+    // numérico (dado novo), ou o texto como veio (dado legado "HH:MM:SS").
+    formatTimestampForCsv(value) {
+      if (typeof value !== 'number') return value;
+      return new Date(value).toISOString();
+    }
+
     exportCsv(dataset) {
       const rows = this._data[dataset] || [];
       if (rows.length === 0) return 'Timestamp,Valor\n';
-      return rows.map(r => r.join(',')).join('\n');
+      return rows.map(r => [this.formatTimestampForCsv(r[0]), ...r.slice(1)].join(',')).join('\n');
     }
 
     exportAllConsolidatedCsv() {
@@ -179,7 +213,7 @@ window.SatDataboard = (function() {
       this._keys.forEach(k => {
         const rows = this._data[k] || [];
         rows.forEach(r => {
-          csv += `${r[0]},${k},${r.slice(1).join(',')}\n`;
+          csv += `${this.formatTimestampForCsv(r[0])},${k},${r.slice(1).join(',')}\n`;
         });
       });
       return csv;
@@ -271,10 +305,9 @@ window.SatDataboard = (function() {
       if (!data || !data.success || !Array.isArray(data.result) || data.result.length === 0) return;
 
       data.result.forEach(ponto => {
-        const d = new Date(ponto.timestamp * 1000);
-        const timeStr = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}:${d.getSeconds().toString().padStart(2, '0')}`;
+        const timestampMs = ponto.timestamp * 1000;
         const numerico = parseFloat(ponto.valor);
-        DataStorage.push(canal, [timeStr, isNaN(numerico) ? ponto.valor : numerico]);
+        DataStorage.push(canal, [timestampMs, isNaN(numerico) ? ponto.valor : numerico]);
         this.knownChannels[canal] = Math.max(this.knownChannels[canal], ponto.timestamp + 1);
       });
     }
@@ -499,12 +532,36 @@ window.SatDataboard = (function() {
         const toggle = switchBox.querySelector('.bipes-switch-toggle');
         let state = false;
         toggle.onclick = () => {
-          state = !state;
-          toggle.classList.toggle('on', state);
-          const targetUrl = state ? data.setup.onUrl : data.setup.offUrl;
-          if (targetUrl) {
-            fetch(targetUrl, { mode: 'no-cors' }).catch(() => {});
-          }
+          const nextState = !state;
+          const targetUrl = nextState ? data.setup.onUrl : data.setup.offUrl;
+          if (!targetUrl) return;
+
+          const confirmSuccess = () => {
+            state = nextState;
+            toggle.classList.toggle('on', state);
+            toggle.classList.remove('switch-error');
+          };
+          const flashError = () => {
+            toggle.classList.add('switch-error');
+            setTimeout(() => toggle.classList.remove('switch-error'), 800);
+          };
+
+          // Tenta uma requisição normal primeiro, para confirmar de verdade que
+          // o comando chegou (só muda o visual se a placa respondeu OK). Se a
+          // placa não expõe CORS (comum em servidores MicroPython simples) ou
+          // a página está em HTTPS falando com um IP local em HTTP, cai para
+          // "no-cors" como último recurso — sem confirmação real, mas ainda
+          // disparando o comando, igual ao comportamento anterior.
+          fetch(targetUrl)
+            .then(resp => {
+              if (!resp.ok) throw new Error('HTTP ' + resp.status);
+              confirmSuccess();
+            })
+            .catch(() => {
+              fetch(targetUrl, { mode: 'no-cors' })
+                .then(confirmSuccess)
+                .catch(flashError);
+            });
         };
       } else if (data.type === 'stream') {
         const img = document.createElement('img');
@@ -548,11 +605,37 @@ window.SatDataboard = (function() {
     initChartJs(uid, canvasEl, setup) {
       const chartData = DataStorage.getChartData(setup.dataset, setup);
       const isRadar = setup.chartType === 'radar';
+      const isPie = setup.chartType === 'pie';
+      const noScales = isRadar || isPie;
+      // "Dispersão" reaproveita o controlador de linha do Chart.js sem
+      // desenhar a linha (showLine:false já vem no dataset) — assim os
+      // pontos continuam sobre o mesmo eixo de categorias/tempo das outras
+      // séries, sem precisar de pares {x,y} num eixo puramente numérico.
+      const chartJsType = setup.chartType === 'scatter' ? 'line' : (setup.chartType || 'line');
 
       let chartJsInstance = null;
       if (typeof Chart !== 'undefined') {
+        const scalesConfig = noScales ? {} : {
+          x: {
+            type: chartData.useTimeAxis ? 'linear' : 'category',
+            grid: { color: 'rgba(0,0,0,0.04)' },
+            ticks: {
+              maxTicksLimit: 8,
+              font: { size: 10 },
+              callback: chartData.useTimeAxis ? (value) => DataStorage.formatEpoch(value) : undefined
+            },
+            title: setup.xLabel ? { display: true, text: setup.xLabel } : undefined
+          },
+          y: {
+            grid: { color: 'rgba(0,0,0,0.06)' },
+            ticks: { font: { size: 10 } },
+            beginAtZero: false,
+            title: setup.yLabel ? { display: true, text: setup.yLabel } : undefined
+          }
+        };
+
         chartJsInstance = new Chart(canvasEl, {
-          type: setup.chartType || 'line',
+          type: chartJsType,
           data: chartData,
           options: {
             responsive: true,
@@ -565,17 +648,7 @@ window.SatDataboard = (function() {
                 labels: { boxWidth: 10, font: { size: 11 } }
               }
             },
-            scales: isRadar ? {} : {
-              x: {
-                grid: { color: 'rgba(0,0,0,0.04)' },
-                ticks: { maxTicksLimit: 8, font: { size: 10 } }
-              },
-              y: {
-                grid: { color: 'rgba(0,0,0,0.06)' },
-                ticks: { font: { size: 10 } },
-                beginAtZero: false
-              }
-            }
+            scales: scalesConfig
           }
         });
       }
@@ -584,6 +657,7 @@ window.SatDataboard = (function() {
         uid: uid,
         dataset: setup.dataset,
         limitPoints: parseInt(setup.limitPoints, 10) || 50,
+        timeseries: !!setup.timeseries,
         chartJs: chartJsInstance,
         canvas: canvasEl
       };
@@ -788,6 +862,69 @@ window.SatDataboard = (function() {
       this.updateWorkspaceSelect();
     }
 
+    // Empacota o layout do Painel IOT (nomes de workspace, widgets e suas
+    // configurações) para ser embutido no arquivo de projeto .satblocks.
+    // Deliberadamente NÃO inclui o histórico de telemetria (datastorage:*):
+    // dados de voo já gravados pertencem à exportação de CSV, não ao
+    // arquivo de código-fonte do projeto.
+    exportProjectData() {
+      const streams = {};
+      Object.keys(this.workspaces).forEach(wkspUid => {
+        const streamUids = JSON.parse(localStorage.getItem(`workspace:${wkspUid}`) || '[]');
+        streamUids.forEach(uid => {
+          const raw = localStorage.getItem(`stream:${uid}`);
+          if (raw) streams[uid] = JSON.parse(raw);
+        });
+      });
+
+      return {
+        workspaces: this.workspaces,
+        workspaceStreamLists: Object.keys(this.workspaces).reduce((acc, wkspUid) => {
+          acc[wkspUid] = JSON.parse(localStorage.getItem(`workspace:${wkspUid}`) || '[]');
+          return acc;
+        }, {}),
+        streams: streams,
+        currentUid: this.currentUid
+      };
+    }
+
+    // Restaura o layout do Painel IOT a partir de um projeto .satblocks
+    // carregado. Substitui os workspaces atuais (não faz merge) para o
+    // painel refletir exatamente o que foi salvo naquele projeto.
+    importProjectData(data) {
+      if (!data || typeof data !== 'object') return;
+
+      try {
+        Object.keys(this.workspaces).forEach(wkspUid => {
+          localStorage.removeItem(`workspace:${wkspUid}`);
+        });
+
+        this.workspaces = data.workspaces || {};
+        localStorage.setItem('bipes_workspaces', JSON.stringify(this.workspaces));
+
+        Object.keys(data.workspaceStreamLists || {}).forEach(wkspUid => {
+          localStorage.setItem(`workspace:${wkspUid}`, JSON.stringify(data.workspaceStreamLists[wkspUid]));
+        });
+        Object.keys(data.streams || {}).forEach(uid => {
+          localStorage.setItem(`stream:${uid}`, JSON.stringify(data.streams[uid]));
+        });
+
+        this.currentUid = (data.currentUid && this.workspaces[data.currentUid]) ? data.currentUid : Object.keys(this.workspaces)[0];
+        if (!this.currentUid) {
+          this.workspaces['obsat_mission'] = 'Missão OBSAT 2026 (Padrão)';
+          localStorage.setItem('bipes_workspaces', JSON.stringify(this.workspaces));
+          this.currentUid = 'obsat_mission';
+          this.createObsatPresetWidgets(this.currentUid);
+        }
+        localStorage.setItem('currentWorkspace', this.currentUid);
+
+        this.updateWorkspaceSelect();
+        if (GridInstance) GridInstance.init(this.currentUid);
+      } catch (e) {
+        console.warn('[Painel IOT] Erro ao importar layout do projeto:', e);
+      }
+    }
+
     createObsatPresetWidgets(wkspUid) {
       const defaultWidgets = [
         {
@@ -912,6 +1049,9 @@ window.SatDataboard = (function() {
               if (document.getElementById('widgetLimitPoints')) document.getElementById('widgetLimitPoints').value = parsed.setup.limitPoints || '50';
               if (document.getElementById('widgetTitleInput')) document.getElementById('widgetTitleInput').value = parsed.setup.title || 'Gráfico';
               if (document.getElementById('widgetLabelsInput')) document.getElementById('widgetLabelsInput').value = parsed.setup.labels || 'Valor';
+              if (document.getElementById('widgetXLabelInput')) document.getElementById('widgetXLabelInput').value = parsed.setup.xLabel || '';
+              if (document.getElementById('widgetYLabelInput')) document.getElementById('widgetYLabelInput').value = parsed.setup.yLabel || '';
+              if (document.getElementById('widgetTimeseriesInput')) document.getElementById('widgetTimeseriesInput').checked = !!parsed.setup.timeseries;
             } else if (parsed.type === 'switch') {
               if (document.getElementById('widgetSwitchTitle')) document.getElementById('widgetSwitchTitle').value = parsed.setup.title || 'Interruptor';
               if (document.getElementById('widgetSwitchOnUrl')) document.getElementById('widgetSwitchOnUrl').value = parsed.setup.onUrl || '';
@@ -930,6 +1070,9 @@ window.SatDataboard = (function() {
         if (document.getElementById('widgetTitleInput')) document.getElementById('widgetTitleInput').value = 'Novo Gráfico';
         if (document.getElementById('widgetLabelsInput')) document.getElementById('widgetLabelsInput').value = 'Valor';
         if (document.getElementById('widgetLimitPoints')) document.getElementById('widgetLimitPoints').value = '50';
+        if (document.getElementById('widgetXLabelInput')) document.getElementById('widgetXLabelInput').value = '';
+        if (document.getElementById('widgetYLabelInput')) document.getElementById('widgetYLabelInput').value = '';
+        if (document.getElementById('widgetTimeseriesInput')) document.getElementById('widgetTimeseriesInput').checked = false;
       }
 
       modal.style.display = 'flex';
@@ -980,7 +1123,10 @@ window.SatDataboard = (function() {
               chartType: document.getElementById('widgetChartType').value,
               title: document.getElementById('widgetTitleInput').value.trim() || 'Gráfico',
               labels: document.getElementById('widgetLabelsInput').value.trim() || 'Valor',
-              limitPoints: document.getElementById('widgetLimitPoints').value || '50'
+              limitPoints: document.getElementById('widgetLimitPoints').value || '50',
+              xLabel: document.getElementById('widgetXLabelInput').value.trim(),
+              yLabel: document.getElementById('widgetYLabelInput').value.trim(),
+              timeseries: document.getElementById('widgetTimeseriesInput').checked
             };
           } else if (type === 'switch') {
             setup = {
@@ -1212,8 +1358,7 @@ window.SatDataboard = (function() {
       if (!hasObsatFields) return;
 
       packetCounter++;
-      const d = new Date();
-      const timeStr = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}:${d.getSeconds().toString().padStart(2, '0')}`;
+      const timestampMs = Date.now();
 
       // Atualiza pílula de status na interface
       const pill = document.getElementById('databoardTelemetryStatus');
@@ -1232,42 +1377,42 @@ window.SatDataboard = (function() {
 
       // Ingestão no motor de séries temporais DataStorage (alimenta os gráficos em tempo real)
       if (data.temperatura !== undefined && !isNaN(parseFloat(data.temperatura))) {
-        DataStorage.push('obsat_temperatura', [timeStr, parseFloat(parseFloat(data.temperatura).toFixed(2))]);
+        DataStorage.push('obsat_temperatura', [timestampMs, parseFloat(parseFloat(data.temperatura).toFixed(2))]);
       }
 
       if (data.pressao !== undefined && !isNaN(parseFloat(data.pressao))) {
-        DataStorage.push('obsat_pressao', [timeStr, parseFloat(parseFloat(data.pressao).toFixed(2))]);
+        DataStorage.push('obsat_pressao', [timestampMs, parseFloat(parseFloat(data.pressao).toFixed(2))]);
       }
 
       if (data.altitude !== undefined && !isNaN(parseFloat(data.altitude))) {
-        DataStorage.push('obsat_altitude', [timeStr, parseFloat(parseFloat(data.altitude).toFixed(1))]);
+        DataStorage.push('obsat_altitude', [timestampMs, parseFloat(parseFloat(data.altitude).toFixed(1))]);
       } else if (data.pressao !== undefined && !isNaN(parseFloat(data.pressao))) {
         // Estimativa barométrica alternativa caso o campo direto não venha
         const p = parseFloat(data.pressao);
         if (p > 100 && p < 1200) {
           const alt = 44330 * (1 - Math.pow(p / 1013.25, 0.1903));
-          DataStorage.push('obsat_altitude', [timeStr, parseFloat(alt.toFixed(1))]);
+          DataStorage.push('obsat_altitude', [timestampMs, parseFloat(alt.toFixed(1))]);
         }
       }
 
       if (data.bateria !== undefined && !isNaN(parseFloat(data.bateria))) {
-        DataStorage.push('obsat_bateria', [timeStr, parseFloat(parseFloat(data.bateria).toFixed(1))]);
+        DataStorage.push('obsat_bateria', [timestampMs, parseFloat(parseFloat(data.bateria).toFixed(1))]);
       }
 
       if (Array.isArray(data.giroscopio) && data.giroscopio.length >= 3) {
-        DataStorage.push('obsat_giroscopio', [timeStr, data.giroscopio[0], data.giroscopio[1], data.giroscopio[2]]);
+        DataStorage.push('obsat_giroscopio', [timestampMs, data.giroscopio[0], data.giroscopio[1], data.giroscopio[2]]);
       } else if (typeof data.giroscopio === 'number') {
-        DataStorage.push('obsat_giroscopio', [timeStr, 0, 0, data.giroscopio]);
+        DataStorage.push('obsat_giroscopio', [timestampMs, 0, 0, data.giroscopio]);
       } else if (data.giroscopio && typeof data.giroscopio === 'object') {
-        DataStorage.push('obsat_giroscopio', [timeStr, data.giroscopio.x || 0, data.giroscopio.y || 0, data.giroscopio.z || 0]);
+        DataStorage.push('obsat_giroscopio', [timestampMs, data.giroscopio.x || 0, data.giroscopio.y || 0, data.giroscopio.z || 0]);
       }
 
       if (Array.isArray(data.acelerometro) && data.acelerometro.length >= 3) {
-        DataStorage.push('obsat_acelerometro', [timeStr, data.acelerometro[0], data.acelerometro[1], data.acelerometro[2]]);
+        DataStorage.push('obsat_acelerometro', [timestampMs, data.acelerometro[0], data.acelerometro[1], data.acelerometro[2]]);
       } else if (typeof data.acelerometro === 'number') {
-        DataStorage.push('obsat_acelerometro', [timeStr, 0, 0, data.acelerometro]);
+        DataStorage.push('obsat_acelerometro', [timestampMs, 0, 0, data.acelerometro]);
       } else if (data.acelerometro && typeof data.acelerometro === 'object') {
-        DataStorage.push('obsat_acelerometro', [timeStr, data.acelerometro.x || 0, data.acelerometro.y || 0, data.acelerometro.z || 0]);
+        DataStorage.push('obsat_acelerometro', [timestampMs, data.acelerometro.x || 0, data.acelerometro.y || 0, data.acelerometro.z || 0]);
       }
 
       // Ponte Serial USB -> Servidor de Telemetria OBSAT (Local / Remoto)

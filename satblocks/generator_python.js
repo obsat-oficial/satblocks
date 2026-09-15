@@ -1659,7 +1659,7 @@ def obsat_led_mcp(pin=0, state=1):
     const html = Blockly.Python.valueToCode(block, 'HTML', Blockly.Python.ORDER_NONE) || '""';
     return `try:\n` +
            `    _c = ${client}[0] if isinstance(${client}, tuple) else ${client}\n` +
-           `    _c.send('HTTP/1.1 200 OK\\r\\nContent-Type: text/html\\r\\nConnection: close\\r\\n\\r\\n')\n` +
+           `    _c.send('HTTP/1.1 200 OK\\r\\nContent-Type: text/html\\r\\nAccess-Control-Allow-Origin: *\\r\\nConnection: close\\r\\n\\r\\n')\n` +
            `    _c.send(str(${html}))\n` +
            `    _c.close()\n` +
            `except Exception as _e:\n` +

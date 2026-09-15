@@ -6,7 +6,7 @@
   <title>SatBlocks by BIPES — Ambiente Espacial OBSAT</title>
   
   <!-- Estilos e Fontes -->
-  <link rel="stylesheet" href="css/satblocks_theme.css?v=20260915-4">
+  <link rel="stylesheet" href="css/satblocks_theme.css?v=20260915-5">
   <link rel="stylesheet" href="css/tour.css?v=20260915-3">
   <style>
     .sat-modal-overlay.active,
@@ -32,7 +32,7 @@
 
   <!-- Biblioteca Aeroespacial SatBlocks -->
   <script src="satblocks/block_definitions.js?v=20260915-4"></script>
-  <script src="satblocks/generator_python.js?v=20260915-3"></script>
+  <script src="satblocks/generator_python.js?v=20260915-4"></script>
 
   <!-- Bibliotecas do BIPES Databoard Oficial (Chart.js e Muuri Grid Offline) -->
   <script src="core/chart.umd.min.js?v=2026.2"></script>
@@ -758,6 +758,8 @@
                 <option value="line" selected>Linha (Line)</option>
                 <option value="bar">Barras (Bar)</option>
                 <option value="radar">Radar / Polar</option>
+                <option value="scatter">Dispersão (Scatter)</option>
+                <option value="pie">Pizza (Pie)</option>
               </select>
             </div>
             <div>
@@ -775,6 +777,22 @@
             <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">6. Rótulos das Séries (separados por vírgula):</label>
             <input type="text" id="widgetLabelsInput" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="Altitude (m)">
           </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+              <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">7. Rótulo Eixo X:</label>
+              <input type="text" id="widgetXLabelInput" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="" placeholder="Ex: Tempo">
+            </div>
+            <div>
+              <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">8. Rótulo Eixo Y:</label>
+              <input type="text" id="widgetYLabelInput" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="" placeholder="Ex: Altitude (m)">
+            </div>
+          </div>
+
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #475569; font-weight: 700; cursor: pointer;">
+            <input type="checkbox" id="widgetTimeseriesInput" style="width: 15px; height: 15px;">
+            Eixo X proporcional ao tempo real (em vez de espaçamento igual entre pontos)
+          </label>
         </div>
 
         <!-- CAMPOS ESPECÍFICOS DE SWITCH -->
@@ -1944,11 +1962,11 @@
   <!-- Scripts da Aplicação -->
   <script src="js/sat_connection.js?v=20260911-600"></script>
   <script src="js/sat_files.js?v=20260915-1"></script>
-  <script src="js/sat_databoard.js?v=20260915-1"></script>
+  <script src="js/sat_databoard.js?v=20260915-2"></script>
   <script src="js/sat_profiles.js?v=20260915-2"></script>
   <script src="js/sat_reference.js?v=20260915-3"></script>
   <script src="js/satblocks_tour.js?v=20260915-4"></script>
-  <script src="js/satblocks_app.js?v=20260915-3"></script>
+  <script src="js/satblocks_app.js?v=20260915-4"></script>
 
   <script src="js/sat_capture.js?v=20260911-600"></script>
 </body>

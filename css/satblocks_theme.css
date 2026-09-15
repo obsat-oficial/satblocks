@@ -2018,6 +2018,15 @@ textarea#fileEditorTextarea {
   transform: translateX(32px);
 }
 
+.bipes-switch-toggle.switch-error {
+  animation: sat-switch-error-flash 0.4s ease-in-out 2;
+}
+
+@keyframes sat-switch-error-flash {
+  0%, 100% { box-shadow: none; }
+  50% { box-shadow: 0 0 0 3px #ef4444; }
+}
+
 /* ESTADO VAZIO DO DATABOARD */
 .databoard-empty-state {
   display: flex;
