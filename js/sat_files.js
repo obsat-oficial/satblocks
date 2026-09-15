@@ -707,9 +707,44 @@ class WLAN:
     }
   ];
 
+  // Explicação padrão pré-escrita sobre o papel de boot.py e main.py na Flash do MicroPython
+  const BOOT_PY_EXPLANATION = `# ============================================================
+# boot.py — Inicialização do Satélite (executado 1x, ANTES do main.py)
+# ============================================================
+# O MicroPython roda este arquivo automaticamente toda vez que a placa
+# liga ou é resetada, ANTES de executar o main.py. É o lugar certo para
+# configurações de baixo nível que precisam acontecer só uma vez, como:
+#   - ajustar a frequência do processador (machine.freq)
+#   - configurar o sistema de arquivos / cartão SD
+#   - desligar o eco do REPL ou mensagens de debug
+# Evite colocar aqui o programa principal da missão — isso é papel do
+# main.py. Se este arquivo travar ou lançar um erro, o satélite pode não
+# conseguir avançar para o main.py na próxima inicialização.
+# ============================================================
+import gc
+gc.collect()
+print("[BOOT] MicroPython carregado com sucesso!")
+`;
+
+  const MAIN_PY_EXPLANATION = `# ============================================================
+# main.py — Programa Principal de Voo (executado automaticamente
+#            toda vez que o satélite liga ou é resetado, DEPOIS do boot.py)
+# ============================================================
+# Este é o arquivo que o MicroPython procura e executa sozinho, sem
+# precisar de nenhum cabo conectado ao computador — é assim que o
+# satélite "voa" de forma autônoma depois de gravado. Qualquer código
+# salvo aqui (incluindo o gerado a partir dos blocos, em blocks.py)
+# roda desde o instante em que a placa recebe energia.
+# Dica: para testar sem sobrescrever este arquivo, use o botão
+# ▶ Executar (que roda o código direto na memória, sem gravar na Flash).
+# ============================================================
+import time
+print("[OBSAT] Missao iniciada na memoria Flash")
+`;
+
   let deviceFiles = [
-    { name: 'boot.py', size: '140 B', content: '# Inicializacao do Satelite\nimport gc\ngc.collect()\nprint("[BOOT] MicroPython carregado com sucesso!")\n' },
-    { name: 'main.py', size: '1.1 KB', content: '# Programa de Voo Principal OBSAT\nimport time\nprint("[OBSAT] Missao iniciada na memoria Flash")\n' }
+    { name: 'boot.py', size: '140 B', content: BOOT_PY_EXPLANATION },
+    { name: 'main.py', size: '1.1 KB', content: MAIN_PY_EXPLANATION }
   ];
 
   let currentEditingFile = 'main.py';
@@ -793,8 +828,19 @@ class WLAN:
     });
     listEl.appendChild(blocksItem);
 
-    // Lista de arquivos da Flash
-    deviceFiles.forEach(file => {
+    // Lista de arquivos da Flash — boot.py e main.py sempre no topo,
+    // por serem os arquivos especiais que o MicroPython executa sozinho.
+    const PINNED_ORDER = ['boot.py', 'main.py'];
+    const sortedDeviceFiles = deviceFiles.slice().sort((a, b) => {
+      const ia = PINNED_ORDER.indexOf(a.name);
+      const ib = PINNED_ORDER.indexOf(b.name);
+      if (ia === -1 && ib === -1) return 0;
+      if (ia === -1) return 1;
+      if (ib === -1) return -1;
+      return ia - ib;
+    });
+
+    sortedDeviceFiles.forEach(file => {
       const item = document.createElement('div');
       item.className = 'sat-file-item' + (currentEditingFile === file.name ? ' active' : '');
       item.innerHTML = `
@@ -947,8 +993,17 @@ class WLAN:
     if (!filename || filename.trim().length === 0) return;
 
     const cleanName = filename.trim();
-    const initContent = `# Arquivo ${cleanName}\n# Criado via SatBlocks by BIPES\n\n`;
-    
+
+    if (deviceFiles.some(f => f.name === cleanName)) {
+      showDriverToast(`⚠️ Já existe um arquivo "${cleanName}".`);
+      openFile(cleanName);
+      return;
+    }
+
+    let initContent = `# Arquivo ${cleanName}\n# Criado via SatBlocks by BIPES\n\n`;
+    if (cleanName === 'boot.py') initContent = BOOT_PY_EXPLANATION;
+    else if (cleanName === 'main.py') initContent = MAIN_PY_EXPLANATION;
+
     deviceFiles.push({
       name: cleanName,
       size: '50 B',
@@ -1042,10 +1097,13 @@ class WLAN:
             const updated = list.map(name => {
               const prev = deviceFiles.find(f => f.name === name);
               const official = OFFICIAL_DRIVERS.find(d => d.name === name);
+              let fallbackContent = `# Arquivo ${name} carregado da Flash\n`;
+              if (name === 'boot.py') fallbackContent = BOOT_PY_EXPLANATION;
+              else if (name === 'main.py') fallbackContent = MAIN_PY_EXPLANATION;
               return {
                 name: name,
                 size: official ? official.size : (prev ? prev.size : '1 KB'),
-                content: prev ? prev.content : (official ? official.content : `# Arquivo ${name} carregado da Flash\n`)
+                content: prev ? prev.content : (official ? official.content : fallbackContent)
               };
             });
 
