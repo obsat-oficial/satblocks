@@ -958,6 +958,14 @@ window.SatBlocksApp = (function() {
     // Inicializa preferência de recolher/auto-hover do painel de código (já com a largura restaurada acima)
     initSidePanelCollapse();
 
+    // Recalcula a posição das setas de recolher (toolbox e painel lateral) sempre que
+    // a largura disponível mudar — breakpoints responsivos alteram a largura real da
+    // toolbox/painel, e a seta precisa continuar exatamente em cima da linha de contorno.
+    window.addEventListener('resize', () => {
+      positionToolboxToggleBtn();
+      positionSidePanelToggleBtn();
+    });
+
     if (resizerEl && sidePanelEl) {
       let isDragging = false;
       let startX = 0;
@@ -2113,6 +2121,7 @@ window.SatBlocksApp = (function() {
   }
 
   function initToolboxCollapse() {
+    positionToolboxToggleBtn();
     const saved = localStorage.getItem('satblocks_toolbox_collapsed');
     if (saved === 'true' || (saved === null && window.innerWidth <= 768)) {
       setToolboxCollapsed(true);
@@ -2218,9 +2227,24 @@ window.SatBlocksApp = (function() {
     if (!btn || !panelEl) return;
     const restoreWidth = parseInt(panelEl.style.getPropertyValue('--sat-restore-width'), 10);
     const w = restoreWidth || parseInt(panelEl.style.width, 10) || panelEl.offsetWidth || 520;
-    // Espelha o botão da barra de blocos: fica no canto interno (esquerdo) do painel,
-    // acompanhando sua largura real em vez de ficar fixo na borda da tela.
-    btn.style.right = Math.max(8, w - 37) + 'px';
+    const btnW = btn.offsetWidth || 26;
+    // Centraliza o botão sobre a própria linha de contorno (borda esquerda do
+    // painel), em vez de deslocá-lo para dentro do conteúdo — evita que ele
+    // fique em cima das abas/rótulos do cabeçalho do painel.
+    btn.style.right = Math.max(8, w - (btnW / 2)) + 'px';
+  }
+
+  function positionToolboxToggleBtn() {
+    const btn = document.getElementById('btnToggleToolbox');
+    const toolboxEl = document.querySelector('.blocklyToolbox');
+    if (!btn || !toolboxEl) return;
+    // offsetWidth reflete a largura de layout real (275/230/80vw conforme o
+    // breakpoint), e não é afetado pelo transform usado para recolher a
+    // gaveta — por isso serve tanto para o estado aberto quanto o "espiando"
+    // (collapsed + hover-active).
+    const w = toolboxEl.offsetWidth || 275;
+    const btnW = btn.offsetWidth || 26;
+    btn.style.left = Math.max(8, w - (btnW / 2)) + 'px';
   }
 
   function initSidePanelCollapse() {

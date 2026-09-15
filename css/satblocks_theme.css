@@ -798,10 +798,13 @@ body {
 }
 
 /* Botão Minimalista de Toggle (Ícone Apenas) */
+/* left é recalculado via JS (positionToolboxToggleBtn) para ficar sempre em
+   cima da linha de contorno da toolbox, acompanhando sua largura real em
+   cada breakpoint; o valor abaixo é só o fallback antes do JS rodar. */
 .sat-toolbox-toggle-btn {
   position: absolute;
   top: 6px;
-  left: 238px;
+  left: 262px;
   z-index: 1002;
   background: #ffffff;
   border: 1px solid var(--border-color);
@@ -861,8 +864,8 @@ body {
 
 /* Posição do botão quando recolhido (vira uma abinha flutuante na borda esquerda) */
 #blocklyArea.toolbox-collapsed .sat-toolbox-toggle-btn {
-  left: 8px;
-  top: 8px;
+  left: 8px !important;
+  top: 8px !important;
   width: 28px;
   height: 28px;
   background: #ffffff;
@@ -871,8 +874,11 @@ body {
   color: var(--obsat-pink);
 }
 
+/* Ao "espiar" (hover) com a gaveta recolhida, a seta volta a ficar em cima da
+   borda da toolbox (não mais no canto flutuante) — posição real calculada via
+   JS (positionToolboxToggleBtn), este é só o fallback. */
 #blocklyArea.toolbox-collapsed.hover-active .sat-toolbox-toggle-btn {
-  left: 238px;
+  left: 262px;
   top: 6px;
 }
 
@@ -944,9 +950,11 @@ body {
 .sat-panel-toggle-btn {
   position: absolute;
   top: 6px;
-  /* Acompanha a borda esquerda (interna) do painel — mantido em sincronia via JS
-     conforme a largura do painel muda (arraste, toggle, responsivo). */
-  right: 483px;
+  /* Fica centralizado em cima da linha de contorno (borda esquerda do painel),
+     não embaixo do conteúdo do cabeçalho — mantido em sincronia via JS
+     (positionSidePanelToggleBtn) conforme a largura do painel muda (arraste,
+     toggle, responsivo); o valor abaixo é só o fallback antes do JS rodar. */
+  right: 507px;
   z-index: 1002;
   background: #ffffff;
   border: 1px solid var(--border-color);
@@ -3207,7 +3215,7 @@ textarea#fileEditorTextarea {
   }
 
   #blocklyArea.toolbox-collapsed.hover-active .sat-toolbox-toggle-btn {
-    left: 194px;
+    left: 217px;
   }
 
   /* Em telas pequenas o painel de código vira uma gaveta sobreposta (drawer),
