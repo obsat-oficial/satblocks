@@ -85,9 +85,6 @@ body {
   min-width: 0;
   overflow: visible;
   flex-wrap: nowrap;
-  /* Cabeçalho um pouco maior (~equivalente a 133% de zoom só nessa área),
-     sem afetar o zoom do workspace/painéis abaixo. */
-  zoom: 1.15;
 }
 
 .sat-topbar-left {
