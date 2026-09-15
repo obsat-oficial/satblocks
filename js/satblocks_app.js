@@ -1705,6 +1705,19 @@ window.SatBlocksApp = (function() {
     }
 
     if (!workspace) return;
+
+    if (!window.SatConnection || !SatConnection.isConnected || !SatConnection.isConnected()) {
+      const modalConn = document.getElementById('modalConnectionOverlay') || document.getElementById('satModalConnection');
+      if (modalConn) {
+        modalConn.style.display = 'flex';
+        modalConn.classList.add('active');
+      }
+      if (window.SatFiles && window.SatFiles.showDriverToast) {
+        window.SatFiles.showDriverToast('⚠️ Conecte um satélite/placa antes de executar o código.');
+      }
+      return;
+    }
+
     const code = Blockly.Python.workspaceToCode(workspace);
 
     switchMainTab('console');
