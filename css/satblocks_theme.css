@@ -2054,6 +2054,194 @@ textarea#fileEditorTextarea {
   50% { box-shadow: 0 0 0 3px #ef4444; }
 }
 
+/* ==========================================
+   NOVOS TIPOS DE WIDGET (Texto, Gauge, Sparkline, Ponteiro, Imagem,
+   Luz Indicadora, HTML Livre, Atuador, Slider, Medidor Linear)
+   ========================================== */
+.bipes-text-widget {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 4px;
+}
+.bipes-text-value {
+  font-size: 32px;
+  font-weight: 800;
+  color: #0f172a;
+}
+.bipes-text-units {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.bipes-gauge-widget {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 6px;
+}
+.bipes-gauge-svg {
+  width: 100%;
+  max-width: 200px;
+}
+.bipes-gauge-track {
+  fill: none;
+  stroke: #e2e8f0;
+  stroke-width: 8;
+  stroke-linecap: round;
+}
+.bipes-gauge-fill {
+  fill: none;
+  stroke: #0284c7;
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.3s ease;
+}
+.bipes-gauge-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-top: -18px;
+}
+.bipes-gauge-range {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 200px;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.bipes-pointer-widget {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 8px;
+}
+.bipes-pointer-svg {
+  width: 100%;
+  max-width: 150px;
+}
+.bipes-pointer-face {
+  fill: #f8fafc;
+  stroke: #e2e8f0;
+  stroke-width: 2;
+}
+.bipes-pointer-needle {
+  stroke: #e11d48;
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: transform 0.3s ease;
+  transform-origin: 50px 50px;
+}
+.bipes-pointer-hub {
+  fill: #0f172a;
+}
+.bipes-pointer-value {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.bipes-indicator-widget {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 10px;
+}
+.bipes-indicator-lamp {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+  transition: all 0.3s;
+}
+.bipes-indicator-lamp.on {
+  background: #10b981;
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.7), inset 0 1px 2px rgba(255,255,255,0.3);
+}
+.bipes-indicator-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.bipes-html-widget {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  padding: 4px;
+}
+
+.bipes-actuator-widget,
+.bipes-slider-widget {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 10px;
+  width: 100%;
+}
+.bipes-actuator-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  max-width: 220px;
+}
+.bipes-actuator-input {
+  flex: 1;
+  padding: 8px 10px !important;
+}
+.bipes-slider-input {
+  width: 100%;
+  max-width: 220px;
+}
+.bipes-slider-value {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.bipes-hgauge-widget {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 8px;
+  width: 100%;
+  padding: 0 16px;
+}
+.bipes-hgauge-track {
+  width: 100%;
+  max-width: 260px;
+  height: 16px;
+  background: #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.bipes-hgauge-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #0284c7, #06b6d4);
+  transition: width 0.3s ease;
+}
+.bipes-hgauge-value {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
 /* ESTADO VAZIO DO DATABOARD */
 .databoard-empty-state {
   display: flex;

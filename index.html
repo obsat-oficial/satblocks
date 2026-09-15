@@ -6,7 +6,7 @@
   <title>SatBlocks by BIPES — Ambiente Espacial OBSAT</title>
   
   <!-- Estilos e Fontes -->
-  <link rel="stylesheet" href="css/satblocks_theme.css?v=20260915-8">
+  <link rel="stylesheet" href="css/satblocks_theme.css?v=20260915-9">
   <link rel="stylesheet" href="css/tour.css?v=20260915-3">
   <style>
     .sat-modal-overlay.active,
@@ -674,6 +674,10 @@
             <span>💾</span> Datasets / CSV
           </button>
 
+          <button class="sat-btn" id="btnOpenDatasourcesManager" title="Gerenciar Datasources: fontes de dados nomeadas que qualquer widget pode usar">
+            <span>🔌</span> Datasources
+          </button>
+
           <button class="sat-btn" id="btnShareProjectIot" title="Compartilhar: gerar um link (e QR Code) para este projeto e o Painel IOT">
             <span>🔗</span>
           </button>
@@ -734,7 +738,22 @@
             <option value="chart" selected>📈 Gráfico Chart.js (Linha, Barras, Radar, Dispersão, Pizza)</option>
             <option value="switch">🔘 Interruptor / Chave de Comando HTTP</option>
             <option value="stream">🎥 Câmera / Stream de Vídeo (MJPEG)</option>
+            <option value="text">🔢 Texto / Valor</option>
+            <option value="gauge">⏱️ Medidor Circular (Gauge)</option>
+            <option value="hgauge">📏 Medidor Linear Horizontal</option>
+            <option value="sparkline">📈 Sparkline (Mini-gráfico)</option>
+            <option value="pointer">🧭 Ponteiro / Bússola</option>
+            <option value="indicator_light">💡 Luz Indicadora</option>
+            <option value="picture">🖼️ Imagem</option>
+            <option value="html">🧩 HTML Livre</option>
+            <option value="actuator">🎛️ Atuador (Número + Enviar)</option>
+            <option value="slider">🎚️ Controle Deslizante (Slider)</option>
           </select>
+        </div>
+
+        <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px 12px; font-size: 11px; color: #1e40af;">
+          💡 Campos marcados com <b>{{ }}</b> aceitam vínculo a um <b>Datasource</b> ao vivo — digite <code>{{nome}}</code> ou <code>{{nome.campo}}</code>. Gerencie seus Datasources em
+          <a href="#" onclick="event.preventDefault(); document.getElementById('modalWidgetEditorOverlay').style.display='none'; document.getElementById('modalDatasourcesOverlay').style.display='flex';" style="color: #0284c7; font-weight: 700;">Gerenciar Datasources</a>.
         </div>
 
         <!-- CAMPOS ESPECÍFICOS DE GRÁFICO -->
@@ -823,6 +842,11 @@
             <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">URL de Desativação (OFF):</label>
             <input type="text" id="widgetSwitchOffUrl" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="http://192.168.4.1/actuator/off">
           </div>
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Datasource de Estado Real (opcional):</label>
+            <input type="text" id="widgetSwitchStateBinding" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="" placeholder="Ex: statusAtuador.value">
+            <div style="font-size: 11px; color: #94a3b8; margin-top: 4px;">Se preenchido, o visual do interruptor passa a refletir esse valor de verdade, em vez de só assumir sucesso após o clique.</div>
+          </div>
         </div>
 
         <!-- CAMPOS ESPECÍFICOS DE STREAM -->
@@ -830,6 +854,144 @@
           <div>
             <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Endereço Stream MJPEG / Câmera:</label>
             <input type="text" id="widgetStreamUrl" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="http://192.168.4.1:81/stream">
+          </div>
+        </div>
+
+        <!-- CAMPOS ESPECÍFICOS DE TEXTO/VALOR -->
+        <div id="widgetTextFields" style="display: none; flex-direction: column; gap: 12px;">
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Título:</label>
+            <input type="text" id="widgetTextTitle" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="Valor">
+          </div>
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Valor (aceita {{datasource}}):</label>
+            <input type="text" id="widgetTextValue" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="{{meuSensor.value}}">
+          </div>
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Unidade (opcional):</label>
+            <input type="text" id="widgetTextUnits" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="" placeholder="Ex: °C">
+          </div>
+        </div>
+
+        <!-- CAMPOS ESPECÍFICOS DE GAUGE / HGAUGE / PONTEIRO (todos numéricos min/max) -->
+        <div id="widgetGaugeFields" style="display: none; flex-direction: column; gap: 12px;">
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Título:</label>
+            <input type="text" id="widgetGaugeTitle" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="Medidor">
+          </div>
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Valor (aceita {{datasource}}):</label>
+            <input type="text" id="widgetGaugeValue" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="{{meuSensor.value}}">
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+              <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Mínimo:</label>
+              <input type="number" id="widgetGaugeMin" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="0" step="any">
+            </div>
+            <div>
+              <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Máximo:</label>
+              <input type="number" id="widgetGaugeMax" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="100" step="any">
+            </div>
+          </div>
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Unidade (opcional):</label>
+            <input type="text" id="widgetGaugeUnits" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="">
+          </div>
+        </div>
+
+        <!-- CAMPOS ESPECÍFICOS DE SPARKLINE -->
+        <div id="widgetSparklineFields" style="display: none; flex-direction: column; gap: 12px;">
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Título:</label>
+            <input type="text" id="widgetSparklineTitle" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="Tendência">
+          </div>
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Canal / Dataset:</label>
+            <input type="text" id="widgetSparklineDataset" class="sat-input-pill" list="widgetDatasetOptions" style="width: 100%; padding: 8px 12px;" value="obsat_altitude">
+          </div>
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Limite de Pontos:</label>
+            <input type="number" id="widgetSparklineLimit" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="30" min="5" max="200">
+          </div>
+        </div>
+
+        <!-- CAMPOS ESPECÍFICOS DE IMAGEM -->
+        <div id="widgetPictureFields" style="display: none; flex-direction: column; gap: 12px;">
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Título:</label>
+            <input type="text" id="widgetPictureTitle" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="Imagem">
+          </div>
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">URL da Imagem (aceita {{datasource}}):</label>
+            <input type="text" id="widgetPictureUrl" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="">
+          </div>
+        </div>
+
+        <!-- CAMPOS ESPECÍFICOS DE LUZ INDICADORA -->
+        <div id="widgetIndicatorFields" style="display: none; flex-direction: column; gap: 12px;">
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Título:</label>
+            <input type="text" id="widgetIndicatorTitle" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="Status">
+          </div>
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Valor (aceita {{datasource}}):</label>
+            <input type="text" id="widgetIndicatorValue" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="{{meuSensor.value}}">
+          </div>
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Limite para Acender (opcional, numérico):</label>
+            <input type="number" id="widgetIndicatorThreshold" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="" placeholder="Ex: 50" step="any">
+            <div style="font-size: 11px; color: #94a3b8; margin-top: 4px;">Sem limite, acende quando o valor for "verdadeiro" (diferente de 0/false/off).</div>
+          </div>
+        </div>
+
+        <!-- CAMPOS ESPECÍFICOS DE HTML LIVRE -->
+        <div id="widgetHtmlFields" style="display: none; flex-direction: column; gap: 12px;">
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">HTML (aceita {{datasource}}):</label>
+            <textarea id="widgetHtmlContent" class="sat-input-pill" style="width: 100%; padding: 8px 12px; min-height: 90px; font-family: monospace; font-size: 12px;"><b>{{meuSensor.value}}</b></textarea>
+            <div style="font-size: 11px; color: #94a3b8; margin-top: 4px;">&lt;script&gt;, &lt;iframe&gt; e atributos on* (onclick etc.) são removidos automaticamente por segurança.</div>
+          </div>
+        </div>
+
+        <!-- CAMPOS ESPECÍFICOS DE ATUADOR -->
+        <div id="widgetActuatorFields" style="display: none; flex-direction: column; gap: 12px;">
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Título:</label>
+            <input type="text" id="widgetActuatorTitle" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="Atuador">
+          </div>
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Valor Inicial:</label>
+            <input type="number" id="widgetActuatorDefault" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="0" step="any">
+          </div>
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">URL de Envio (use {{value}} onde o número deve entrar):</label>
+            <input type="text" id="widgetActuatorUrl" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="http://192.168.4.1/set?v={{value}}">
+          </div>
+        </div>
+
+        <!-- CAMPOS ESPECÍFICOS DE SLIDER -->
+        <div id="widgetSliderFields" style="display: none; flex-direction: column; gap: 12px;">
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Título:</label>
+            <input type="text" id="widgetSliderTitle" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="Controle Deslizante">
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+            <div>
+              <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Mínimo:</label>
+              <input type="number" id="widgetSliderMin" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="0" step="any">
+            </div>
+            <div>
+              <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Máximo:</label>
+              <input type="number" id="widgetSliderMax" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="100" step="any">
+            </div>
+            <div>
+              <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Inicial:</label>
+              <input type="number" id="widgetSliderDefault" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="0" step="any">
+            </div>
+          </div>
+          <div>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">URL de Envio (use {{value}} onde o número deve entrar):</label>
+            <input type="text" id="widgetSliderUrl" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="http://192.168.4.1/set?v={{value}}">
           </div>
         </div>
 
@@ -945,6 +1107,70 @@
         </div>
 
         <div id="shareModalError" style="display: none; color: #dc2626; font-size: 13px; text-align: center; padding: 20px;"></div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: GERENCIAR DATASOURCES -->
+  <div class="sat-modal-overlay" id="modalDatasourcesOverlay" style="display: none;">
+    <div class="sat-modal" style="max-width: 620px;">
+      <div class="sat-modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 18px;">🔌</span>
+          <h3 style="font-size: 15px; font-weight: 700; color: #0f172a;">Datasources — Fontes de Dados Vivas</h3>
+        </div>
+        <button class="sat-btn sat-modal-close" onclick="document.getElementById('modalDatasourcesOverlay').style.display='none'" style="padding: 4px 10px;">✕</button>
+      </div>
+      <div class="sat-modal-body" style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+
+        <div style="font-size: 11px; color: #64748b;">Um Datasource é uma fonte de dado nomeada que qualquer campo de qualquer widget pode usar, escrevendo <code>{{nome}}</code> ou <code>{{nome.campo}}</code>.</div>
+
+        <div id="datasourcesList" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
+          <!-- Lista dinâmica preenchida via JS -->
+        </div>
+
+        <div style="border-top: 1px solid var(--border-color); padding-top: 14px; display: flex; flex-direction: column; gap: 12px;">
+          <div style="font-size: 13px; font-weight: 800; color: #0f172a;">➕ Novo Datasource</div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+              <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Nome (sem espaços):</label>
+              <input type="text" id="dsNameInput" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" placeholder="Ex: meuSensor">
+            </div>
+            <div>
+              <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Tipo:</label>
+              <select id="dsTypeSelect" class="sat-select" style="width: 100%; padding: 8px 12px; font-size: 13px;">
+                <option value="iot_channel" selected>📡 Canal IoT (já publicado pelos blocos)</option>
+                <option value="json_http">🌐 JSON via HTTP (qualquer URL)</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="dsIotChannelFields">
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Canal / Dataset:</label>
+            <input type="text" id="dsIotCanal" class="sat-input-pill" list="widgetDatasetOptions" style="width: 100%; padding: 8px 12px;" placeholder="Ex: temperatura">
+          </div>
+
+          <div id="dsJsonHttpFields" style="display: none; flex-direction: column; gap: 12px;">
+            <div>
+              <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">URL do JSON:</label>
+              <input type="text" id="dsJsonUrl" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" placeholder="https://...">
+            </div>
+            <div>
+              <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">Atualizar a cada (ms, mínimo 2000):</label>
+              <input type="number" id="dsJsonInterval" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="5000" min="2000" step="500">
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end;">
+            <button class="sat-btn primary" id="btnAddDatasource"><span>➕</span> Adicionar Datasource</button>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; margin-top: 6px;">
+          <button class="sat-btn" onclick="document.getElementById('modalDatasourcesOverlay').style.display='none'">Fechar</button>
+        </div>
 
       </div>
     </div>
@@ -2044,7 +2270,7 @@
   <!-- Scripts da Aplicação -->
   <script src="js/sat_connection.js?v=20260911-600"></script>
   <script src="js/sat_files.js?v=20260915-1"></script>
-  <script src="js/sat_databoard.js?v=20260915-10"></script>
+  <script src="js/sat_databoard.js?v=20260915-11"></script>
   <script src="js/sat_profiles.js?v=20260915-3"></script>
   <script src="js/sat_reference.js?v=20260915-4"></script>
   <script src="js/satblocks_tour.js?v=20260915-4"></script>
