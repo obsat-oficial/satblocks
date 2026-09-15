@@ -1117,7 +1117,7 @@ window.SatDataboard = (function() {
       // Ponte Serial USB -> Servidor de Telemetria OBSAT (Local / Remoto)
       // Permite que placas em bancada (via Serial) alimentem o backend de telemetria em tempo real
       const cleanJsonStr = JSON.stringify(data);
-      fetch('salvar_telemetria.php', {
+      fetch('telemetria/salvar_telemetria.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: cleanJsonStr

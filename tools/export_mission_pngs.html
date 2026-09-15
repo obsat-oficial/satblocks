@@ -3,6 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <title>Export Mission PNGs - SatBlocks</title>
+  <!-- Movido de export_mission_pngs.html (raiz) para tools/export_mission_pngs.html: os
+       caminhos relativos abaixo (core/, satblocks/, js/) continuam resolvendo para a raiz
+       do site graças a isso. A exceção é save_png.php, que foi junto pra tools/ (ver fetch
+       mais abaixo, ajustado para 'tools/save_png.php'). -->
+  <base href="/satblocks/">
   <script src="core/blockly/blockly_compressed.js?v=2026.3"></script>
   <script src="core/blockly/blocks_compressed.js?v=2026.3"></script>
   <script src="core/blockly/python_compressed.js?v=2026.3"></script>
@@ -82,7 +87,7 @@
           log('  PNG gerado, tamanho: ' + blob.size + ' bytes');
 
           const dataUrl = await blobToDataUrl(blob);
-          const resp = await fetch('save_png.php', {
+          const resp = await fetch('tools/save_png.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ filename: m.filename, dataUrl: dataUrl })

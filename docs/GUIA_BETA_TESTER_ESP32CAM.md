@@ -18,7 +18,7 @@ Com este kit portátil, você irá programar o computador de bordo do seu satél
 
 Antes de programar pela primeira vez, precisamos colocar o sistema operacional do satélite (MicroPython com suporte a Câmera) na memória da placa:
 
-1. Dê um duplo-clique no arquivo **`flasher.html`** para abrir o gravador no navegador.
+1. Acesse **`flasher/index.html`** (ou o link "Flasher Firmware" no site) para abrir o gravador no navegador.
 2. Conecte sua ESP32-CAM na porta USB do computador.
    > **Dica importante**: Se a sua placa estiver conectada via módulo adaptador USB (**ESP32-CAM-MB**), basta plugar o cabo. Se estiver usando módulo FTDI/Serial avulso, conecte o **GPIO 0 ao GND** antes de ligar o cabo na USB para colocá-la em modo de gravação.
 3. No Flasher, selecione a opção **"ESP32-CAM (MicroPython com Câmera OV2640)"**.

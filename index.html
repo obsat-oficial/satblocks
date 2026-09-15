@@ -186,14 +186,14 @@
           <span>🚀</span> <span class="studio-label">Missões Oficiais</span>
         </button>
 
-        <button class="sat-btn studio" id="btnOpenFlasher" onclick="window.open('flasher.html', '_blank')" title="Gravar Firmware MicroPython na ESP32 / ESP32-CAM via Web Serial" style="background: rgba(219, 39, 119, 0.15); border-color: rgba(219, 39, 119, 0.4); color: #f472b6;">
+        <button class="sat-btn studio" id="btnOpenFlasher" onclick="window.open('flasher/index.html', '_blank')" title="Gravar Firmware MicroPython na ESP32 / ESP32-CAM via Web Serial" style="background: rgba(219, 39, 119, 0.15); border-color: rgba(219, 39, 119, 0.4); color: #f472b6;">
           <span>⚡</span> <span class="studio-label">Flasher Firmware</span>
         </button>
 
         <button class="sat-btn studio" id="btnOpenTelemetria" onclick="window.open('telemetria/', '_blank')" title="Abrir Servidor de Testes de Telemetria OBSAT 2026" style="background: rgba(2, 132, 199, 0.15); border-color: rgba(2, 132, 199, 0.4); color: #38bdf8;">
           <span>📡</span> <span class="studio-label">Telemetria</span>
         </button>
-        <button class="sat-btn studio" id="btnOpenStudio" onclick="window.open('studio.html', '_blank')" title="Criar novos blocos e exportar imagens / drivers">
+        <button class="sat-btn studio" id="btnOpenStudio" onclick="window.open('studio/index.html', '_blank')" title="Criar novos blocos e exportar imagens / drivers">
           <span>🛠️</span> <span class="studio-label">SatBlocks Studio</span>
         </button>
       </div>
@@ -211,13 +211,13 @@
           <div class="sat-dropdown-item" onclick="SatBlocksApp.closeActionsDropdown(); window.SatProfiles ? window.SatProfiles.openMissionsModal() : (document.getElementById('modalMissionsOverlay').style.display='flex')">
             <span class="item-icon">🚀</span> <span class="item-label">Missões Oficiais</span>
           </div>
-          <div class="sat-dropdown-item" onclick="SatBlocksApp.closeActionsDropdown(); window.open('flasher.html', '_blank')">
+          <div class="sat-dropdown-item" onclick="SatBlocksApp.closeActionsDropdown(); window.open('flasher/index.html', '_blank')">
             <span class="item-icon">⚡</span> <span class="item-label">Flasher Firmware</span>
           </div>
           <div class="sat-dropdown-item" onclick="SatBlocksApp.closeActionsDropdown(); window.open('telemetria/', '_blank')">
             <span class="item-icon">📡</span> <span class="item-label">Telemetria</span>
           </div>
-          <div class="sat-dropdown-item" onclick="SatBlocksApp.closeActionsDropdown(); window.open('studio.html', '_blank')">
+          <div class="sat-dropdown-item" onclick="SatBlocksApp.closeActionsDropdown(); window.open('studio/index.html', '_blank')">
             <span class="item-icon">🛠️</span> <span class="item-label">SatBlocks Studio</span>
           </div>
         </div>
