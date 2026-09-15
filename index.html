@@ -793,6 +793,18 @@
             <input type="checkbox" id="widgetTimeseriesInput" style="width: 15px; height: 15px;">
             Eixo X proporcional ao tempo real (em vez de espaçamento igual entre pontos)
           </label>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+              <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">9. Eixo Y — Onde Começa (mínimo):</label>
+              <input type="number" id="widgetYMinInput" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="" placeholder="Automático" step="any">
+            </div>
+            <div>
+              <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">10. Eixo Y — Onde Termina (máximo):</label>
+              <input type="number" id="widgetYMaxInput" class="sat-input-pill" style="width: 100%; padding: 8px 12px;" value="" placeholder="Automático" step="any">
+            </div>
+          </div>
+          <div style="font-size: 11px; color: #94a3b8; margin-top: -6px;">Deixe em branco para a escala se ajustar automaticamente aos dados (padrão).</div>
         </div>
 
         <!-- CAMPOS ESPECÍFICOS DE SWITCH -->
@@ -1962,8 +1974,8 @@
   <!-- Scripts da Aplicação -->
   <script src="js/sat_connection.js?v=20260911-600"></script>
   <script src="js/sat_files.js?v=20260915-1"></script>
-  <script src="js/sat_databoard.js?v=20260915-6"></script>
-  <script src="js/sat_profiles.js?v=20260915-2"></script>
+  <script src="js/sat_databoard.js?v=20260915-7"></script>
+  <script src="js/sat_profiles.js?v=20260915-3"></script>
   <script src="js/sat_reference.js?v=20260915-4"></script>
   <script src="js/satblocks_tour.js?v=20260915-4"></script>
   <script src="js/satblocks_app.js?v=20260915-4"></script>

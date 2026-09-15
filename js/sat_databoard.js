@@ -682,7 +682,9 @@ window.SatDataboard = (function() {
             grid: { color: 'rgba(0,0,0,0.06)' },
             ticks: { font: { size: 10 } },
             beginAtZero: false,
-            title: setup.yLabel ? { display: true, text: setup.yLabel } : undefined
+            title: setup.yLabel ? { display: true, text: setup.yLabel } : undefined,
+            min: (setup.yMin !== undefined && setup.yMin !== '' && !isNaN(parseFloat(setup.yMin))) ? parseFloat(setup.yMin) : undefined,
+            max: (setup.yMax !== undefined && setup.yMax !== '' && !isNaN(parseFloat(setup.yMax))) ? parseFloat(setup.yMax) : undefined
           }
         };
 
@@ -1088,6 +1090,8 @@ window.SatDataboard = (function() {
               if (document.getElementById('widgetXLabelInput')) document.getElementById('widgetXLabelInput').value = parsed.setup.xLabel || '';
               if (document.getElementById('widgetYLabelInput')) document.getElementById('widgetYLabelInput').value = parsed.setup.yLabel || '';
               if (document.getElementById('widgetTimeseriesInput')) document.getElementById('widgetTimeseriesInput').checked = !!parsed.setup.timeseries;
+              if (document.getElementById('widgetYMinInput')) document.getElementById('widgetYMinInput').value = (parsed.setup.yMin !== undefined && parsed.setup.yMin !== '') ? parsed.setup.yMin : '';
+              if (document.getElementById('widgetYMaxInput')) document.getElementById('widgetYMaxInput').value = (parsed.setup.yMax !== undefined && parsed.setup.yMax !== '') ? parsed.setup.yMax : '';
             } else if (parsed.type === 'switch') {
               if (document.getElementById('widgetSwitchTitle')) document.getElementById('widgetSwitchTitle').value = parsed.setup.title || 'Interruptor';
               if (document.getElementById('widgetSwitchOnUrl')) document.getElementById('widgetSwitchOnUrl').value = parsed.setup.onUrl || '';
@@ -1109,6 +1113,8 @@ window.SatDataboard = (function() {
         if (document.getElementById('widgetXLabelInput')) document.getElementById('widgetXLabelInput').value = '';
         if (document.getElementById('widgetYLabelInput')) document.getElementById('widgetYLabelInput').value = '';
         if (document.getElementById('widgetTimeseriesInput')) document.getElementById('widgetTimeseriesInput').checked = false;
+        if (document.getElementById('widgetYMinInput')) document.getElementById('widgetYMinInput').value = '';
+        if (document.getElementById('widgetYMaxInput')) document.getElementById('widgetYMaxInput').value = '';
       }
 
       modal.style.display = 'flex';
@@ -1162,7 +1168,9 @@ window.SatDataboard = (function() {
               limitPoints: document.getElementById('widgetLimitPoints').value || '50',
               xLabel: document.getElementById('widgetXLabelInput').value.trim(),
               yLabel: document.getElementById('widgetYLabelInput').value.trim(),
-              timeseries: document.getElementById('widgetTimeseriesInput').checked
+              timeseries: document.getElementById('widgetTimeseriesInput').checked,
+              yMin: document.getElementById('widgetYMinInput').value.trim(),
+              yMax: document.getElementById('widgetYMaxInput').value.trim()
             };
           } else if (type === 'switch') {
             setup = {

@@ -772,7 +772,7 @@ window.SatProfiles = (function() {
                   </block>
                 </value>
                 <value name="VAL4">
-                  <block type="sat_battery_adc" id="val_bat_of1"></block>
+                  <block type="sat_eps_battery_percent" id="val_bat_of1"></block>
                 </value>
                 <value name="VAL5">
                   <shadow type="text" id="val_payload_of1">
