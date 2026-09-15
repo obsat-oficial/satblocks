@@ -3,8 +3,8 @@
 date_default_timezone_set('America/Sao_Paulo');
 
 // Credenciais reais ficam em db_config.local.php (fora do controle de versão)
-if (file_exists(__DIR__ . '/../db_config.local.php')) {
-    require_once __DIR__ . '/../db_config.local.php';
+if (file_exists(__DIR__ . '/db_config.local.php')) {
+    require_once __DIR__ . '/db_config.local.php';
 }
 
 $servername = getenv('SATBLOCKS_DB_HOST') ?: 'localhost';

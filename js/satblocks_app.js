@@ -1151,7 +1151,7 @@ window.SatBlocksApp = (function() {
     if (studioBtn) {
       studioBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        window.open('studio.html', '_blank');
+        window.open('studio/index.html', '_blank');
       });
     }
 
