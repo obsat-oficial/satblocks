@@ -681,7 +681,14 @@ window.SatDataboard = (function() {
         uid: uid,
         dataset: setup.dataset,
         limitPoints: parseInt(setup.limitPoints, 10) || 50,
-        timeseries: !!setup.timeseries,
+        // Precisa ser exatamente o que o gráfico foi CRIADO usando
+        // (chartData.useTimeAxis), não só a intenção do checkbox
+        // (setup.timeseries) — se o dataset tiver dado antigo (string)
+        // misturado com epoch numérico, o gráfico é criado com eixo de
+        // categorias mesmo com o checkbox marcado, e a atualização ao
+        // vivo precisa concordar com isso ou manda pontos {x,y} para um
+        // eixo que não sabe interpretá-los.
+        timeseries: !!chartData.useTimeAxis,
         chartJs: chartJsInstance,
         canvas: canvasEl
       };
