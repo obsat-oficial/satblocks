@@ -179,7 +179,13 @@ window.SatDataboard = (function() {
           fill: setup.chartType === 'line',
           showLine: !isScatter,
           tension: 0.3,
-          pointRadius: setup.chartType === 'line' ? 2 : (isScatter ? 5 : 4)
+          pointRadius: setup.chartType === 'line' ? 2 : (isScatter ? 5 : 4),
+          // Barras num eixo linear/temporal calculam a própria largura pela
+          // distância entre pontos vizinhos — com poucos pontos ou pontos
+          // muito espaçados no tempo, isso pode dar largura ~0 (barra
+          // "invisível", mesmo com o eixo escalado corretamente pelos
+          // valores). Fixar uma largura em pixels evita esse problema.
+          barThickness: (setup.chartType === 'bar' && useTimeAxis) ? 10 : undefined
         };
       });
 
