@@ -1,0 +1,18 @@
+{
+  "name": "ESP32-CAM (Câmera de Sensoriamento Remoto OBSAT)",
+  "id": "esp32_cam",
+  "mcu": "ESP32 Dual Core + Câmera OV2640 + Slot MicroSD",
+  "flash": "4MB Flash + 520KB SRAM + 4MB PSRAM Externa",
+  "wireless": "Wi-Fi 802.11 b/g/n + Bluetooth",
+  "pins": [
+    { "pin": "GPIO 4", "func": "Flash LED de Alta Potência", "type": "led" },
+    { "pin": "GPIO 33", "func": "LED Vermelho Onboard (Invertido)", "type": "led" },
+    { "pin": "GPIO 14", "func": "MicroSD CLK", "type": "sd" },
+    { "pin": "GPIO 15", "func": "MicroSD CMD", "type": "sd" },
+    { "pin": "GPIO 2", "func": "MicroSD DATA0", "type": "sd" },
+    { "pin": "GPIO 12", "func": "Sensor I2C SDA Auxiliar", "type": "i2c" },
+    { "pin": "GPIO 13", "func": "Sensor I2C SCL Auxiliar", "type": "i2c" },
+    { "pin": "GPIO 1", "func": "U0TXD (Programação / Telemetria)", "type": "uart" },
+    { "pin": "GPIO 3", "func": "U0RXD (Programação / Telemetria)", "type": "uart" }
+  ]
+}

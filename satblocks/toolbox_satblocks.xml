@@ -1,0 +1,550 @@
+<xml xmlns="https://developers.google.com/blockly/xml" id="toolbox" style="display: none">
+  <!-- CATEGORIAS AEROESPACIAIS OBSAT -->
+  <category name="🛰️ Missão &amp; Satélite" colour="#7c3aed">
+    <block type="project_info">
+      <value name="project_author">
+        <shadow type="text">
+          <field name="TEXT">Equipe 41</field>
+        </shadow>
+      </value>
+      <value name="project_iot_id">
+        <shadow type="math_number">
+          <field name="NUM">41</field>
+        </shadow>
+      </value>
+      <value name="project_description">
+        <shadow type="text">
+          <field name="TEXT">obsat_teste</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="sat_mission_start">
+      <field name="MISSION_NAME">CANSAT_OBSAT_01</field>
+    </block>
+    <block type="sat_emit_beep">
+      <field name="COUNT">3</field>
+      <field name="INTERVAL">500</field>
+    </block>
+    <block type="sat_wait">
+      <field name="TIME">1</field>
+      <field name="UNIT">SEC</field>
+    </block>
+    <block type="sat_watchdog_feed"></block>
+    <block type="sat_deploy_antenna">
+      <field name="BURN_TIME">2000</field>
+    </block>
+    <block type="sat_rp2040_rgb_led"></block>
+    <block type="sat_mission_end"></block>
+  </category>
+
+  <category name="🌡️ Sensores Ambientais" colour="#0284c7">
+    <button text="🌡️ Instalar Driver BMP280 (bmp280.py)" callbackKey="INSTALL_BMP280"></button>
+    <block type="sat_sensor_bmp280_temp"></block>
+    <block type="sat_sensor_bmp280_press"></block>
+    <block type="sat_sensor_bmp280_alt">
+      <field name="SEA_LEVEL">1013.25</field>
+    </block>
+    <block type="sat_rp2040_temp"></block>
+    <block type="sat_sensor_dht_hum">
+      <field name="PIN">4</field>
+    </block>
+    <block type="sat_sensor_light_ldr">
+      <field name="PIN">34</field>
+    </block>
+    <block type="sat_sensor_uv_index">
+      <field name="PIN">35</field>
+    </block>
+  </category>
+
+  <category name="🧭 Inércia &amp; ADCS" colour="#0891b2">
+    <button text="🧭 Instalar Driver MPU6050 (mpu6050.py)" callbackKey="INSTALL_MPU6050"></button>
+    <block type="sat_imu_mpu6050_accel">
+      <field name="AXIS">total</field>
+    </block>
+    <block type="sat_imu_mpu6050_gyro">
+      <field name="AXIS">z</field>
+    </block>
+    <block type="sat_imu_detect_freefall">
+      <field name="THRESHOLD">0.15</field>
+    </block>
+    <block type="sat_mag_heading"></block>
+  </category>
+
+  <category name="📍 Navegação &amp; GPS" colour="#059669">
+    <block type="sat_gps_lat"></block>
+    <block type="sat_gps_lng"></block>
+    <block type="sat_gps_alt"></block>
+    <block type="sat_gps_speed"></block>
+    <block type="sat_gps_time_utc"></block>
+  </category>
+
+  <category name="📡 Comunicação &amp; LoRa" colour="#ea580c">
+    <block type="sat_wifi_ap_start">
+      <field name="SSID">ESP32CAM_OBSAT</field>
+      <field name="PASSWORD">12345678</field>
+    </block>
+    <block type="sat_wifi_ap_ip"></block>
+    <block type="sat_lora_setup">
+      <field name="FREQ">915.0</field>
+      <field name="POWER">20</field>
+      <field name="SF">7</field>
+    </block>
+    <block type="sat_lora_send_packet"></block>
+    <block type="sat_lora_receive_cmd"></block>
+    <block type="sat_mqtt_publish">
+      <field name="TOPIC">obsat/satelite01/telemetria</field>
+    </block>
+    <block type="sat_obsat_telemetry_packet"></block>
+  </category>
+
+  <category name="⚡ Energia &amp; EPS" colour="#d97706">
+    <block type="sat_battery_adc"></block>
+    <block type="sat_eps_battery_voltage"></block>
+    <block type="sat_eps_solar_current"></block>
+    <block type="sat_eps_battery_percent"></block>
+    <block type="sat_eps_deepsleep">
+      <field name="SECONDS">10</field>
+    </block>
+  </category>
+
+  <category name="📷 Câmera &amp; Payload" colour="#db2777">
+    <block type="sat_camera_init_advanced">
+      <field name="FRAMESIZE">FRAMESIZE_QVGA</field>
+      <field name="QUALITY">12</field>
+      <field name="EFFECT">0</field>
+      <field name="ROTATE">0</field>
+    </block>
+    <block type="sat_camera_flash_intensity">
+      <field name="BRIGHTNESS">100</field>
+    </block>
+    <block type="sat_camera_status_led">
+      <field name="STATE">1</field>
+    </block>
+    <block type="sat_camera_capture">
+      <field name="FILENAME">foto_obsat_%d.jpg</field>
+    </block>
+    <block type="sat_camera_capture_base64"></block>
+    <block type="sat_camera_webserver_start">
+      <field name="PORT">80</field>
+      <field name="TITLE">ESP32-CAM Estação OBSAT</field>
+    </block>
+    <block type="sat_camera_webserver_handle"></block>
+    <block type="sat_camera_lora_send_chunks">
+      <field name="CHUNK_SIZE">200</field>
+    </block>
+    <block type="sat_camera_deinit"></block>
+    <block type="sat_sd_write_log">
+      <field name="FILENAME">telemetria.csv</field>
+    </block>
+  </category>
+
+  <category name="⚙️ Atuadores &amp; Ejeção" colour="#dc2626">
+    <block type="sat_actuator_servo_release">
+      <field name="PIN">18</field>
+      <field name="ANGLE">90</field>
+    </block>
+    <block type="sat_actuator_buzzer">
+      <field name="PIN">25</field>
+      <field name="FREQ">2000</field>
+      <field name="DURATION">300</field>
+    </block>
+    <block type="sat_actuator_led_status">
+      <field name="PIN">2</field>
+      <field name="STATE">1</field>
+    </block>
+  </category>
+
+  <category name="📁 Arquivos &amp; Flash" colour="#5b67a5">
+    <block type="file_open">
+      <value name="file_name">
+        <shadow type="text">
+          <field name="TEXT">file.txt</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="file_open_write">
+      <value name="filename">
+        <shadow type="text">
+          <field name="TEXT">file.txt</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="file_open_read">
+      <value name="filename">
+        <shadow type="text">
+          <field name="TEXT">file.txt</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="file_write">
+      <value name="data">
+        <shadow type="text">
+          <field name="TEXT">contents</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="file_write_line">
+      <value name="data">
+        <shadow type="text">
+          <field name="TEXT">line contents</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="file_write_byte">
+      <value name="data">
+        <shadow type="math_number">
+          <field name="NUM">80</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="file_read"></block>
+    <block type="file_close"></block>
+    <sep></sep>
+    <block type="files_list"></block>
+    <block type="uos_mkdir">
+      <value name="pIn">
+        <shadow type="text">
+          <field name="TEXT">file.txt</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="uos_remove">
+      <value name="pIn">
+        <shadow type="text">
+          <field name="TEXT">file.txt</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="uos_rmdir">
+      <value name="pIn">
+        <shadow type="text">
+          <field name="TEXT">pasta</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="uos_chdir">
+      <value name="pIn">
+        <shadow type="text">
+          <field name="TEXT">/sd</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="uos_getcwd"></block>
+  </category>
+
+  <sep></sep>
+
+  <!-- CATEGORIAS PADRÃO DE PENSAMENTO COMPUTACIONAL / BNCC -->
+  <category name="🧠 Lógica &amp; Condição" colour="#3b82f6">
+    <block type="controls_if"></block>
+    <block type="controls_ifelse"></block>
+    <block type="logic_compare"></block>
+    <block type="logic_operation"></block>
+    <block type="logic_negate"></block>
+    <block type="logic_boolean"></block>
+    <block type="logic_null"></block>
+    <block type="logic_ternary"></block>
+  </category>
+
+  <category name="🔄 Laços de Repetição" colour="#10b981">
+    <block type="controls_repeat_ext">
+      <value name="TIMES">
+        <shadow type="math_number">
+          <field name="NUM">10</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="controls_whileUntil"></block>
+    <block type="controls_for">
+      <value name="FROM">
+        <shadow type="math_number">
+          <field name="NUM">1</field>
+        </shadow>
+      </value>
+      <value name="TO">
+        <shadow type="math_number">
+          <field name="NUM">10</field>
+        </shadow>
+      </value>
+      <value name="BY">
+        <shadow type="math_number">
+          <field name="NUM">1</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="controls_forEach"></block>
+    <block type="controls_flow_statements"></block>
+  </category>
+
+  <category name="🔢 Matemática &amp; Cálculos" colour="#6366f1">
+    <block type="math_number">
+      <field name="NUM">123</field>
+    </block>
+    <block type="math_arithmetic">
+      <value name="A">
+        <shadow type="math_number">
+          <field name="NUM">1</field>
+        </shadow>
+      </value>
+      <value name="B">
+        <shadow type="math_number">
+          <field name="NUM">1</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="math_single">
+      <value name="NUM">
+        <shadow type="math_number">
+          <field name="NUM">9</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="math_trig">
+      <value name="NUM">
+        <shadow type="math_number">
+          <field name="NUM">45</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="math_constant"></block>
+    <block type="math_number_property">
+      <value name="NUMBER_TO_CHECK">
+        <shadow type="math_number">
+          <field name="NUM">0</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="math_round">
+      <value name="NUM">
+        <shadow type="math_number">
+          <field name="NUM">3.1</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="math_on_list"></block>
+    <block type="math_modulo">
+      <value name="DIVIDEND">
+        <shadow type="math_number">
+          <field name="NUM">64</field>
+        </shadow>
+      </value>
+      <value name="DIVISOR">
+        <shadow type="math_number">
+          <field name="NUM">10</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="math_constrain">
+      <value name="VALUE">
+        <shadow type="math_number">
+          <field name="NUM">50</field>
+        </shadow>
+      </value>
+      <value name="LOW">
+        <shadow type="math_number">
+          <field name="NUM">1</field>
+        </shadow>
+      </value>
+      <value name="HIGH">
+        <shadow type="math_number">
+          <field name="NUM">100</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="math_random_int">
+      <value name="FROM">
+        <shadow type="math_number">
+          <field name="NUM">1</field>
+        </shadow>
+      </value>
+      <value name="TO">
+        <shadow type="math_number">
+          <field name="NUM">100</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="math_random_float"></block>
+    <block type="sat_math_to_int"></block>
+    <block type="sat_math_to_float"></block>
+  </category>
+
+  <category name="📝 Textos &amp; Mensagens" colour="#14b8a6">
+    <block type="text"></block>
+    <block type="text_join"></block>
+    <block type="text_append">
+      <value name="TEXT">
+        <shadow type="text"></shadow>
+      </value>
+    </block>
+    <block type="text_length">
+      <value name="VALUE">
+        <shadow type="text">
+          <field name="TEXT">abc</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="text_isEmpty">
+      <value name="VALUE">
+        <shadow type="text">
+          <field name="TEXT"></field>
+        </shadow>
+      </value>
+    </block>
+    <block type="text_indexOf">
+      <value name="VALUE">
+        <block type="variables_get">
+          <field name="VAR">texto</field>
+        </block>
+      </value>
+      <value name="FIND">
+        <shadow type="text">
+          <field name="TEXT">abc</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="text_charAt">
+      <value name="VALUE">
+        <block type="variables_get">
+          <field name="VAR">texto</field>
+        </block>
+      </value>
+    </block>
+    <block type="text_getSubstring">
+      <value name="STRING">
+        <block type="variables_get">
+          <field name="VAR">texto</field>
+        </block>
+      </value>
+    </block>
+    <block type="text_changeCase">
+      <value name="TEXT">
+        <shadow type="text">
+          <field name="TEXT">abc</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="text_trim">
+      <value name="TEXT">
+        <shadow type="text">
+          <field name="TEXT">abc</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="text_print">
+      <value name="TEXT">
+        <shadow type="text">
+          <field name="TEXT">abc</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="text_prompt_ext">
+      <value name="TEXT">
+        <shadow type="text">
+          <field name="TEXT">abc</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="sat_text_to_str"></block>
+  </category>
+
+  <category name="📑 Listas &amp; Coleções" colour="#8b5cf6">
+    <block type="lists_create_empty"></block>
+    <block type="lists_create_with"></block>
+    <block type="lists_repeat">
+      <value name="NUM">
+        <shadow type="math_number">
+          <field name="NUM">5</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="lists_length"></block>
+    <block type="lists_isEmpty"></block>
+    <block type="lists_indexOf">
+      <value name="VALUE">
+        <block type="variables_get">
+          <field name="VAR">lista</field>
+        </block>
+      </value>
+    </block>
+    <block type="lists_getIndex">
+      <value name="VALUE">
+        <block type="variables_get">
+          <field name="VAR">lista</field>
+        </block>
+      </value>
+    </block>
+    <block type="lists_setIndex">
+      <value name="LIST">
+        <block type="variables_get">
+          <field name="VAR">lista</field>
+        </block>
+      </value>
+    </block>
+    <block type="lists_getSublist">
+      <value name="LIST">
+        <block type="variables_get">
+          <field name="VAR">lista</field>
+        </block>
+      </value>
+    </block>
+    <block type="lists_split">
+      <value name="DELIM">
+        <shadow type="text">
+          <field name="TEXT">,</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="lists_sort"></block>
+    <block type="lists_reverse"></block>
+  </category>
+
+  <category name="⏱️ Temporização &amp; Relógio" colour="#7c3aed">
+    <block type="sat_wait"><field name="TIME">1</field><field name="UNIT">SEC</field></block>
+    <block type="sat_time_sleep_ms"><value name="MS"><shadow type="math_number"><field name="NUM">500</field></shadow></value></block>
+    <block type="sat_time_sleep_us"><value name="US"><shadow type="math_number"><field name="NUM">100</field></shadow></value></block>
+    <block type="sat_time_ticks_ms"></block>
+    <block type="sat_time_ticks_us"></block>
+    <block type="sat_time_ticks_diff"></block>
+    <block type="sat_time_localtime"></block>
+  </category>
+
+  <category name="🐍 Python &amp; Avançado" colour="#3776ab">
+    <block type="try_catch"></block>
+    <block type="exec_python">
+      <value name="command">
+        <shadow type="text">
+          <field name="TEXT">print("SatBlocks OBSAT")</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="exec_python_output">
+      <value name="command">
+        <shadow type="text">
+          <field name="TEXT">time.ticks_ms()</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="inter_init">
+      <value name="Nome">
+        <shadow type="text">
+          <field name="TEXT">botao_ejeção</field>
+        </shadow>
+      </value>
+      <value name="Função">
+        <shadow type="text">
+          <field name="TEXT">ao_pressionar</field>
+        </shadow>
+      </value>
+      <value name="pin">
+        <shadow type="math_number">
+          <field name="NUM">0</field>
+        </shadow>
+      </value>
+    </block>
+    <block type="sat_python_comment"></block>
+  </category>
+
+  <category name="📦 Variáveis" colour="#f59e0b" custom="VARIABLE"></category>
+
+  <category name="🧩 Funções &amp; Rotinas" colour="#8b5cf6" custom="PROCEDURE"></category>
+</xml>

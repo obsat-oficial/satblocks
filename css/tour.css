@@ -1,0 +1,207 @@
+/**
+ * SatBlocks Tour CSS — Estilos do Tour Interativo de Missão
+ */
+
+.sat-tour-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(3, 7, 18, 0.65);
+  z-index: 9990;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: auto;
+}
+
+.sat-tour-overlay.active {
+  display: block;
+  opacity: 1;
+}
+
+/* ELEMENTO DESTACADO (SPOTLIGHT SEM BLUR E 100% NÍTIDO ACIMA DO OVERLAY) */
+.sat-tour-target-highlight {
+  position: relative !important;
+  z-index: 10005 !important;
+  box-shadow: 0 0 0 3px #38bdf8, 0 0 20px rgba(56, 189, 248, 0.9) !important;
+  border-radius: 8px !important;
+  background: #1e293b !important;
+  transition: all 0.25s ease !important;
+}
+
+.sat-topbar:has(.sat-tour-target-highlight),
+.sat-header:has(.sat-tour-target-highlight) {
+  z-index: 10000 !important;
+}
+
+.sat-tour-card {
+  position: absolute;
+  width: 380px;
+  background: #0f172a;
+  border: 1px solid #0284c7;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9), 0 0 20px rgba(2, 132, 199, 0.4);
+  border-radius: 12px;
+  padding: 20px;
+  color: #f8fafc;
+  z-index: 10000;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sat-tour-badge {
+  display: inline-block;
+  background: rgba(6, 182, 212, 0.2);
+  color: #38bdf8;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.sat-tour-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sat-tour-body {
+  font-size: 13px;
+  line-height: 1.55;
+  color: #cbd5e1;
+  margin-bottom: 18px;
+}
+
+.sat-tour-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sat-tour-steps-indicator {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.sat-tour-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.sat-tour-btn {
+  background: #1e293b;
+  color: #f8fafc;
+  border: 1px solid #334155;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sat-tour-btn:hover {
+  background: #334155;
+  color: #fff;
+}
+
+.sat-tour-btn.next {
+  background: linear-gradient(135deg, #0284c7, #06b6d4);
+  border-color: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+}
+
+.sat-tour-btn.next:hover {
+  filter: brightness(1.1);
+}
+
+.sat-tour-badge {
+  display: inline-block;
+  background: rgba(6, 182, 212, 0.2);
+  color: #06b6d4;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.sat-tour-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sat-tour-body {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #94a3b8;
+  margin-bottom: 18px;
+}
+
+.sat-tour-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sat-tour-steps-indicator {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.sat-tour-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.sat-tour-btn {
+  background: #1e293b;
+  color: #f8fafc;
+  border: 1px solid #334155;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sat-tour-btn:hover {
+  background: #334155;
+}
+
+.sat-tour-btn.next {
+  background: linear-gradient(135deg, #0284c7, #06b6d4);
+  border-color: #06b6d4;
+  color: #ffffff;
+}
+
+.sat-tour-btn.next:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+}
+
+.sat-tour-target-highlight {
+  position: relative;
+  z-index: 10001 !important;
+  box-shadow: 0 0 0 4px #06b6d4, 0 0 20px rgba(6, 182, 212, 0.6) !important;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}

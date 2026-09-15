@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentação &amp; Tutoriais — SatBlocks by BIPES</title>
+  
+  <link rel="stylesheet" href="css/satblocks_theme.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    body.docs-body {
+      background: #090d16;
+      color: #e2e8f0;
+      overflow-y: auto;
+      height: auto;
+      min-height: 100vh;
+    }
+    .docs-container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    .docs-card {
+      background: #111827;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+    h1 { font-size: 28px; color: #38bdf8; margin-bottom: 12px; }
+    h2 { font-size: 20px; color: #a78bfa; margin-top: 24px; margin-bottom: 12px; border-bottom: 1px solid #334155; padding-bottom: 6px; }
+    h3 { font-size: 16px; color: #34d399; margin-top: 16px; margin-bottom: 8px; }
+    p, li { font-size: 14px; line-height: 1.6; color: #94a3b8; margin-bottom: 10px; }
+    ul { padding-left: 20px; }
+    code {
+      background: #1e293b;
+      color: #38bdf8;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    pre {
+      background: #060911;
+      border: 1px solid #1e293b;
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: #a7f3d0;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body class="docs-body">
+
+  <header class="sat-header" style="position: sticky; top: 0;">
+    <div class="sat-brand">
+      <div class="sat-logo-badge">🛰️ SatBlocks</div>
+      <div class="sat-title">Documentação Oficial da Missão</div>
+    </div>
+    <div class="sat-toolbar">
+      <a href="index.html" class="sat-btn primary">🚀 Abrir SatBlocks IDE</a>
+      <a href="studio.html" class="sat-btn accent">🛠️ SatBlocks Studio</a>
+    </div>
+  </header>
+
+  <div class="docs-container">
+    <div class="docs-card">
+      <h1>🛰️ Guia de Voo SatBlocks — OBSAT 2026</h1>
+      <p>O <strong>SatBlocks by BIPES</strong> é a plataforma oficial de programação visual baseada em blocos para a Olimpíada Brasileira de Satélites. Projetado para transformar conceitos de engenharia espacial em algoritmos intuitivos e poderosos para <strong>CubeSats</strong>, <strong>CanSats</strong> e <strong>Estações Terrenas</strong>.</p>
+    </div>
+
+    <div class="docs-card">
+      <h2>1. Ciclo de Missão do Satélite (Flight Sequence)</h2>
+      <p>Um programa de voo espacial típico segue a arquitetura de subsistemas aeroespaciais:</p>
+      <ul>
+        <li><strong>Iniciação e Armamento:</strong> Aguarda a liberação pelo foguete lançador ou balão estratosférico e emite o pulso de rádio beacon.</li>
+        <li><strong>Coleta de Telemetria:</strong> Lê os sensores ambientais (pressão barométrica BMP280, temperatura, luminosidade solar e umidade).</li>
+        <li><strong>Controle de Atitude &amp; Detecção de Queda:</strong> O acelerômetro/giroscópio MPU6050 monitora o apogeu e detecta o momento exato de queda livre (microgravidade).</li>
+        <li><strong>Transmissão de Pacotes LoRa:</strong> Envia os dados científicos formatados em CSV para a estação de solo a cada 1 segundo.</li>
+        <li><strong>Ejeção do Paraquedas:</strong> Ao atingir a altitude de acionamento seguro, o servomotor libera o paraquedas para pouso suave.</li>
+      </ul>
+
+      <h2>2. Exemplo de Programa de Voo Completo em MicroPython</h2>
+      <p>O código equivalente gerado automaticamente pelo SatBlocks:</p>
+      <pre>from machine import Pin, I2C, PWM, ADC
+import time, math, bmp280, mpu6050
+
+# 1. Inicializacao dos Sensores
+i2c = I2C(0, scl=Pin(22), sda=Pin(21))
+bmp = bmp280.BMP280(i2c)
+imu = mpu6050.accel(i2c)
+servo = PWM(Pin(18), freq=50)
+
+print("[OBSAT] Missao CANSAT_01 iniciada com sucesso!")
+
+# 2. Laco de Telemetria de Voo
+for ciclo in range(100):
+    temp = bmp.temperature
+    press = bmp.pressure / 100.0
+    alt = 44330.0 * (1.0 - math.pow(press / 1013.25, 0.1903))
+    
+    # Formata pacote CSV
+    pacote = f"SAT01,{ciclo},{temp:.2f},{press:.2f},{alt:.2f}"
+    print("[LORA TX] ->", pacote)
+    
+    # Detecção de Apogeu e Abertura de Paraquedas
+    if alt &lt; 300.0 and ciclo &gt; 10:
+        servo.duty(75) # 90 graus para liberacao
+        print("[PAYLOAD] Paraquedas acionado!")
+        
+    time.sleep(1)</pre>
+    </div>
+
+    <div class="docs-card">
+      <h2>3. Criando Novos Blocos no SatBlocks Studio</h2>
+      <p>Se a sua equipe construiu uma carga útil científica com um sensor inédito (ex: sensor de CO₂, radiação Gama ou espectrofotômetro), utilize o <strong>SatBlocks Studio</strong>:</p>
+      <ol>
+        <li>Abra o <code>SatBlocks Studio</code> no topo da página.</li>
+        <li>Desenhe a geometria do bloco (campos de texto, dropdowns de portas GPIO, saídas numéricas).</li>
+        <li>Escreva o código MicroPython correspondente no painel de gerador.</li>
+        <li>Exporte a imagem em <strong>PNG HD (300 DPI)</strong> ou <strong>SVG</strong> para anexar diretamente no relatório de missão ou simulado da OBSAT!</li>
+      </ol>
+    </div>
+  </div>
+
+</body>
+</html>

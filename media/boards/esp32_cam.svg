@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 380" width="100%" height="100%">
+  <defs>
+    <linearGradient id="cambg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="camLens" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="50%" stop-color="#1d4ed8"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <rect width="100%" height="100%" fill="#f8fafc" rx="12"/>
+
+  <!-- Placa Central ESP32-CAM -->
+  <g transform="translate(250, 30)" filter="url(#shadow)">
+    <!-- PCB -->
+    <rect x="0" y="0" width="260" height="320" rx="12" fill="url(#cambg)" stroke="#0284c7" stroke-width="2.5"/>
+
+    <!-- Antena PCB Superior -->
+    <path d="M 30 18 L 60 18 L 60 10 L 90 10 L 90 18 L 120 18 L 120 10 L 150 10 L 150 18 L 180 18 L 180 10 L 230 10" fill="none" stroke="url(#gold)" stroke-width="2.5"/>
+
+    <!-- Módulo de Câmera OV2640 -->
+    <rect x="70" y="40" width="120" height="120" rx="12" fill="#d97706" stroke="#b45309" stroke-width="2"/>
+    <circle cx="130" cy="100" r="42" fill="#0f172a" stroke="#f59e0b" stroke-width="3"/>
+    <circle cx="130" cy="100" r="28" fill="url(#camLens)" stroke="#60a5fa" stroke-width="2"/>
+    <circle cx="120" cy="90" r="8" fill="#ffffff" opacity="0.6"/>
+    <text x="130" y="152" fill="#fff" font-size="10" font-weight="900" font-family="Inter, sans-serif" text-anchor="middle">OV2640 CAMERA</text>
+
+    <!-- Slot MicroSD no centro/fundo -->
+    <rect x="80" y="180" width="100" height="90" rx="4" fill="#64748b" stroke="#94a3b8" stroke-width="1.5"/>
+    <text x="130" y="210" fill="#f8fafc" font-size="11" font-weight="800" font-family="monospace" text-anchor="middle">MicroSD SLOT</text>
+    <text x="130" y="230" fill="#38bdf8" font-size="10" font-weight="700" font-family="monospace" text-anchor="middle">SPI FAT32</text>
+
+    <!-- Flash LED de Alta Potência -->
+    <rect x="25" y="185" width="28" height="28" rx="4" fill="#fef08a" stroke="#eab308" stroke-width="1.5"/>
+    <text x="39" y="202" fill="#854d0e" font-size="8" font-weight="900" text-anchor="middle">LED</text>
+    <text x="39" y="225" fill="#e2e8f0" font-size="8" font-weight="700" text-anchor="middle">IO4</text>
+
+    <!-- Blindagem MCU ESP32 -->
+    <rect x="80" y="280" width="100" height="28" rx="4" fill="#334155" stroke="#475569"/>
+    <text x="130" y="298" fill="#38bdf8" font-size="10" font-weight="800" font-family="monospace" text-anchor="middle">ESP32 240MHz</text>
+
+    <!-- Pinos Lado Esquerdo -->
+    <g transform="translate(10, 60)">
+      <circle cx="0" cy="0" r="5" fill="url(#gold)"/>
+      <circle cx="0" cy="25" r="5" fill="url(#gold)"/>
+      <circle cx="0" cy="50" r="5" fill="url(#gold)"/>
+      <circle cx="0" cy="75" r="5" fill="url(#gold)"/>
+      <circle cx="0" cy="100" r="5" fill="url(#gold)"/>
+      <circle cx="0" cy="125" r="5" fill="url(#gold)"/>
+      <circle cx="0" cy="150" r="5" fill="url(#gold)"/>
+      <circle cx="0" cy="175" r="5" fill="url(#gold)"/>
+    </g>
+
+    <!-- Pinos Lado Direito -->
+    <g transform="translate(250, 60)">
+      <circle cx="0" cy="0" r="5" fill="url(#gold)"/>
+      <circle cx="0" cy="25" r="5" fill="url(#gold)"/>
+      <circle cx="0" cy="50" r="5" fill="url(#gold)"/>
+      <circle cx="0" cy="75" r="5" fill="url(#gold)"/>
+      <circle cx="0" cy="100" r="5" fill="url(#gold)"/>
+      <circle cx="0" cy="125" r="5" fill="url(#gold)"/>
+      <circle cx="0" cy="150" r="5" fill="url(#gold)"/>
+      <circle cx="0" cy="175" r="5" fill="url(#gold)"/>
+    </g>
+  </g>
+
+  <!-- Legendas Esquerda -->
+  <g transform="translate(30, 80)" font-family="Inter, monospace" font-size="11" font-weight="700">
+    <rect x="0" y="5" width="200" height="22" rx="4" fill="#fff7ed" stroke="#fed7aa"/>
+    <text x="190" y="20" fill="#c2410c" text-anchor="end">5V (Alimentação)</text>
+
+    <rect x="0" y="30" width="200" height="22" rx="4" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="190" y="45" fill="#334155" text-anchor="end">GND (Terra)</text>
+
+    <rect x="0" y="55" width="200" height="22" rx="4" fill="#eff6ff" stroke="#bfdbfe"/>
+    <text x="190" y="70" fill="#1e40af" text-anchor="end">GPIO 12 (I2C SDA Aux)</text>
+
+    <rect x="0" y="80" width="200" height="22" rx="4" fill="#eff6ff" stroke="#bfdbfe"/>
+    <text x="190" y="95" fill="#1e40af" text-anchor="end">GPIO 13 (I2C SCL Aux)</text>
+
+    <rect x="0" y="105" width="200" height="22" rx="4" fill="#fdf4ff" stroke="#f0abfc"/>
+    <text x="190" y="120" fill="#86198f" text-anchor="end">GPIO 15 (SD CMD)</text>
+
+    <rect x="0" y="130" width="200" height="22" rx="4" fill="#fdf4ff" stroke="#f0abfc"/>
+    <text x="190" y="145" fill="#86198f" text-anchor="end">GPIO 14 (SD CLK)</text>
+
+    <rect x="0" y="155" width="200" height="22" rx="4" fill="#fdf4ff" stroke="#f0abfc"/>
+    <text x="190" y="170" fill="#86198f" text-anchor="end">GPIO 2 (SD DATA0)</text>
+
+    <rect x="0" y="180" width="200" height="22" rx="4" fill="#fef08a" stroke="#facc15"/>
+    <text x="190" y="195" fill="#854d0e" text-anchor="end">GPIO 4 (Flash Light)</text>
+  </g>
+
+  <!-- Legendas Direita -->
+  <g transform="translate(530, 80)" font-family="Inter, monospace" font-size="11" font-weight="700">
+    <rect x="0" y="5" width="200" height="22" rx="4" fill="#fef2f2" stroke="#fecaca"/>
+    <text x="10" y="20" fill="#b91c1c">3V3 (Saída 3.3V)</text>
+
+    <rect x="0" y="30" width="200" height="22" rx="4" fill="#f0fdf4" stroke="#bbf7d0"/>
+    <text x="10" y="45" fill="#15803d">GPIO 16 (U2_RX)</text>
+
+    <rect x="0" y="55" width="200" height="22" rx="4" fill="#f0fdf4" stroke="#bbf7d0"/>
+    <text x="10" y="70" fill="#15803d">GPIO 0 (Boot Mode)</text>
+
+    <rect x="0" y="80" width="200" height="22" rx="4" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="10" y="95" fill="#334155">GND (Terra)</text>
+
+    <rect x="0" y="105" width="200" height="22" rx="4" fill="#f0fdf4" stroke="#bbf7d0"/>
+    <text x="10" y="120" fill="#15803d">U0_RX (UART Flash RX)</text>
+
+    <rect x="0" y="130" width="200" height="22" rx="4" fill="#f0fdf4" stroke="#bbf7d0"/>
+    <text x="10" y="145" fill="#15803d">U0_TX (UART Flash TX)</text>
+
+    <rect x="0" y="155" width="200" height="22" rx="4" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="10" y="170" fill="#334155">GND (Terra)</text>
+
+    <rect x="0" y="180" width="200" height="22" rx="4" fill="#fef2f2" stroke="#fecaca"/>
+    <text x="10" y="195" fill="#b91c1c">VCC (5V / 3.3V)</text>
+  </g>
+</svg>

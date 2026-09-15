@@ -1,47 +1,23 @@
-# BIPES: Block based Integrated Platform for Embedded Systems.
+# SatBlocks
 
-![BIPES](bipes.png)
+**SatBlocks** é uma plataforma de programação em blocos (MicroPython) voltada para as oficinas educacionais da **OBSAT** (Olimpíada Brasileira de Satélites), permitindo que participantes montem missões de satélite/CubeSat — sensores, LEDs, telemetria, conexão Wi-Fi/MQTT — sem escrever código diretamente, e exportem/gravem firmware MicroPython real em placas ESP32, ESP32-CAM e Waveshare RP2040-Zero, entre outras.
 
+Este projeto é um **fork** de [BIPES](https://github.com/BIPES/BIPES) — *Block based Integrated Platform for Embedded Systems* — desenvolvido pelo Laboratório de Sistemas Integráveis (LSI-TEC/USP). O SatBlocks reaproveita a base do editor de blocos (Blockly) e da geração de código Python do BIPES, adaptando e estendendo a plataforma com:
 
-BIPES allows anyone to quickly and reliably design, program, build, deploy and test embedded systems and IOT devices and applications. It is fully based on a web environment, so absolutely no software install is needed on the client / developer machine. 
+- Blocos e missões específicos da OBSAT (sensores de satélite, ADCS, EPS, payload de câmera, telemetria de voo).
+- Um "Studio" para criação de blocos e definições customizadas.
+- Um flasher de firmware integrado ao navegador (WebSerial/esptool) para placas ESP32 e RP2040.
+- Um painel de telemetria em tempo real para acompanhar os dados enviados pelos satélites das equipes durante as oficinas.
+- Suporte a placas e variantes específicas usadas nas oficinas (Waveshare RP2040-Zero, ESP32-CAM em diferentes fabricantes).
 
-More information at the project website: [bipes.net.br](https://bipes.net.br/).
+## Créditos
 
-## Live version
-Try it now at: [bipes.net.br/ide](https://bipes.net.br/ide).
+Agradecemos à equipe do BIPES pelo trabalho original, disponível em [github.com/BIPES/BIPES](https://github.com/BIPES/BIPES) e [bipes.net.br](https://bipes.net.br/). O SatBlocks mantém a mesma licença do projeto original.
 
-## Usage
+## Licença
 
-To init submodules, like [BIPES/freeboard](https://github.com/BIPES/freeboard) and [BIPES/Databoard](https://github.com/BIPES/Databoard), run:
-```
-make submodules
-```
+Este projeto é distribuído sob a licença **GNU General Public License v3.0** (GPL-3.0) — veja o arquivo [LICENSE](LICENSE) para o texto completo, em conformidade com a licença do projeto original BIPES.
 
-To build/update the offline version with latest, run:
-```
-make offline
-```
-This version does not require a server since it has all core files concatanated at `ui/index_offline.html`, just open this file in a browser. It will also create a `bipes_offline.zip`. Howver, keep in mind that any tool that requires a server, like MQTT, won't work due to [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS).
+## Sobre a OBSAT
 
-That's it, enjoy BIPES 😄.
-
-
-## Documentation
-
-The documentation is online at [bipes.net.br/docs](https://bipes.net.br/docs).
-
-To build the documentation out of a fresh clone, do:
-```
-make doc
-```
-after having installed the theme, [sphinx](https://www.sphinx-doc.org/en/master/) and [sphinx-js](https://pypi.org/project/sphinx-js/).
-```
-pip install sphinx sphinx-js furo
-```
-## More information
-Some functions of `ui/index.html` were based on Blopy project (https://github.com/mnoriaki/Blopy), by Noriaki Mitsunaga
- (https://github.com/mnoriaki).
- 
- OpenCV blocks were automatically generated using berak's OpenCV to Blockly generator (https://github.com/berak/blockly-cv2/tree/master/gen).
- 
-We also use `xterm.js` (https://github.com/xtermjs/xterm.js/) and `codemirror.js` (https://github.com/codemirror/codemirror).
+Mais informações sobre a Olimpíada Brasileira de Satélites em [obsat.org.br](https://www.obsat.org.br/).

@@ -1,0 +1,3259 @@
+/**
+ * SatBlocks by BIPES — Design System Oficial OBSAT (Clean Modern Theme)
+ * Identidade Visual Oficial OBSAT 2026: Fundo Clean, Rosa OBSAT, Azul Espacial e Cards Elevados
+ * Copyright (C) 2026 OBSAT / BIPES Project
+ */
+
+:root {
+  /* Paleta Oficial OBSAT */
+  --obsat-pink: #e11d48;
+  --obsat-pink-hover: #be123c;
+  --obsat-pink-light: rgba(225, 29, 72, 0.08);
+  --obsat-pink-border: rgba(225, 29, 72, 0.3);
+
+  --obsat-blue: #2563eb;
+  --obsat-blue-hover: #1d4ed8;
+  --obsat-blue-light: rgba(37, 99, 235, 0.08);
+
+  --obsat-navy: #1e1b4b;
+  --obsat-slate: #0f172a;
+
+  /* Superfícies & Layout Clean */
+  --bg-space: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f1f5f9;
+  --bg-card: #ffffff;
+
+  /* Bordas e Sombras */
+  --border-color: #e2e8f0;
+  --border-darker: #cbd5e1;
+  --border-focus: var(--obsat-pink);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 16px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -2px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 10px 25px -3px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.03);
+
+  /* Textos */
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+
+  /* Status */
+  --accent-green: #10b981;
+  --accent-amber: #f59e0b;
+  --accent-red: #ef4444;
+  --accent-cyan: #06b6d4;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-space);
+  color: var(--text-main);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================
+   TOPBAR GLOBAL ESTILO OBSAT / BIPES RESPONSIVA
+   ========================================== */
+.sat-header, .sat-topbar {
+  height: 56px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  box-shadow: var(--shadow-sm);
+  z-index: 1000;
+  position: relative;
+  gap: 10px;
+  min-width: 0;
+  overflow: visible;
+  flex-wrap: nowrap;
+  /* Cabeçalho um pouco maior (~equivalente a 133% de zoom só nessa área),
+     sem afetar o zoom do workspace/painéis abaixo. */
+  zoom: 1.15;
+}
+
+.sat-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.satblock-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.satblock-brand:hover {
+  transform: translateY(-1px);
+}
+
+.bipes-logo-official {
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.bipes-logo-official:hover {
+  background: rgba(50, 152, 220, 0.2);
+  border-color: rgba(50, 152, 220, 0.6);
+  transform: scale(1.05);
+}
+
+.sat-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Tag OBSAT Oficial Rosa */
+.sat-obsat-tag {
+  font-size: 11px;
+  font-weight: 800;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--obsat-pink), #db2777);
+  padding: 4px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(225, 29, 72, 0.25);
+  text-transform: uppercase;
+}
+
+/* ABAS DA TOPBAR (BLINDAGEM VISUAL OBSAT FLUIDA) */
+.sat-tabs-nav, .sat-main-tabs-nav {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: var(--bg-subtle);
+  padding: 3px 4px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.sat-tab-btn, .sat-main-tab {
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.sat-tab-btn:hover, .sat-main-tab:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.sat-tab-btn.active, .sat-main-tab.active {
+  background: var(--bg-surface);
+  color: var(--obsat-pink);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  font-weight: 800;
+}
+
+/* PÍLULAS SUPERIORES DE AÇÃO BIPES */
+.sat-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Pílula de Conexão Separada (#channel_connect) */
+.channel-connect-pill {
+  display: inline-flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid var(--border-darker);
+  border-radius: 20px;
+  padding: 3px 6px;
+  gap: 4px;
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+.channel-pill-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.channel-pill-btn:hover {
+  background: var(--bg-subtle);
+  color: var(--obsat-navy);
+}
+
+.channel-pill-btn.active {
+  background: rgba(37, 99, 235, 0.12);
+  border-color: rgba(37, 99, 235, 0.3);
+  color: var(--obsat-blue);
+}
+
+.pill-divider {
+  width: 1px;
+  height: 14px;
+  background: #cbd5e1;
+  flex-shrink: 0;
+}
+
+.connect-status-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  border: none;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(16, 185, 129, 0.3);
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.connect-status-btn:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-1px);
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  background: #ffffff;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 6px #ffffff;
+}
+
+/* ==========================================
+   DROPDOWN / TOGGLE DE ABAS PARA TELAS MENORES
+   ========================================== */
+.sat-tabs-desktop-list {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.sat-tabs-dropdown-container {
+  display: none;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Dropdown de Ações (Missões/Flasher/Telemetria/Studio) — mesmo padrão do dropdown de abas */
+.sat-actions-expanded-list {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.sat-actions-dropdown-container {
+  display: none;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.sat-tab-dropdown-btn {
+  background: var(--bg-surface);
+  color: var(--obsat-slate);
+  border: 1px solid var(--border-color);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.sat-tab-dropdown-btn:hover {
+  background: var(--bg-subtle);
+  border-color: var(--border-darker);
+  transform: translateY(-1px);
+}
+
+.dropdown-icon-badge {
+  font-size: 15px;
+}
+
+.dropdown-tab-text {
+  color: var(--obsat-pink);
+  font-weight: 800;
+}
+
+.dropdown-chevron {
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+}
+
+.sat-tabs-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+  min-width: 175px;
+  padding: 6px;
+  display: none;
+  flex-direction: column;
+  gap: 3px;
+  z-index: 99999;
+}
+
+.sat-tabs-dropdown-menu.open {
+  display: flex;
+  animation: tabFadeInDown 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sat-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.sat-dropdown-item:hover {
+  background: var(--bg-subtle);
+  color: var(--obsat-blue);
+}
+
+.sat-dropdown-item.active {
+  background: var(--obsat-pink-light);
+  color: var(--obsat-pink);
+  font-weight: 800;
+}
+
+@keyframes tabFadeInDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================
+   BREAKPOINTS RESPONSIVOS PROGRESSIVOS DA TOPBAR
+   ========================================== */
+
+/* Primeiro estágio de compactação: agrupa os botões de ação num menu
+   e reduz a pílula de conexão a um único botão, antes de qualquer
+   coisa precisar ser cortada/escondida sem alternativa de acesso. */
+/* Aplicado via JS (updateHeaderCompactMode), que mede se o conteúdo do
+   cabeçalho realmente cabe na largura disponível — mais confiável do que
+   um breakpoint fixo, já que a largura necessária varia com zoom, fontes
+   do sistema e nomes de placa/equipe. */
+.sat-topbar.header-force-compact .sat-actions-expanded-list {
+  display: none !important;
+}
+
+.sat-topbar.header-force-compact .sat-actions-dropdown-container {
+  display: flex !important;
+}
+
+.sat-topbar.header-force-compact .channel-connect-pill .channel-pill-btn,
+.sat-topbar.header-force-compact .channel-connect-pill .pill-divider {
+  display: none !important;
+}
+
+.sat-topbar.header-force-compact .connect-status-btn {
+  padding: 6px 10px;
+}
+
+/* Breakpoint fixo como rede de segurança adicional em telas muito estreitas */
+@media screen and (max-width: 1050px) {
+  .sat-actions-expanded-list {
+    display: none !important;
+  }
+  .sat-actions-dropdown-container {
+    display: flex !important;
+  }
+  .channel-connect-pill .channel-pill-btn,
+  .channel-connect-pill .pill-divider {
+    display: none !important;
+  }
+  .connect-status-btn {
+    padding: 6px 10px;
+  }
+}
+
+@media screen and (max-width: 1380px) {
+  .sat-header, .sat-topbar {
+    padding: 0 12px;
+    gap: 8px;
+  }
+  .sat-tab-btn, .sat-main-tab {
+    padding: 5px 9px;
+    font-size: 12px;
+    gap: 4px;
+  }
+  #device_selector {
+    max-width: 135px;
+    font-size: 12px;
+  }
+  .sat-btn.studio {
+    padding: 5px 8px;
+    font-size: 12px;
+  }
+}
+
+/* Aciona o Toggle Dropdown de Abas para economizar ~350px de largura */
+@media screen and (max-width: 1250px) {
+  .sat-header, .sat-topbar {
+    padding: 0 10px;
+    gap: 6px;
+  }
+  .sat-tabs-desktop-list {
+    display: none !important;
+  }
+  .sat-tabs-dropdown-container {
+    display: flex !important;
+  }
+  .satblock-brand span[style*="italic"] {
+    display: none;
+  }
+  .studio-label {
+    display: none !important;
+  }
+  .sat-btn.studio {
+    padding: 5px 8px;
+  }
+  #device_selector {
+    max-width: 130px;
+    font-size: 12px;
+  }
+}
+
+@media screen and (max-width: 1050px) {
+  .sat-header, .sat-topbar {
+    padding: 0 8px;
+    gap: 6px;
+  }
+  /* Conectividade resumida (apenas ícones e botão de status com led) */
+  .channel-btn-text {
+    display: none !important;
+  }
+  .channel-pill-btn {
+    padding: 4px 6px;
+  }
+  #connStatusText {
+    display: none !important;
+  }
+  .connect-status-btn {
+    padding: 5px 8px;
+    border-radius: 12px;
+    gap: 0;
+  }
+  #device_selector {
+    max-width: 110px;
+    font-size: 11px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .sat-header, .sat-topbar {
+    height: 52px;
+    padding: 0 6px;
+    gap: 4px;
+  }
+  .bipes-logo-official {
+    display: none !important;
+  }
+  #device_selector {
+    max-width: 88px;
+    font-size: 10.5px;
+    padding: 2px 4px;
+  }
+  .sat-tab-dropdown-btn {
+    padding: 5px 8px;
+    font-size: 12px;
+    gap: 5px;
+  }
+}
+
+/* Pílula Dispositivo (#deviceSelect) */
+#deviceSelect {
+  display: inline-flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid var(--obsat-blue);
+  border-radius: 20px;
+  padding: 2px 4px 2px 10px;
+  gap: 6px;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.12);
+}
+
+#device_selector {
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--obsat-navy);
+  outline: none;
+  cursor: pointer;
+  padding: 4px 2px;
+}
+
+#runButton {
+  background: var(--obsat-pink);
+  color: #ffffff;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(225, 29, 72, 0.3);
+}
+
+#runButton:hover {
+  background: var(--obsat-pink-hover);
+  transform: scale(1.08);
+}
+
+#runButton.running {
+  background: #ef4444;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.7);
+  animation: pulse-run-button 1.5s infinite;
+}
+
+#btnStopProgramDevice.running-active {
+  background: #dc2626 !important;
+  border-color: #b91c1c !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 10px rgba(220, 38, 38, 0.6) !important;
+  animation: pulse-stop-btn 1.5s infinite;
+}
+
+@keyframes pulse-stop-btn {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+@keyframes pulse-run-button {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { transform: scale(1.08); box-shadow: 0 0 0 7px rgba(239, 68, 68, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+/* Botões Globais Padrão OBSAT */
+.sat-btn {
+  background: var(--bg-surface);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-sm);
+}
+
+.sat-btn:hover {
+  background: var(--bg-subtle);
+  border-color: var(--border-darker);
+}
+
+.sat-btn.primary {
+  background: linear-gradient(135deg, var(--obsat-pink), #db2777);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 2px 8px rgba(225, 29, 72, 0.25);
+}
+
+.sat-btn.primary:hover {
+  background: linear-gradient(135deg, var(--obsat-pink-hover), #be123c);
+  transform: translateY(-1px);
+}
+
+.sat-btn.accent {
+  background: linear-gradient(135deg, var(--obsat-blue), #1d4ed8);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+}
+
+.sat-btn.accent:hover {
+  background: linear-gradient(135deg, #1d4ed8, #1e40af);
+  transform: translateY(-1px);
+}
+
+.sat-btn.success {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  border: none;
+}
+
+.sat-btn.danger {
+  background: #ef4444;
+  color: #ffffff;
+  border: none;
+}
+
+.sat-select {
+  background: var(--bg-surface);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+}
+
+/* ==========================================
+   CONTEÚDO DAS 5 ABAS PRINCIPAIS
+   ========================================== */
+.sat-main-content {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-space);
+}
+
+.sat-tab-page {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  overflow: hidden;
+}
+
+.sat-tab-page.tab-hidden {
+  position: absolute !important;
+  left: -99999px !important;
+  top: -99999px !important;
+  width: 1px !important;
+  height: 1px !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+}
+
+/* 1. ABA BLOCOS */
+#tab_page_blocks {
+  display: flex;
+  flex-direction: row;
+}
+
+#blocklyArea {
+  flex: 1;
+  height: 100%;
+  position: relative;
+  background: #f8fafc;
+  overflow: hidden;
+}
+
+#blocklyDiv {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/* ==========================================
+   BARRA LATERAL RETRÁTIL (GAVETA FLUTUANTE ESTILO NAVEGADORES)
+   Classes conforme Blockly >= v9 (makeDefaultCssConfig_ em blockly_compressed.js):
+   .blocklyToolboxDiv -> .blocklyToolbox | .blocklyTreeRow -> .blocklyToolboxCategory
+   .blocklyTreeSelected -> .blocklyToolboxSelected | .blocklyTreeLabel -> .blocklyToolboxCategoryLabel
+   .blocklyTreeIcon -> .blocklyToolboxCategoryIcon | .blocklyTreeSeparator (mantido sem mudança)
+   ========================================== */
+.blocklyToolbox {
+  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s !important;
+  z-index: 950 !important;
+  background-color: #ffffff !important;
+  border-right: 1px solid var(--border-color) !important;
+  width: 275px !important;
+  min-width: 275px !important;
+  max-width: 275px !important;
+  box-sizing: border-box !important;
+  padding-top: 38px !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
+
+.blocklyToolboxCategory {
+  height: 36px !important;
+  line-height: 36px !important;
+  padding: 0 12px 0 10px !important;
+  margin-bottom: 4px !important;
+  border-radius: 0 8px 8px 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  cursor: pointer !important;
+  border-left-width: 6px !important;
+  border-left-style: solid !important;
+  box-sizing: border-box !important;
+  transition: background 0.15s ease, transform 0.1s ease !important;
+}
+
+.blocklyToolboxCategory:not(.blocklyToolboxSelected):hover {
+  background-color: #f1f5f9 !important;
+  transform: translateX(3px) !important;
+}
+
+.blocklyToolboxSelected {
+  background-color: rgba(2, 132, 199, 0.08) !important;
+  box-shadow: inset 0 0 0 1px rgba(2, 132, 199, 0.25) !important;
+}
+
+.blocklyToolboxCategoryLabel {
+  font-family: var(--font-sans) !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  letter-spacing: -0.2px !important;
+  padding-left: 6px !important;
+  white-space: nowrap !important;
+  vertical-align: middle !important;
+}
+
+.blocklyToolboxSelected .blocklyToolboxCategoryLabel {
+  color: #0284c7 !important;
+  font-weight: 700 !important;
+}
+
+.blocklyTreeSeparator {
+  border-bottom: 1px solid #e2e8f0 !important;
+  height: 0 !important;
+  margin: 10px 8px !important;
+}
+
+.blocklyToolboxCategoryIcon {
+  display: none !important;
+}
+
+/* Rótulos e Cabeçalhos Didáticos dentro do Flyout (Estilo Microbit) */
+.blocklyFlyoutLabelText {
+  font-family: var(--font-sans) !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  fill: #0f172a !important;
+  letter-spacing: -0.2px !important;
+}
+
+/* Botão Minimalista de Toggle (Ícone Apenas) */
+.sat-toolbox-toggle-btn {
+  position: absolute;
+  top: 6px;
+  left: 238px;
+  z-index: 1002;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: left 0.24s cubic-bezier(0.16, 1, 0.3, 1), background 0.15s, color 0.15s, transform 0.15s;
+  user-select: none;
+}
+
+.sat-toolbox-toggle-btn:hover {
+  background: var(--bg-subtle);
+  color: var(--obsat-pink);
+  border-color: var(--obsat-pink-border);
+  transform: scale(1.08);
+}
+
+.sat-toolbox-toggle-btn .toggle-icon-collapse {
+  display: block;
+}
+
+.sat-toolbox-toggle-btn .toggle-icon-expand {
+  display: none;
+}
+
+/* Faixa invisível de gatilho hover na borda esquerda da tela */
+.sat-toolbox-hover-trigger {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 24px;
+  height: 100%;
+  z-index: 920;
+  display: none;
+}
+
+/* MODO RECOLHIDO (GAVETA OCULTA / AUTO-HOVER) */
+#blocklyArea.toolbox-collapsed .blocklyToolbox {
+  transform: translateX(-100%);
+  box-shadow: 6px 0 25px rgba(15, 23, 42, 0.16) !important;
+}
+
+#blocklyArea.toolbox-collapsed .sat-toolbox-hover-trigger {
+  display: block;
+}
+
+/* Quando passa o mouse na borda esquerda, na aba de toggle ou na própria gaveta: expande suavemente */
+#blocklyArea.toolbox-collapsed.hover-active .blocklyToolbox {
+  transform: translateX(0);
+}
+
+/* Posição do botão quando recolhido (vira uma abinha flutuante na borda esquerda) */
+#blocklyArea.toolbox-collapsed .sat-toolbox-toggle-btn {
+  left: 8px;
+  top: 8px;
+  width: 28px;
+  height: 28px;
+  background: #ffffff;
+  border-color: var(--border-darker);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  color: var(--obsat-pink);
+}
+
+#blocklyArea.toolbox-collapsed.hover-active .sat-toolbox-toggle-btn {
+  left: 238px;
+  top: 6px;
+}
+
+#blocklyArea.toolbox-collapsed .sat-toolbox-toggle-btn .toggle-icon-collapse {
+  display: none;
+}
+
+#blocklyArea.toolbox-collapsed .sat-toolbox-toggle-btn .toggle-icon-expand {
+  display: block;
+}
+
+#blocklyArea.toolbox-collapsed.hover-active .sat-toolbox-toggle-btn .toggle-icon-collapse {
+  display: block;
+}
+
+#blocklyArea.toolbox-collapsed.hover-active .sat-toolbox-toggle-btn .toggle-icon-expand {
+  display: none;
+}
+
+/* ==========================================
+   PAINEL LATERAL DIREITO — RETRÁTIL / AUTO-HOVER
+   (mesmo padrão da barra de blocos à esquerda)
+   ========================================== */
+#tab_page_blocks {
+  position: relative;
+}
+
+.sat-panel-hover-trigger {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 24px;
+  height: 100%;
+  z-index: 940;
+  display: none;
+}
+
+#tab_page_blocks.side-panel-collapsed .sat-panel-hover-trigger {
+  display: block;
+}
+
+#tab_page_blocks.side-panel-collapsed .sat-side-panel {
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  overflow: hidden;
+  border-left: none;
+  box-shadow: none;
+}
+
+#tab_page_blocks.side-panel-collapsed .sat-panel-resizer {
+  display: none;
+}
+
+#tab_page_blocks.side-panel-collapsed.side-panel-hover-active .sat-side-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  height: 100%;
+  width: var(--sat-restore-width, 520px) !important;
+  min-width: 500px !important;
+  max-width: 85vw !important;
+  overflow: visible;
+  z-index: 950;
+  box-shadow: -6px 0 25px rgba(15, 23, 42, 0.16);
+}
+
+.sat-panel-toggle-btn {
+  position: absolute;
+  top: 6px;
+  /* Acompanha a borda esquerda (interna) do painel — mantido em sincronia via JS
+     conforme a largura do painel muda (arraste, toggle, responsivo). */
+  right: 483px;
+  z-index: 1002;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: right 0.32s cubic-bezier(0.16, 1, 0.3, 1), background 0.15s, color 0.15s, transform 0.15s;
+  user-select: none;
+}
+
+/* Recolhido e sem hover: flutua como uma abinha fixa na borda direita da tela */
+#tab_page_blocks.side-panel-collapsed:not(.side-panel-hover-active) .sat-panel-toggle-btn {
+  right: 8px !important;
+}
+
+.sat-panel-toggle-btn:hover {
+  background: var(--bg-subtle);
+  color: var(--obsat-pink);
+  border-color: var(--obsat-pink-border);
+  transform: scale(1.08);
+}
+
+.sat-panel-toggle-btn .toggle-icon-collapse {
+  display: block;
+}
+
+.sat-panel-toggle-btn .toggle-icon-expand {
+  display: none;
+}
+
+#tab_page_blocks.side-panel-collapsed .sat-panel-toggle-btn .toggle-icon-collapse {
+  display: none;
+}
+
+#tab_page_blocks.side-panel-collapsed .sat-panel-toggle-btn .toggle-icon-expand {
+  display: block;
+}
+
+#tab_page_blocks.side-panel-collapsed.side-panel-hover-active .sat-panel-toggle-btn .toggle-icon-collapse {
+  display: block;
+}
+
+#tab_page_blocks.side-panel-collapsed.side-panel-hover-active .sat-panel-toggle-btn .toggle-icon-expand {
+  display: none;
+}
+
+/* Divisor Arrastável com Setas (Resizer) */
+.sat-panel-resizer {
+  width: 10px;
+  background: var(--bg-surface);
+  border-left: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  cursor: col-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  user-select: none;
+  z-index: 20;
+  transition: background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+
+.sat-panel-resizer:hover, .sat-panel-resizer.active {
+  background: rgba(225, 29, 72, 0.08);
+  border-color: var(--obsat-pink);
+}
+
+.resizer-handle {
+  width: 18px;
+  height: 38px;
+  background: #ffffff;
+  border: 1.5px solid var(--border-color);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: all 0.15s;
+}
+
+.sat-panel-resizer:hover .resizer-handle, .sat-panel-resizer.active .resizer-handle {
+  background: var(--obsat-pink);
+  border-color: var(--obsat-pink);
+  box-shadow: 0 4px 12px rgba(225, 29, 72, 0.35);
+  transform: translateX(-50%) scale(1.08);
+}
+
+.resizer-arrow {
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  color: #64748b;
+  transition: color 0.15s;
+}
+
+.sat-panel-resizer:hover .resizer-arrow, .sat-panel-resizer.active .resizer-arrow {
+  color: #ffffff;
+}
+
+body.resizing-active {
+  user-select: none !important;
+  cursor: col-resize !important;
+}
+
+body.resizing-active * {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
+
+/* Painel Lateral Direito de Código & Referência */
+.sat-side-panel {
+  width: 520px;
+  min-width: 500px;
+  max-width: 85vw;
+  background: var(--bg-surface);
+  display: flex;
+  flex-direction: column;
+  box-shadow: -2px 0 12px rgba(15, 23, 42, 0.04);
+  flex-shrink: 0;
+}
+
+.sat-side-panel.animate-resize {
+  transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sat-side-panel.side-panel-collapse-transition {
+  transition: width 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sat-side-panel .panel-header {
+  padding: 6px 10px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-height: 42px;
+  white-space: nowrap;
+}
+
+.panel-header-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.mpy-brand-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.mpy-brand-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: #0f172a;
+  white-space: nowrap;
+  letter-spacing: -0.2px;
+}
+
+.panel-header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.panel-header-actions .sat-btn {
+  padding: 3.5px 7px;
+  font-size: 11px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  gap: 3px;
+}
+
+.sat-btn-icon {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.sat-btn-icon:hover {
+  background: var(--obsat-pink-light);
+  border-color: var(--obsat-pink);
+  color: var(--obsat-pink);
+}
+
+/* Barra interna dentro do bloco escuro de código (Python Header) */
+.code-block-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px 8px 16px;
+  background: #090d16;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.code-block-lang {
+  font-family: 'JetBrains Mono', 'Fira Code', var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.3px;
+}
+
+.code-copy-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  color: #cbd5e1;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.code-copy-btn svg {
+  color: #94a3b8;
+  transition: color 0.15s;
+}
+
+.code-copy-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.code-copy-btn:hover svg {
+  color: #ffffff;
+}
+
+.code-copy-btn.copied {
+  background: rgba(16, 185, 129, 0.2) !important;
+  border-color: #10b981 !important;
+  color: #34d399 !important;
+}
+
+.code-copy-btn.copied svg {
+  stroke: #34d399 !important;
+}
+
+.sat-side-panel .panel-content {
+  flex: 1;
+  background: #090d16;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+#pythonCodeView {
+  font-family: 'JetBrains Mono', 'Fira Code', var(--font-mono);
+  font-size: 12px;
+  color: #f8fafc;
+  padding: 12px 16px 20px 16px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  tab-size: 4;
+  margin: 0;
+  flex: 1;
+}
+
+/* Paleta Python no Painel Lateral Escuro */
+#pythonCodeView .py-kw { color: #f43f5e; font-weight: 800; }        /* import, from, def, return */
+#pythonCodeView .py-mod { color: #38bdf8; font-weight: 700; }       /* machine, time, network, ujson */
+#pythonCodeView .py-func { color: #60a5fa; font-weight: 700; }      /* print, round, read */
+#pythonCodeView .py-str { color: #34d399; font-weight: 600; }       /* strings em verde esmeralda */
+#pythonCodeView .py-num { color: #fbbf24; font-weight: 700; }       /* números e booleanos em âmbar */
+#pythonCodeView .py-comment { color: #94a3b8; font-style: italic; } /* comentários em cinza ardósia */
+
+/* 2. ABA CONSOLE / TERMINAL REPL */
+#tab_page_console {
+  display: none;
+  padding: 16px 24px;
+  flex-direction: column;
+  height: 100%;
+}
+
+.terminal-window {
+  flex: 1;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.terminal-window-header {
+  padding: 10px 16px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.terminal-window-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--obsat-navy);
+}
+
+.terminal-baud-badge {
+  font-size: 10px;
+  font-weight: 800;
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--obsat-blue);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+}
+
+.terminal-quick-bar {
+  padding: 8px 16px;
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+}
+
+.terminal-quick-btn {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  color: #0f172a;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.terminal-quick-btn:hover {
+  background: var(--obsat-pink-light);
+  border-color: var(--obsat-pink);
+  color: var(--obsat-pink);
+}
+
+.terminal-screen-container {
+  flex: 1;
+  background: #090d16;
+  padding: 16px 20px;
+  overflow-y: auto;
+  font-family: 'JetBrains Mono', 'Fira Code', var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  color: #f8fafc;
+}
+
+#terminalFullLogs {
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: #f8fafc;
+}
+
+.terminal-prompt-bar {
+  padding: 10px 16px;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.terminal-prompt-symbol {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  color: var(--obsat-pink);
+}
+
+.terminal-prompt-input {
+  flex: 1;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  color: #0f172a;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  outline: none;
+}
+
+.terminal-prompt-input:focus {
+  border-color: var(--obsat-pink);
+  background: #ffffff;
+}
+
+.terminal-send-btn {
+  background: linear-gradient(135deg, var(--obsat-pink), #db2777);
+  color: #ffffff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Cores de Realce do Terminal Python (Alto Contraste) */
+.term-sys { color: #38bdf8; font-weight: 800; }
+.term-err { color: #ff6b6b; font-weight: 800; }
+.term-comment { color: #94a3b8; font-style: italic; }
+.term-prompt { color: #fb7185; font-weight: 800; }
+.term-str { color: #34d399; font-weight: 600; }
+.term-keyword { color: #f43f5e; font-weight: 800; }
+.term-module { color: #fbbf24; font-weight: 700; }
+.term-func { color: #60a5fa; font-weight: 700; }
+.term-num { color: #c084fc; font-weight: 700; }
+
+/* 3. ABA ARQUIVOS (FLASH FILE MANAGER) */
+#tab_page_files {
+  display: none;
+  padding: 16px 24px;
+  gap: 16px;
+}
+
+.files-sidebar {
+  width: 320px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.files-list-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.sat-file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sat-file-item:hover {
+  background: var(--bg-subtle);
+  border-color: var(--obsat-pink);
+  transform: translateX(2px);
+}
+
+.sat-file-item.active {
+  background: var(--obsat-pink-light);
+  border-color: var(--obsat-pink);
+}
+
+.files-editor-area {
+  flex: 1;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.files-editor-header {
+  padding: 10px 16px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.files-code-editor-container {
+  flex: 1;
+  position: relative;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.files-code-highlight, textarea#fileEditorTextarea {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 16px 20px;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: 'JetBrains Mono', 'Fira Code', var(--font-mono);
+  font-size: 13px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-break: break-word;
+  tab-size: 4;
+}
+
+.files-code-highlight {
+  background: #ffffff;
+  color: #0f172a;
+  pointer-events: none;
+  overflow-y: auto;
+  z-index: 1;
+}
+
+textarea#fileEditorTextarea {
+  background: transparent;
+  color: transparent;
+  caret-color: #0f172a;
+  border: none;
+  outline: none;
+  resize: none;
+  z-index: 2;
+  overflow-y: auto;
+}
+
+/* PALETA PYTHON TERMINAL EM FUNDO CLARO (LIGHT THEME) */
+.py-kw { color: #c026d3; font-weight: 800; }        /* Keywords: import, from, def, class, if, while... */
+.py-mod { color: #4338ca; font-weight: 800; }       /* Modules: machine, time, network, ujson, urequests */
+.py-func { color: #0284c7; font-weight: 700; }      /* Functions: print, round, read, collect */
+.py-str { color: #16a34a; font-weight: 600; }       /* Strings: "...", '...' */
+.py-num { color: #d97706; font-weight: 700; }       /* Numbers: 10, 3.3, True, False, None */
+.py-comment { color: #64748b; font-style: italic; } /* Comments: # ... */
+.py-op { color: #e11d48; font-weight: 700; }        /* Operators: =, +, -, *, : */
+
+/* 4. ABA DISPOSITIVO & PINOUT */
+#tab_page_device {
+  display: none;
+  padding: 20px 24px;
+  overflow-y: auto;
+}
+
+.device-container {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 20px;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.device-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-md);
+}
+
+.device-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.device-card-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--obsat-navy);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Tabela de Pinagem OBSAT Clean */
+.device-pin-table, .sat-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.device-pin-table th, .sat-table th {
+  background: #f1f5f9;
+  color: #0f172a;
+  font-weight: 800;
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 2px solid var(--border-color);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.device-pin-table td, .sat-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border-color);
+  color: #0f172a;
+}
+
+.device-pin-table tr:hover td, .sat-table tr:hover td {
+  background: #f8fafc;
+}
+
+.pin-badge {
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  display: inline-block;
+}
+
+.pin-badge.i2c {
+  background: rgba(6, 182, 212, 0.15);
+  color: #0284c7;
+  border: 1px solid rgba(6, 182, 212, 0.4);
+}
+
+.pin-badge.spi {
+  background: rgba(168, 85, 247, 0.15);
+  color: #9333ea;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+}
+
+.pin-badge.uart {
+  background: rgba(245, 158, 11, 0.15);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.pin-badge.adc {
+  background: rgba(225, 29, 72, 0.15);
+  color: #e11d48;
+  border: 1px solid rgba(225, 29, 72, 0.4);
+}
+
+.pin-badge.gpio {
+  background: rgba(16, 185, 129, 0.15);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.pin-badge.pwm {
+  background: rgba(236, 72, 153, 0.15);
+  color: #db2777;
+  border: 1px solid rgba(236, 72, 153, 0.4);
+}
+
+.device-specs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.device-spec-box {
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.device-spec-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.device-spec-value {
+  font-size: 13px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+/* 5. ABA IOT / BIPES DATABOARD OFICIAL */
+#tab_page_iot {
+  display: none;
+  padding: 16px 20px;
+  overflow-y: auto;
+  flex-direction: column;
+}
+
+.databoard-page-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.databoard-topbar {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 12px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.databoard-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.databoard-brand-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.databoard-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.databoard-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.3px;
+}
+
+.databoard-version-tag {
+  background: rgba(2, 132, 199, 0.1);
+  color: #0284c7;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+
+.databoard-subtitle {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+  display: block;
+}
+
+.databoard-control-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  padding: 4px 10px;
+  border-radius: 10px;
+}
+
+.databoard-select {
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+  outline: none;
+  cursor: pointer;
+}
+
+.databoard-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.databoard-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  padding: 5px 10px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  user-select: none;
+}
+
+.databoard-status-pill.receiving {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #059669;
+}
+
+.telemetry-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #94a3b8;
+  display: inline-block;
+}
+
+.databoard-status-pill.receiving .telemetry-status-dot {
+  background: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+  animation: pulse-telemetry 1.5s infinite;
+}
+
+@keyframes pulse-telemetry {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+/* ÁREA DE GRID DINÂMICO MUURI DO DATABOARD */
+.databoard-content-wrapper {
+  position: relative;
+  min-height: 520px;
+  width: 100%;
+}
+
+.bipes-muuri-grid {
+  position: relative;
+  width: 100%;
+  min-height: 520px;
+}
+
+/* ITEM DO GRID (WIDGET / CARD) */
+.bipes-muuri-item {
+  display: block;
+  position: absolute;
+  width: calc(50% - 12px);
+  margin: 6px;
+  z-index: 1;
+  box-sizing: border-box;
+  touch-action: none;
+}
+
+@media (max-width: 900px) {
+  .bipes-muuri-item {
+    width: calc(100% - 12px);
+  }
+}
+
+.bipes-muuri-item.full-width {
+  width: calc(100% - 12px);
+}
+
+.bipes-muuri-item.muuri-item-dragging {
+  z-index: 100 !important;
+  opacity: 0.95;
+  cursor: grabbing !important;
+}
+
+.bipes-muuri-item.muuri-item-releasing {
+  z-index: 99 !important;
+}
+
+.bipes-muuri-item.muuri-placeholder {
+  border: 2px dashed #0284c7 !important;
+  border-radius: 16px;
+  background: rgba(2, 132, 199, 0.05);
+}
+
+.bipes-widget-card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.2s, border-color 0.2s;
+  height: 270px;
+  box-sizing: border-box;
+}
+
+.bipes-muuri-grid.edit-mode-active .bipes-widget-card {
+  border: 2px dashed #0284c7;
+  box-shadow: 0 4px 16px rgba(2, 132, 199, 0.12);
+}
+
+.bipes-widget-card:hover {
+  background: #f0fdf4;
+}
+
+.widget-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.widget-title-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.widget-controls-box {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.widget-btn-edit,
+.widget-btn-drag,
+.widget-btn-dismiss {
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  color: #94a3b8;
+  padding: 3px 7px;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease-in-out;
+}
+
+.widget-btn-edit:hover {
+  background: #e0f2fe;
+  color: #0284c7;
+  border-color: #bae6fd;
+}
+
+.widget-btn-drag {
+  cursor: grab;
+}
+
+.widget-btn-drag:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.widget-btn-dismiss:hover {
+  background: #ffe4e6;
+  color: #e11d48;
+  border-color: #fecdd3;
+}
+
+.widget-btn-dismiss {
+  cursor: pointer;
+  color: #94a3b8;
+  background: transparent;
+  border: none;
+  padding: 4px;
+  border-radius: 6px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.widget-btn-dismiss:hover {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+.widget-canvas-box {
+  flex: 1;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+/* WIDGET SWITCH (INTERRUPTOR) */
+.bipes-switch-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 12px;
+}
+
+.bipes-switch-toggle {
+  width: 70px;
+  height: 36px;
+  background: #cbd5e1;
+  border-radius: 20px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.bipes-switch-toggle::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  width: 30px;
+  height: 30px;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  transition: transform 0.3s;
+}
+
+.bipes-switch-toggle.on {
+  background: #10b981;
+}
+
+.bipes-switch-toggle.on::after {
+  transform: translateX(32px);
+}
+
+/* ESTADO VAZIO DO DATABOARD */
+.databoard-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+}
+
+.databoard-empty-card {
+  background: #ffffff;
+  border: 1.5px dashed var(--border-color);
+  border-radius: 20px;
+  padding: 40px 30px;
+  text-align: center;
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.databoard-empty-card .empty-icon {
+  font-size: 40px;
+  margin-bottom: 4px;
+}
+
+.databoard-empty-card h3 {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.databoard-empty-card p {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.databoard-empty-card .empty-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* Modais e Painéis de Conta BIPES */
+.sat-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(6px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.sat-modal-overlay.active,
+.sat-modal-overlay.show {
+  display: flex !important;
+}
+
+.sat-modal {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  width: 92%;
+  max-width: 540px;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+  overflow: hidden;
+}
+
+.connection-modal {
+  max-width: 580px;
+}
+
+.sat-modal-header {
+  padding: 16px 22px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header-icon-box {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: var(--obsat-pink-light);
+  border: 1px solid rgba(225, 29, 72, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--obsat-pink);
+}
+
+.sat-modal-close-btn {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  transition: all 0.2s;
+}
+
+.sat-modal-close-btn:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #ef4444;
+  transform: rotate(90deg);
+}
+
+.sat-modal-body {
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sat-modal-footer {
+  padding: 12px 22px;
+  background: var(--bg-subtle);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Cards de Canais de Conexão Arredondados */
+.channel-option-card {
+  background: #ffffff;
+  border: 1.5px solid var(--border-color);
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
+}
+
+.channel-option-card:hover {
+  border-color: var(--obsat-pink);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(225, 29, 72, 0.08);
+}
+
+.channel-option-card.active {
+  border-color: var(--obsat-blue);
+  background: #f8fafc;
+}
+
+.channel-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.channel-card-icon.usb {
+  background: rgba(37, 99, 235, 0.1);
+  border: 1px solid rgba(37, 99, 235, 0.25);
+}
+
+.channel-card-icon.ble {
+  background: rgba(147, 51, 234, 0.1);
+  border: 1px solid rgba(147, 51, 234, 0.25);
+}
+
+.channel-card-icon.wifi {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.channel-card-content {
+  flex: 1;
+}
+
+.channel-card-header-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.channel-card-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.channel-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+}
+
+.channel-badge.recommended {
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--obsat-blue);
+  border: 1px solid rgba(37, 99, 235, 0.3);
+}
+
+.channel-badge.wireless {
+  background: rgba(147, 51, 234, 0.12);
+  color: #9333ea;
+  border: 1px solid rgba(147, 51, 234, 0.3);
+}
+
+.channel-badge.wifi {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.channel-card-desc {
+  font-size: 12px;
+  color: #64748b;
+  margin: 3px 0 0 0;
+  line-height: 1.4;
+}
+
+.channel-card-controls {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sat-select-pill, .sat-input-pill {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #0f172a;
+  outline: none;
+}
+
+.sat-select-pill:focus, .sat-input-pill:focus {
+  border-color: var(--obsat-pink);
+}
+
+.channel-action-btn {
+  border: none;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.channel-action-btn.primary {
+  background: linear-gradient(135deg, var(--obsat-pink), #db2777);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(225, 29, 72, 0.25);
+}
+
+.channel-action-btn.primary:hover {
+  background: linear-gradient(135deg, var(--obsat-pink-hover), #be123c);
+  transform: translateY(-1px);
+}
+
+.channel-action-btn.purple {
+  background: linear-gradient(135deg, #9333ea, #7e22ce);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(147, 51, 234, 0.25);
+}
+
+.channel-action-btn.purple:hover {
+  background: linear-gradient(135deg, #7e22ce, #6b21a8);
+  transform: translateY(-1px);
+}
+
+.channel-action-btn.green {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+
+.channel-action-btn.green:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-1px);
+}
+
+.channel-action-btn.blue {
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
+}
+
+.channel-action-btn.blue:hover {
+  background: linear-gradient(135deg, #0369a1, #075985);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+}
+
+/* Botão de Avatar / Perfil do Usuário BIPES na Topbar */
+.sat-user-avatar-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1.5px solid var(--border-color);
+  color: var(--obsat-navy);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.sat-user-avatar-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: #64748b;
+  transition: fill 0.2s;
+}
+
+.sat-user-avatar-btn:hover {
+  border-color: var(--obsat-pink);
+  background: #fff;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(225, 29, 72, 0.2);
+}
+
+.sat-user-avatar-btn:hover svg {
+  fill: var(--obsat-pink);
+}
+
+/* Painel de Conta / Projetos Oficial Padrão BIPES */
+.account-panel {
+  position: absolute;
+  top: 54px;
+  right: 16px;
+  width: 320px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.15);
+  z-index: 10000;
+  display: none;
+  flex-direction: column;
+  padding: 16px;
+  gap: 12px;
+}
+
+.account-panel.active {
+  display: flex !important;
+  animation: fadeInDown 0.2s ease-out;
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#account_header {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  display: block;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+#account_user {
+  color: var(--obsat-blue);
+  border-bottom: 1.5px dashed var(--obsat-blue);
+  outline: none;
+  cursor: text;
+  padding: 0 2px;
+}
+
+#account_user:focus {
+  background: rgba(37, 99, 235, 0.08);
+  border-radius: 4px;
+}
+
+.account-panel details {
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 10px 12px;
+  overflow: hidden;
+}
+
+.account-panel summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+}
+
+.account-panel summary::-webkit-details-marker {
+  display: none;
+}
+
+.account-panel summary h2 {
+  font-size: 13px;
+  font-weight: 800;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+#newProjectButton {
+  background: var(--obsat-blue);
+  color: #ffffff;
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+#newProjectButton:hover {
+  background: #1d4ed8;
+  transform: scale(1.1);
+}
+
+#ProjectList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+#ProjectList > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+#ProjectList > div:hover {
+  border-color: var(--obsat-blue);
+  transform: translateX(2px);
+}
+
+#ProjectList > div.current {
+  background: #0284c7;
+  border-color: #0284c7;
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+}
+
+#ProjectList > div.current .runText {
+  color: #ffffff;
+}
+
+#ProjectList > div.current .icon-action-btn {
+  color: #ffffff;
+}
+
+.runText {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: text;
+  padding: 2px 4px;
+  border-radius: 4px;
+  border-bottom: 1.5px dashed transparent;
+  transition: all 0.15s;
+  margin-right: 6px;
+}
+
+.runText:hover {
+  border-bottom-color: #94a3b8;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+#ProjectList > div.current .runText:hover {
+  border-bottom-color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.runText:focus {
+  outline: none;
+  background: rgba(37, 99, 235, 0.08);
+  border-bottom-color: var(--obsat-blue);
+  color: #0f172a;
+  white-space: normal;
+}
+
+#ProjectList > div.current .runText:focus {
+  background: rgba(255, 255, 255, 0.25);
+  border-bottom-color: #ffffff;
+  color: #ffffff;
+}
+
+.project-actions-box {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.icon-action-btn {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.icon-action-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: #0f172a;
+}
+
+#ProjectList > div.current .icon-action-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+/* ==========================================
+   PAINEL DE PROJETOS E CONTA OFICIAL BIPES / SATBLOCKS
+   ========================================== */
+.account-panel,
+#bipesAccountPanel {
+  position: absolute;
+  top: 58px;
+  right: 16px;
+  width: 330px;
+  max-width: 90vw;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  box-shadow: 0 12px 32px -4px rgba(15, 23, 42, 0.18), 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+  padding: 16px;
+  z-index: 99999;
+  display: none;
+  font-family: var(--font-sans);
+  animation: panelSlideDown 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes panelSlideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#account_header {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+  display: block;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+#account_user {
+  color: var(--obsat-pink);
+  font-weight: 800;
+  border-bottom: 1.5px dashed var(--obsat-pink);
+  outline: none;
+  cursor: text;
+  padding: 0 2px;
+}
+
+#bipesAccountPanel details {
+  margin-bottom: 12px;
+  border: 1px solid #f1f5f9;
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: #fafafa;
+}
+
+#bipesAccountPanel summary {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  outline: none;
+}
+
+#bipesAccountPanel summary h2 {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #334155;
+  margin: 0;
+}
+
+#newProjectButton {
+  background: var(--obsat-pink);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  width: 24px;
+  height: 24px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, transform 0.15s ease;
+  line-height: 1;
+}
+
+#newProjectButton:hover {
+  background: var(--obsat-pink-hover);
+  transform: scale(1.08);
+}
+
+#ProjectList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.project-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.project-item:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
+.project-item.active {
+  background: #f0f9ff;
+  border-color: #38bdf8;
+  box-shadow: 0 1px 3px rgba(56, 189, 248, 0.2);
+}
+
+.project-item-info {
+  flex: 1;
+  min-width: 0;
+  margin-right: 8px;
+}
+
+.project-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.project-item.active .project-name {
+  color: #0369a1;
+}
+
+.project-date {
+  font-size: 10px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.project-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.project-action-btn {
+  background: transparent;
+  border: none;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background 0.15s;
+  line-height: 1;
+}
+
+.project-action-btn:hover {
+  background: #e2e8f0;
+}
+
+.project-action-btn.delete:hover {
+  background: #fee2e2;
+}
+
+/* =========================================================================
+   GUIA DE REFERÊNCIA DIDÁTICA ESTILO MICRO:BIT (SATBLOCKS REFERENCE)
+   ========================================================================= */
+
+.side-panel-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #f1f5f9;
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.side-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #64748b;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.side-tab-btn:hover {
+  color: #0f172a;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.side-tab-btn.active {
+  color: #0284c7;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.panel-content.ref-view {
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 44px);
+  padding: 0;
+  background: #f8fafc;
+  overflow: hidden;
+}
+
+.sat-ref-nav-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+
+.sat-ref-nav-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding-bottom: 2px;
+}
+
+.sat-ref-nav-row::-webkit-scrollbar {
+  height: 3px;
+}
+.sat-ref-nav-row::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.ref-row-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: #64748b;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  white-space: nowrap;
+  user-select: none;
+  margin-right: 4px;
+}
+
+.ref-nav-chip {
+  padding: 3px 9px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.ref-nav-chip:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.ref-nav-chip.active {
+  background: #0284c7 !important;
+  color: #ffffff !important;
+  border-color: #0284c7 !important;
+  box-shadow: 0 2px 4px rgba(2, 132, 199, 0.25) !important;
+}
+
+.ref-topic-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 18px;
+  color: #1e293b;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.sat-ref-section-title {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+  margin: 14px 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sat-ref-section-title::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #e2e8f0;
+}
+
+.sat-ref-header {
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.sat-ref-icon-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.sat-ref-big-icon {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.sat-ref-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.sat-ref-subtitle {
+  font-size: 11.5px;
+  color: #64748b;
+  font-weight: 600;
+  margin: 2px 0 0 0;
+}
+
+.sat-ref-summary {
+  font-size: 12.5px;
+  color: #0369a1;
+  background: #e0f2fe;
+  border-left: 3px solid #0284c7;
+  padding: 8px 12px;
+  border-radius: 0 6px 6px 0;
+  margin: 10px 0 0 0;
+  line-height: 1.5;
+}
+
+.sat-ref-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Card de Bloco Individual */
+.sat-ref-block-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: border-color 0.15s ease;
+}
+
+.sat-ref-block-card:hover {
+  border-color: #cbd5e1;
+}
+
+.sat-ref-block-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.sat-ref-block-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: #f1f5f9;
+  border-radius: 50%;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #475569;
+  flex-shrink: 0;
+}
+
+.sat-ref-block-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.sat-ref-block-desc {
+  font-size: 12px;
+  color: #475569;
+  margin: 0 0 8px 0;
+  line-height: 1.5;
+}
+
+/* Código em texto inline */
+.sat-ref-card-body p code {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 11.5px;
+  background: #e0f2fe;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+/* Container de Bloco de Código Estilo Micro:bit Reference com Drag and Drop */
+.sat-ref-code-box {
+  display: flex;
+  position: relative;
+  background: #f0fdf4;
+  border: 1.5px solid #a7f3d0;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 10px 0 12px 0;
+  box-shadow: 0 1px 3px rgba(16, 185, 129, 0.06);
+  cursor: grab;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  user-select: none;
+}
+
+.sat-ref-code-box:hover {
+  border-color: #34d399;
+  box-shadow: 0 3px 8px rgba(16, 185, 129, 0.12);
+}
+
+.sat-ref-code-box:active,
+.sat-ref-code-box.dragging {
+  cursor: grabbing;
+  opacity: 0.75;
+  transform: scale(0.98);
+}
+
+.sat-ref-drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  background: #dcfce7;
+  color: #059669;
+  font-size: 15px;
+  border-right: 1px solid #a7f3d0;
+  flex-shrink: 0;
+  cursor: grab;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sat-ref-code-box:hover .sat-ref-drag-handle {
+  background: #bbf7d0;
+  color: #047857;
+}
+
+.sat-ref-code-content {
+  flex: 1;
+  padding: 10px 12px;
+  overflow-x: auto;
+  position: relative;
+  user-select: text;
+}
+
+.sat-ref-code-actions {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  z-index: 2;
+}
+
+.sat-ref-code-box .btn-insert-block {
+  background: #0284c7;
+  border: 1px solid #0369a1;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 2px 7px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 2px rgba(2, 132, 199, 0.2);
+  white-space: nowrap;
+}
+
+.sat-ref-code-box .btn-insert-block:hover {
+  background: #0369a1;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(2, 132, 199, 0.3);
+}
+
+.sat-ref-code-box .btn-copy-snip {
+  background: #ffffff;
+  border: 1px solid #a7f3d0;
+  color: #059669;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 2px 7px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  white-space: nowrap;
+}
+
+.sat-ref-code-box .btn-copy-snip:hover {
+  background: #059669;
+  color: #ffffff;
+}
+
+/* Indicador de Zona de Soltura no Workspace do Blockly */
+#blocklyDiv.sat-drop-target-active {
+  outline: 3px dashed #0284c7 !important;
+  outline-offset: -4px !important;
+  background: rgba(2, 132, 199, 0.04) !important;
+  transition: all 0.15s ease;
+}
+
+/* Toast de Notificação de Bloco Inserido */
+.sat-ref-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(30px);
+  background: #0f172a;
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 9999;
+}
+
+.sat-ref-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.sat-ref-code-box pre {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
+  font-size: 12px !important;
+  line-height: 1.6 !important;
+  color: #0f172a !important;
+  white-space: pre !important;
+}
+
+.sat-ref-code-box pre code {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  color: #0f172a !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+}
+
+/* Syntax Highlighting Preciso estilo Micro:bit */
+.sat-ref-code-box .kw { color: #9333ea !important; font-weight: 700 !important; } /* Palavras-chave: for, in, while, if, else, try, except */
+.sat-ref-code-box .fn { color: #0284c7 !important; font-weight: 600 !important; } /* Funções: print, range, sleep */
+.sat-ref-code-box .str { color: #dc2626 !important; font-weight: 500 !important; } /* Strings: "...", '...' */
+.sat-ref-code-box .num { color: #d97706 !important; font-weight: 600 !important; } /* Números: 3, 100, 0.5 */
+.sat-ref-code-box .cm { color: #64748b !important; font-style: italic !important; font-weight: normal !important; } /* Comentários: # ... */
+
+.sat-ref-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 11.5px;
+}
+
+.sat-ref-table th, .sat-ref-table td {
+  padding: 6px 8px;
+  border: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+.sat-ref-table th {
+  background: #f8fafc;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* ==========================================
+   RESPONSIVIDADE DO LAYOUT PRINCIPAL (BLOCOS + PAINEL LATERAL)
+   Retrocompatibilidade com notebooks pequenos, tablets e celulares.
+   ========================================== */
+@media screen and (max-width: 1024px) {
+  .sat-side-panel {
+    width: 420px !important;
+    min-width: 320px !important;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .blocklyToolbox {
+    width: 230px !important;
+    min-width: 230px !important;
+    max-width: 230px !important;
+  }
+
+  #blocklyArea.toolbox-collapsed.hover-active .sat-toolbox-toggle-btn {
+    left: 194px;
+  }
+
+  /* Em telas pequenas o painel de código vira uma gaveta sobreposta (drawer),
+     independente do estado de "fixado", para nunca competir por espaço com o workspace. */
+  #tab_page_blocks .sat-side-panel {
+    position: absolute !important;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    height: 100%;
+    width: 86vw !important;
+    min-width: 0 !important;
+    max-width: 420px !important;
+    z-index: 950;
+    box-shadow: -6px 0 25px rgba(15, 23, 42, 0.16);
+  }
+
+  #tab_page_blocks .sat-panel-resizer {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .blocklyToolbox {
+    width: 80vw !important;
+    min-width: 200px !important;
+    max-width: 320px !important;
+  }
+
+  #tab_page_blocks .sat-side-panel {
+    width: 94vw !important;
+    max-width: 94vw !important;
+  }
+
+  .sat-toolbox-toggle-btn,
+  .sat-panel-toggle-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .sat-toolbox-hover-trigger,
+  .sat-panel-hover-trigger {
+    width: 32px;
+  }
+}
+

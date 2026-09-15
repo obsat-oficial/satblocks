@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SatBlocks Studio Pro — Criador de Blocos & Drivers MicroPython</title>
+  
+  <!-- Estilos e Fontes -->
+  <link rel="stylesheet" href="css/satblocks_theme.css">
+  <link rel="stylesheet" href="css/studio.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Favicon Oficial com Ícone do Satélite -->
+  <link rel="icon" type="image/x-icon" href="media/favicon.ico">
+  <link rel="shortcut icon" href="media/favicon.ico">
+
+  <!-- Core Google Blockly Oficial -->
+  <script src="core/blockly/blockly_compressed.js?v=2026.3"></script>
+  <script src="core/blockly/blocks_compressed.js?v=2026.3"></script>
+  <script src="core/blockly/javascript_compressed.js?v=2026.3"></script>
+  <script src="core/blockly/python_compressed.js?v=2026.3"></script>
+  <script src="core/blockly/order_shim.js?v=2026.3"></script>
+  <script src="core/msg/pt-br.js?v=2026.3"></script>
+
+  <!-- Módulos do SatBlocks Studio Pro -->
+  <script src="js/sat_driver_hub.js"></script>
+  <script src="js/sat_ai_synthesizer.js"></script>
+  <script src="js/sat_studio_core.js"></script>
+</head>
+<body class="studio-body">
+
+  <!-- HEADER DO STUDIO -->
+  <header class="studio-header">
+    <div class="studio-brand" style="display: inline-flex; align-items: center; gap: 8px;">
+      <div class="satblock-logo-badge" style="width: 32px; height: 32px; background: #0f172a; border: 2px solid #38bdf8; border-radius: 9px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(56, 189, 248, 0.25);">
+        <img src="media/favicon.ico" alt="SatBlocks" style="width: 20px; height: 20px; object-fit: contain;">
+      </div>
+      <div class="studio-logo-texts">
+        <span class="studio-title-main">SatBlocks <strong>Studio Pro</strong></span>
+        <span class="studio-subtitle">Block Synthesizer &amp; MicroPython Driver Hub</span>
+      </div>
+    </div>
+
+    <!-- SELETOR DE TEMPLATE BASE -->
+    <div class="studio-template-selector">
+      <label for="selectBaseTemplate">🧬 Template Base:</label>
+      <select id="selectBaseTemplate" onchange="SatStudioCore.loadBaseTemplate(this.value)">
+        <option value="template_i2c_sensor">🌡️ Sensor I2C Numérico (SHT20 / BMP280)</option>
+        <option value="template_actuator_multiline">⚙️ Atuador / Ejeção Multilinhas</option>
+        <option value="template_telecom_packet">📡 Transmissão LoRa / Pacote</option>
+        <option value="template_adc_voltage">⚡ Medidor de Tensão ADC / EPS</option>
+      </select>
+    </div>
+
+    <!-- AÇÕES DA TOPBAR -->
+    <div class="sat-toolbar">
+      <button class="sat-btn" onclick="window.location.href='index.html'" title="Voltar para a IDE principal">
+        <span>⬅️</span> <span class="btn-label">Voltar para IDE</span>
+      </button>
+
+      <button class="sat-btn success" id="btnInjectIDE" title="Injetar e testar imediatamente na IDE SatBlocks">
+        <span>📥</span> <span class="btn-label">Injetar na IDE</span>
+      </button>
+
+      <button class="sat-btn primary" id="btnExportPng" title="Exportar imagem do bloco em alta resolução PNG (300 DPI)">
+        <span>🖼️</span> <span class="btn-label">Exportar PNG (300 DPI)</span>
+      </button>
+
+      <button class="sat-btn accent" id="btnExportSvg" title="Exportar vetor SVG escalável">
+        <span>📐</span> <span class="btn-label">Exportar SVG</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- PAINEL DE CRIAÇÃO INTELIGENTE: MICROPYTHON & PROMPT/IA -->
+  <section class="studio-creation-bar">
+    <!-- TABS DE SELEÇÃO DE MODO DE CRIAÇÃO -->
+    <div class="creation-mode-tabs">
+      <button class="mode-tab-btn active" id="btnModePython" onclick="switchCreationMode('python')">
+        <span>🐍</span> <strong>Gerar Bloco a partir de MicroPython</strong>
+      </button>
+      <button class="mode-tab-btn" id="btnModePrompt" onclick="switchCreationMode('prompt')">
+        <span>✨</span> <strong>Sintetizar por Descrição / IA</strong>
+      </button>
+    </div>
+
+    <!-- MODO 1: MICROPYTHON TO BLOCK -->
+    <div class="creation-mode-panel active" id="panelModePython">
+      <div class="python-input-row">
+        <textarea id="inputMicroPythonCode" class="python-code-box" placeholder="# Cole ou digite seu código MicroPython aqui...&#10;pin = Pin(18, Pin.OUT)&#10;pin.value(1)&#10;time.sleep_ms(500)&#10;pin.value(0)" rows="3" spellcheck="false"></textarea>
+        <div class="python-action-col">
+          <button class="sat-btn primary full-height" id="btnSynthesizePython" onclick="executePythonSynthesis()" title="Converter este código MicroPython em um bloco visual interativo">
+            <span>⚡</span> <span>Converter em Bloco</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- PRESETS RÁPIDOS DE MICROPYTHON -->
+      <div class="prompt-presets">
+        <span class="presets-label">Exemplos MicroPython Rápidos:</span>
+        <button class="preset-chip" onclick="applyPythonPreset('adc_battery')">🔋 Leitura Bateria ADC</button>
+        <button class="preset-chip" onclick="applyPythonPreset('buzzer_pulse')">🔔 Buzzer / Relé GPIO</button>
+        <button class="preset-chip" onclick="applyPythonPreset('servo_pwm')">🦾 Servo Motor PWM</button>
+        <button class="preset-chip" onclick="applyPythonPreset('lora_send')">📡 Transmissão LoRa</button>
+        <button class="preset-chip" onclick="applyPythonPreset('i2c_sensor')">🌡️ Sensor I2C Custom</button>
+        <button class="preset-chip" onclick="applyPythonPreset('sd_log')">📁 Gravar Telemetria SD</button>
+      </div>
+    </div>
+
+    <!-- MODO 2: PROMPT & IA -->
+    <div class="creation-mode-panel" id="panelModePrompt">
+      <div class="prompt-input-container">
+        <span class="prompt-icon">✨</span>
+        <input type="text" id="inputBlockPrompt" placeholder="Digite sua solicitação (Ex: Criar bloco para ler Mini Sensor de Toque Capacitivo TTP223B)..." onkeydown="if(event.key==='Enter') executePromptGeneration()">
+        
+        <button class="sat-btn" id="btnOpenAIModal" onclick="openAIConfigModal()" title="Configurar Chave de API da IA (Gemini / OpenAI)">
+          <span id="aiStatusIcon">⚙️</span> <span class="btn-label">Conectar IA</span>
+        </button>
+
+        <button class="sat-btn primary" id="btnGeneratePrompt" onclick="executePromptGeneration()">
+          🚀 Sintetizar Bloco &amp; Driver
+        </button>
+      </div>
+
+      <!-- PRESETS RÁPIDOS DE HARDWARE -->
+      <div class="prompt-presets">
+        <span class="presets-label">Chips &amp; Sensores Rápidos:</span>
+        <button class="preset-chip" onclick="applyPreset('Sensor de Distância Laser ToF VL53L0X em I2C')">🎯 VL53L0X (Distância ToF)</button>
+        <button class="preset-chip" onclick="applyPreset('Sensor de Radiação Ultravioleta VEML6075 I2C')">☀️ VEML6075 (Índice UV)</button>
+        <button class="preset-chip" onclick="applyPreset('Sensor de Tensão e Corrente EPS INA219 I2C')">⚡ INA219 (Tensão/Corrente)</button>
+        <button class="preset-chip" onclick="applyPreset('Sensor de Gases e Qualidade do Ar BME680 I2C')">💨 BME680 (Gás/Pressão)</button>
+        <button class="preset-chip" onclick="applyPreset('Sensor Cardíaco e Oxímetro MAX30102')">❤️ MAX30102 (SpO2/BPM)</button>
+        <button class="preset-chip" onclick="applyPreset('Servo Motor SG90 com controle de ângulo PWM')">🦾 Servo SG90 (Ejeção)</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- GRID PRINCIPAL DE 4 QUADRANTES -->
+  <main class="studio-grid">
+    
+    <!-- QUADRANTE 1: CONFIGURAÇÃO VISUAL & CAMPOS DO BLOCO -->
+    <section class="studio-pane">
+      <div class="pane-header">
+        <span>🎛️ 1. Configuração do Bloco</span>
+        <span class="pane-badge" id="blockTypeBadge">Comando / Retorno</span>
+      </div>
+      <div class="pane-content editor-form-content">
+        <div class="form-group">
+          <label>Identificador Único (blockName):</label>
+          <input type="text" id="cfgBlockName" value="sensor_i2c_read" onchange="updateBlockFromForm()">
+        </div>
+
+        <div class="form-group">
+          <label>Rótulo / Texto Visível:</label>
+          <input type="text" id="cfgBlockLabel" value="Ler Sensor I2C" onchange="updateBlockFromForm()">
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label>Categoria:</label>
+            <select id="cfgCategory" onchange="updateBlockFromForm()">
+              <option value="Sensores Ambientais">🌡️ Sensores Ambientais</option>
+              <option value="Inércia & ADCS">🧭 Inércia & ADCS</option>
+              <option value="Navegação & GPS">📍 Navegação & GPS</option>
+              <option value="Comunicação & LoRa">📡 Comunicação & LoRa</option>
+              <option value="Energia & EPS">⚡ Energia & EPS</option>
+              <option value="Câmera & Payload">📷 Câmera & Payload</option>
+              <option value="Atuadores & Ejeção">⚙️ Atuadores & Ejeção</option>
+              <option value="Arquivos & Flash">📁 Arquivos & Flash</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Cor do Bloco:</label>
+            <input type="color" id="cfgColor" value="#06b6d4" onchange="updateBlockFromForm()">
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label>Tipo de Conexão:</label>
+            <select id="cfgBlockType" onchange="updateBlockFromForm()">
+              <option value="output_number">Retorno de Número (Valor)</option>
+              <option value="output_string">Retorno de Texto (String)</option>
+              <option value="output_boolean">Retorno Lógico (Booleano)</option>
+              <option value="statement">Comando de Encaixe (Execução)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Alinhamento dos Campos:</label>
+            <select id="cfgInputsInline" onchange="updateBlockFromForm()">
+              <option value="true">Em linha horizontal</option>
+              <option value="false">Múltiplas linhas verticais</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="sat-btn primary full-width" onclick="updateBlockFromForm()">
+            🔄 Atualizar Prévia do Bloco
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUADRANTE 2: PRÉVIA VIVA & SIMULADOR PYTHON -->
+    <section class="studio-pane">
+      <div class="pane-header">
+        <span>👁️ 2. Prévia Interativa em Tempo Real</span>
+        <span class="pane-badge success">Live Blockly</span>
+      </div>
+      <div class="pane-content preview-split-container">
+        <div id="previewArea" style="flex: 1; min-height: 250px; position: relative;">
+          <div id="previewDiv" style="width: 100%; height: 100%; position: absolute; background: #ffffff;"></div>
+        </div>
+
+        <!-- PAINEL INFERIOR DO PREVIEW: CÓDIGO PYTHON GERADO PELO BLOCO NA PRÉVIA -->
+        <div class="preview-python-bar">
+          <div class="sub-header">
+            <span>🐍 Código MicroPython Gerado na Prévia:</span>
+          </div>
+          <pre class="code-output mini" id="previewPythonOutput"># Conecte ou mova os blocos na prévia para inspecionar o código Python gerado</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUADRANTE 3: DEFINIÇÃO JAVASCRIPT & XML DO TOOLBOX -->
+    <section class="studio-pane">
+      <div class="pane-header tabbed-header">
+        <div class="tab-buttons">
+          <button class="pane-tab active" onclick="switchCodeTab('js')">📋 Definição JS (Blockly.Blocks)</button>
+          <button class="pane-tab" onclick="switchCodeTab('xml')">📦 XML do Toolbox</button>
+        </div>
+        <div style="display: flex; gap: 6px;">
+          <button class="sat-btn copy-btn" onclick="SatStudioCore.recompileFromEditedPanels()" title="Recompilar código editado manualmente">🔄 Recompilar</button>
+          <button class="sat-btn copy-btn" onclick="copyCurrentCodeTab()">Copiar</button>
+        </div>
+      </div>
+      <div class="pane-content">
+        <div id="tabContentJs" class="code-tab-panel active">
+          <pre class="code-output editable" id="blockDefinitionOutput" contenteditable="true" spellcheck="false" title="Edição direta de código JavaScript"></pre>
+        </div>
+        <div id="tabContentXml" class="code-tab-panel">
+          <pre class="code-output editable" id="toolboxSnippetOutput" contenteditable="true" spellcheck="false" title="Edição direta de XML do Toolbox"></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUADRANTE 4: GERADOR PYTHON & DRIVER MICROPYTHON (.PY) -->
+    <section class="studio-pane">
+      <div class="pane-header tabbed-header">
+        <div class="tab-buttons">
+          <button class="pane-tab active" onclick="switchPythonTab('gen')">🐍 Gerador MicroPython</button>
+          <button class="pane-tab" onclick="switchPythonTab('driver')" id="driverTitleBadge">📁 Driver (.py)</button>
+        </div>
+        <div style="display: flex; gap: 6px;">
+          <button class="sat-btn copy-btn" onclick="SatStudioCore.recompileFromEditedPanels()" title="Recompilar gerador editado manualmente">🔄 Recompilar</button>
+          <button class="sat-btn copy-btn" onclick="copyCurrentPythonTab()">Copiar</button>
+        </div>
+      </div>
+      <div class="pane-content">
+        <div id="tabContentGen" class="code-tab-panel active">
+          <pre class="code-output editable" id="generatorStubOutput" contenteditable="true" spellcheck="false" title="Edição direta do Gerador Python"></pre>
+        </div>
+        <div id="tabContentDriver" class="code-tab-panel">
+          <pre class="code-output editable" id="driverPyOutput" contenteditable="true" spellcheck="false" title="Edição do Driver .py"></pre>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL DE CONFIGURAÇÃO DE CHAVE DE API DA IA -->
+  <div class="studio-modal-backdrop" id="modalAIConfigBackdrop" style="display: none;" onclick="if(event.target === this) closeAIConfigModal()">
+    <div class="studio-modal-box">
+      <div class="modal-header">
+        <span>⚙️ Conectar Inteligência Artificial (API Key)</span>
+        <button class="modal-close-btn" onclick="closeAIConfigModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">
+          Conecte sua chave de API do <strong>Google Gemini</strong> para que a IA analise qualquer sensor, módulo ou hardware e gere automaticamente blocos avançados, drivers MicroPython e registradores.
+        </p>
+
+        <div class="form-group">
+          <label>Provedor de IA:</label>
+          <select id="selectAIProvider">
+            <option value="gemini">Google Gemini (Gemini 1.5 / 2.0 Flash — Rápido &amp; Gratuito)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Chave de API (API Key):</label>
+          <input type="password" id="inputAIApiKey" placeholder="Cole sua API Key do Google Gemini..." autocomplete="off">
+          <span class="help-text">Sua chave é armazenada de forma segura exclusivamente no seu navegador local (LocalStorage).</span>
+        </div>
+
+        <div class="modal-actions">
+          <button class="sat-btn" onclick="closeAIConfigModal()">Cancelar</button>
+          <button class="sat-btn primary" onclick="saveAIConfig()">💾 Salvar Chave &amp; Conectar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPTS DE INTERFACE DO STUDIO -->
+  <script>
+    let activeCodeTab = 'js';
+    let activePythonTab = 'gen';
+
+    function openAIConfigModal() {
+      const apiKey = window.SatAISynthesizer ? window.SatAISynthesizer.getApiKey() : '';
+      document.getElementById('inputAIApiKey').value = apiKey;
+      document.getElementById('modalAIConfigBackdrop').style.display = 'flex';
+    }
+
+    function closeAIConfigModal() {
+      document.getElementById('modalAIConfigBackdrop').style.display = 'none';
+    }
+
+    function saveAIConfig() {
+      const key = document.getElementById('inputAIApiKey').value;
+      if (window.SatAISynthesizer) {
+        window.SatAISynthesizer.setApiKey(key);
+      }
+      updateAIStatusBadge();
+      closeAIConfigModal();
+      if (key && key.trim()) {
+        alert('✨ Chave de API do Gemini salva com sucesso!');
+      } else {
+        alert('ℹ️ Modo local inteligente ativado.');
+      }
+    }
+
+    function updateAIStatusBadge() {
+      const key = window.SatAISynthesizer ? window.SatAISynthesizer.getApiKey() : '';
+      const icon = document.getElementById('aiStatusIcon');
+      const btn = document.getElementById('btnOpenAIModal');
+      if (key && key.trim()) {
+        if (icon) icon.textContent = '🟢';
+        if (btn) btn.title = 'IA Conectada (Gemini Flash ativo)';
+      } else {
+        if (icon) icon.textContent = '⚙️';
+        if (btn) btn.title = 'Configurar Chave de API da IA';
+      }
+    }
+
+    function switchCodeTab(tab) {
+      activeCodeTab = tab;
+      document.querySelectorAll('.tabbed-header .tab-buttons button').forEach((btn, idx) => {
+        if (idx === 0) btn.classList.toggle('active', tab === 'js');
+        if (idx === 1) btn.classList.toggle('active', tab === 'xml');
+      });
+      document.getElementById('tabContentJs').classList.toggle('active', tab === 'js');
+      document.getElementById('tabContentXml').classList.toggle('active', tab === 'xml');
+    }
+
+    function switchPythonTab(tab) {
+      activePythonTab = tab;
+      const buttons = document.querySelectorAll('.studio-pane:nth-child(4) .tab-buttons button');
+      if (buttons[0]) buttons[0].classList.toggle('active', tab === 'gen');
+      if (buttons[1]) buttons[1].classList.toggle('active', tab === 'driver');
+      document.getElementById('tabContentGen').classList.toggle('active', tab === 'gen');
+      document.getElementById('tabContentDriver').classList.toggle('active', tab === 'driver');
+    }
+
+    function copyCurrentCodeTab() {
+      const el = activeCodeTab === 'js' 
+        ? document.getElementById('blockDefinitionOutput') 
+        : document.getElementById('toolboxSnippetOutput');
+      const text = (el && el.innerText !== undefined) ? el.innerText : (el ? el.textContent : '');
+      navigator.clipboard.writeText(text);
+      alert('Código copiado para a área de transferência!');
+    }
+
+    function copyCurrentPythonTab() {
+      const el = activePythonTab === 'gen'
+        ? document.getElementById('generatorStubOutput')
+        : document.getElementById('driverPyOutput');
+      const text = (el && el.innerText !== undefined) ? el.innerText : (el ? el.textContent : '');
+      navigator.clipboard.writeText(text);
+      alert('Código copiado para a área de transferência!');
+    }
+
+    function switchCreationMode(mode) {
+      document.getElementById('btnModePython').classList.toggle('active', mode === 'python');
+      document.getElementById('btnModePrompt').classList.toggle('active', mode === 'prompt');
+      document.getElementById('panelModePython').classList.toggle('active', mode === 'python');
+      document.getElementById('panelModePrompt').classList.toggle('active', mode === 'prompt');
+    }
+
+    const PYTHON_PRESETS = {
+      'adc_battery': `# Leitura de Tensão da Bateria (ADC)\ntensao = round((ADC(Pin(36)).read() / 4095.0 * 3.3) * 2.0, 2)`,
+      'buzzer_pulse': `# Acionamento de Buzzer / Relé\nbuzzer = Pin(25, Pin.OUT)\nbuzzer.value(1)\ntime.sleep_ms(80)\nbuzzer.value(0)`,
+      'servo_pwm': `# Controle de Servo Motor (PWM 50Hz)\nservo = PWM(Pin(19), freq=50)\nservo.duty(77) # 90 graus`,
+      'lora_send': `# Transmissão de Pacote LoRa\nlora.send("SAT_DATA", sf=7)`,
+      'i2c_sensor': `# Leitura Direta de Sensor I2C\nleitura = sensor.read_temp()`,
+      'sd_log': `# Registro de Telemetria no Arquivo Flash / SD\nwith open("telemetria.csv", "a") as f:\n    f.write("DADOS\\n")`
+    };
+
+    function applyPythonPreset(key) {
+      if (PYTHON_PRESETS[key]) {
+        document.getElementById('inputMicroPythonCode').value = PYTHON_PRESETS[key];
+        executePythonSynthesis();
+      }
+    }
+
+    function executePythonSynthesis() {
+      const code = document.getElementById('inputMicroPythonCode').value;
+      if (!code || !code.trim()) {
+        alert('Por favor, digite ou cole um trecho de código MicroPython.');
+        return;
+      }
+      const success = SatStudioCore.synthesizeFromPython(code);
+      if (success) {
+        syncFormFromCurrentConfig();
+      }
+    }
+
+    async function executePromptGeneration() {
+      const prompt = document.getElementById('inputBlockPrompt').value;
+      if (prompt && prompt.trim()) {
+        const btn = document.getElementById('btnGeneratePrompt');
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = '⏳ Sintetizando...';
+        }
+        try {
+          await SatStudioCore.generateFromPrompt(prompt);
+          syncFormFromCurrentConfig();
+        } finally {
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = '🚀 Sintetizar Bloco & Driver';
+          }
+        }
+      }
+    }
+
+    function applyPreset(text) {
+      document.getElementById('inputBlockPrompt').value = text;
+      executePromptGeneration();
+    }
+
+    function syncFormFromCurrentConfig() {
+      const cfg = SatStudioCore.getCurrentConfig();
+      if (!cfg) return;
+      document.getElementById('cfgBlockName').value = cfg.blockName;
+      document.getElementById('cfgBlockLabel').value = cfg.label;
+      document.getElementById('cfgColor').value = cfg.color;
+      document.getElementById('cfgBlockType').value = cfg.blockType;
+      document.getElementById('cfgInputsInline').value = cfg.inputsInline ? 'true' : 'false';
+    }
+
+    function updateBlockFromForm() {
+      const cfg = SatStudioCore.getCurrentConfig() || {};
+      cfg.blockName = document.getElementById('cfgBlockName').value.trim() || 'bloco_custom';
+      cfg.label = document.getElementById('cfgBlockLabel').value.trim() || 'Bloco Customizado';
+      cfg.category = document.getElementById('cfgCategory').value;
+      cfg.color = document.getElementById('cfgColor').value;
+      cfg.blockType = document.getElementById('cfgBlockType').value;
+      cfg.inputsInline = document.getElementById('cfgInputsInline').value === 'true';
+
+      // Recompila com a nova configuração do formulário
+      SatStudioCore.applyBlockConfiguration(cfg);
+    }
+
+    // Inicialização ao carregar o DOM
+    window.addEventListener('DOMContentLoaded', () => {
+      SatStudioCore.init();
+      syncFormFromCurrentConfig();
+      updateAIStatusBadge();
+
+      document.getElementById('btnInjectIDE').addEventListener('click', () => {
+        if (SatStudioCore.injectIntoSatBlocksIDE()) {
+          alert('✨ Bloco validado com 5 travas de segurança e injetado na IDE SatBlocks com sucesso!\nEle estará disponível imediatamente na sua barra de ferramentas.');
+        }
+      });
+
+      document.getElementById('btnExportPng').addEventListener('click', () => {
+        SatStudioCore.exportBlockImage('png');
+      });
+
+      document.getElementById('btnExportSvg').addEventListener('click', () => {
+        SatStudioCore.exportBlockImage('svg');
+      });
+    });
+  </script>
+</body>
+</html>
