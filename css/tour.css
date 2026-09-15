@@ -38,7 +38,9 @@
 
 .sat-tour-card {
   position: absolute;
-  width: 380px;
+  width: min(380px, calc(100vw - 24px));
+  max-width: calc(100vw - 24px);
+  box-sizing: border-box;
   background: #0f172a;
   border: 1px solid #0284c7;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9), 0 0 20px rgba(2, 132, 199, 0.4);
