@@ -273,6 +273,27 @@ window.SatDataboard = (function() {
     }
   }
 
+  // Encaminha, em paralelo, os sensores padrão OBSAT recebidos via USB/BLE
+  // para o mesmo canal HTTP que os blocos "Publicar no Painel IoT" usam —
+  // sem isso, quem abre um link de Painel IOT compartilhado nunca veria
+  // esses gráficos, já que a telemetria por cabo só existe no navegador de
+  // quem está fisicamente conectado à placa. Uso o mesmo token embutido no
+  // código gerado, para o link compartilhado (que carrega esse token)
+  // continuar mostrando os mesmos dados ao vivo.
+  function forwardScalarToIotChannel(equipe, canal, valor) {
+    const token = getOrCreateIotSessionToken();
+    if (!token) return;
+    const params = new URLSearchParams({
+      equipe: equipe !== undefined && equipe !== null ? String(equipe) : '',
+      canal: canal,
+      valor: String(valor),
+      token: token
+    });
+    fetch(`telemetria/iot_publish.php?${params.toString()}`).catch(() => {
+      // Falha de rede não deve interromper a exibição local no Databoard
+    });
+  }
+
   /* =========================================================================
    * 1b. PONTE IOT (Polling HTTP dos canais publicados pelos blocos IoT)
    *
@@ -1426,26 +1447,36 @@ window.SatDataboard = (function() {
 
       // Ingestão no motor de séries temporais DataStorage (alimenta os gráficos em tempo real)
       if (data.temperatura !== undefined && !isNaN(parseFloat(data.temperatura))) {
-        DataStorage.push('obsat_temperatura', [timestampMs, parseFloat(parseFloat(data.temperatura).toFixed(2))]);
+        const v = parseFloat(parseFloat(data.temperatura).toFixed(2));
+        DataStorage.push('obsat_temperatura', [timestampMs, v]);
+        forwardScalarToIotChannel(data.equipe, 'obsat_temperatura', v);
       }
 
       if (data.pressao !== undefined && !isNaN(parseFloat(data.pressao))) {
-        DataStorage.push('obsat_pressao', [timestampMs, parseFloat(parseFloat(data.pressao).toFixed(2))]);
+        const v = parseFloat(parseFloat(data.pressao).toFixed(2));
+        DataStorage.push('obsat_pressao', [timestampMs, v]);
+        forwardScalarToIotChannel(data.equipe, 'obsat_pressao', v);
       }
 
       if (data.altitude !== undefined && !isNaN(parseFloat(data.altitude))) {
-        DataStorage.push('obsat_altitude', [timestampMs, parseFloat(parseFloat(data.altitude).toFixed(1))]);
+        const v = parseFloat(parseFloat(data.altitude).toFixed(1));
+        DataStorage.push('obsat_altitude', [timestampMs, v]);
+        forwardScalarToIotChannel(data.equipe, 'obsat_altitude', v);
       } else if (data.pressao !== undefined && !isNaN(parseFloat(data.pressao))) {
         // Estimativa barométrica alternativa caso o campo direto não venha
         const p = parseFloat(data.pressao);
         if (p > 100 && p < 1200) {
           const alt = 44330 * (1 - Math.pow(p / 1013.25, 0.1903));
-          DataStorage.push('obsat_altitude', [timestampMs, parseFloat(alt.toFixed(1))]);
+          const v = parseFloat(alt.toFixed(1));
+          DataStorage.push('obsat_altitude', [timestampMs, v]);
+          forwardScalarToIotChannel(data.equipe, 'obsat_altitude', v);
         }
       }
 
       if (data.bateria !== undefined && !isNaN(parseFloat(data.bateria))) {
-        DataStorage.push('obsat_bateria', [timestampMs, parseFloat(parseFloat(data.bateria).toFixed(1))]);
+        const v = parseFloat(parseFloat(data.bateria).toFixed(1));
+        DataStorage.push('obsat_bateria', [timestampMs, v]);
+        forwardScalarToIotChannel(data.equipe, 'obsat_bateria', v);
       }
 
       if (Array.isArray(data.giroscopio) && data.giroscopio.length >= 3) {
