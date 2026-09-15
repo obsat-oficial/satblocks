@@ -240,9 +240,11 @@ window.SatBlocksApp = (function() {
     }
     setupEvents();
     updateHeaderCompactMode();
+    updateDataboardHeaderCompactMode();
     // Reavalia depois que fontes/ícones tiverem carregado por completo (a medição
     // inicial pode ocorrer antes disso e ficar levemente imprecisa).
     setTimeout(updateHeaderCompactMode, 300);
+    setTimeout(updateDataboardHeaderCompactMode, 300);
     SatFiles.init();
     SatDataboard.init();
     SatBlocksTour.init();
@@ -1755,6 +1757,28 @@ window.SatBlocksApp = (function() {
 
   window.addEventListener('resize', scheduleHeaderCompactUpdate);
 
+  // Mesma técnica de updateHeaderCompactMode acima, mas para o cabeçalho do
+  // Painel IOT: mede se o conteúdo realmente estoura a largura disponível
+  // (em vez de um breakpoint fixo em pixels, que não bate com a largura real
+  // necessária — varia com o tamanho do nome do workspace, zoom, etc.) e só
+  // então empilha em duas linhas com o divisor.
+  let databoardHeaderCompactRaf = null;
+
+  function updateDataboardHeaderCompactMode() {
+    const header = document.querySelector('.databoard-topbar');
+    if (!header || header.offsetParent === null) return; // aba oculta: não mede
+    header.classList.remove('header-force-stack');
+    const overflowing = header.scrollWidth > header.clientWidth + 1;
+    header.classList.toggle('header-force-stack', overflowing);
+  }
+
+  function scheduleDataboardHeaderCompactUpdate() {
+    if (databoardHeaderCompactRaf) cancelAnimationFrame(databoardHeaderCompactRaf);
+    databoardHeaderCompactRaf = requestAnimationFrame(updateDataboardHeaderCompactMode);
+  }
+
+  window.addEventListener('resize', scheduleDataboardHeaderCompactUpdate);
+
   function toggleActionsDropdown(event) {
     if (event) event.stopPropagation();
     const menu = document.getElementById('satActionsDropdownMenu');
@@ -1837,6 +1861,7 @@ window.SatBlocksApp = (function() {
         if (window.SatDataboard && typeof SatDataboard.refreshGrid === 'function') {
           SatDataboard.refreshGrid();
         }
+        updateDataboardHeaderCompactMode();
       }, 50);
     }
   }
