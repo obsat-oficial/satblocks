@@ -1518,9 +1518,27 @@ window.SatBlocksApp = (function() {
     }
   }
 
+  function toggleActionsDropdown(event) {
+    if (event) event.stopPropagation();
+    const menu = document.getElementById('satActionsDropdownMenu');
+    if (menu) {
+      menu.classList.toggle('open');
+    }
+  }
+
+  function closeActionsDropdown() {
+    const menu = document.getElementById('satActionsDropdownMenu');
+    if (menu) {
+      menu.classList.remove('open');
+    }
+  }
+
   document.addEventListener('click', (e) => {
     if (!e.target.closest('#satTabsDropdownContainer')) {
       closeTabsDropdown();
+    }
+    if (!e.target.closest('#satActionsDropdownContainer')) {
+      closeActionsDropdown();
     }
   });
 
@@ -2256,6 +2274,8 @@ window.SatBlocksApp = (function() {
     getCurrentBoard: () => currentBoard,
     switchMainTab,
     toggleTabsDropdown,
+    toggleActionsDropdown,
+    closeActionsDropdown,
     toggleToolbox,
     setToolboxCollapsed,
     toggleSidePanel,

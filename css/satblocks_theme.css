@@ -71,24 +71,20 @@ body {
    TOPBAR GLOBAL ESTILO OBSAT / BIPES RESPONSIVA
    ========================================== */
 .sat-header, .sat-topbar {
-  height: auto;
-  min-height: 56px;
+  height: 56px;
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 16px;
+  padding: 0 16px;
   box-shadow: var(--shadow-sm);
   z-index: 1000;
   position: relative;
   gap: 10px;
-  row-gap: 6px;
   min-width: 0;
   overflow: visible;
-  /* Se não houver espaço para tudo numa linha, quebra para uma 2ª linha
-     em vez de esconder itens (ex: avatar/perfil) para além da borda da tela. */
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .sat-topbar-left {
@@ -291,6 +287,20 @@ body {
   flex-shrink: 0;
 }
 
+/* Dropdown de Ações (Missões/Flasher/Telemetria/Studio) — mesmo padrão do dropdown de abas */
+.sat-actions-expanded-list {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.sat-actions-dropdown-container {
+  display: none;
+  position: relative;
+  flex-shrink: 0;
+}
+
 .sat-tab-dropdown-btn {
   background: var(--bg-surface);
   color: var(--obsat-slate);
@@ -381,6 +391,26 @@ body {
 /* ==========================================
    BREAKPOINTS RESPONSIVOS PROGRESSIVOS DA TOPBAR
    ========================================== */
+
+/* Primeiro estágio de compactação: agrupa os botões de ação num menu
+   e reduz a pílula de conexão a um único botão, antes de qualquer
+   coisa precisar ser cortada/escondida sem alternativa de acesso. */
+@media screen and (max-width: 1650px) {
+  .sat-actions-expanded-list {
+    display: none !important;
+  }
+  .sat-actions-dropdown-container {
+    display: flex !important;
+  }
+  .channel-connect-pill .channel-pill-btn,
+  .channel-connect-pill .pill-divider {
+    display: none !important;
+  }
+  .connect-status-btn {
+    padding: 6px 10px;
+  }
+}
+
 @media screen and (max-width: 1380px) {
   .sat-header, .sat-topbar {
     padding: 0 12px;

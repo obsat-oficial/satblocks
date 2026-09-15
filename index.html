@@ -179,21 +179,48 @@
         </button>
       </div>
 
-      <button class="sat-btn studio" id="btnOpenMissionsModal" onclick="window.SatProfiles ? window.SatProfiles.openMissionsModal() : (document.getElementById('modalMissionsOverlay').style.display='flex')" title="Catálogo de Missões Oficiais das Oficinas OBSAT 2026" style="background: rgba(124, 58, 237, 0.2); border-color: rgba(168, 85, 247, 0.5); color: #c084fc; font-weight: 600; cursor: pointer;">
-        <span>🚀</span> <span class="studio-label">Missões Oficiais</span>
-      </button>
+      <!-- MODO EXPANDIDO / BOTÕES DE AÇÃO EM LINHA (TELAS LARGAS) -->
+      <div class="sat-actions-expanded-list">
+        <button class="sat-btn studio" id="btnOpenMissionsModal" onclick="window.SatProfiles ? window.SatProfiles.openMissionsModal() : (document.getElementById('modalMissionsOverlay').style.display='flex')" title="Catálogo de Missões Oficiais das Oficinas OBSAT 2026" style="background: rgba(124, 58, 237, 0.2); border-color: rgba(168, 85, 247, 0.5); color: #c084fc; font-weight: 600; cursor: pointer;">
+          <span>🚀</span> <span class="studio-label">Missões Oficiais</span>
+        </button>
 
-      <button class="sat-btn studio" id="btnOpenFlasher" onclick="window.open('flasher.html', '_blank')" title="Gravar Firmware MicroPython na ESP32 / ESP32-CAM via Web Serial" style="background: rgba(219, 39, 119, 0.15); border-color: rgba(219, 39, 119, 0.4); color: #f472b6;">
-        <span>⚡</span> <span class="studio-label">Flasher Firmware</span>
-      </button>
+        <button class="sat-btn studio" id="btnOpenFlasher" onclick="window.open('flasher.html', '_blank')" title="Gravar Firmware MicroPython na ESP32 / ESP32-CAM via Web Serial" style="background: rgba(219, 39, 119, 0.15); border-color: rgba(219, 39, 119, 0.4); color: #f472b6;">
+          <span>⚡</span> <span class="studio-label">Flasher Firmware</span>
+        </button>
 
-      
         <button class="sat-btn studio" id="btnOpenTelemetria" onclick="window.open('telemetria/', '_blank')" title="Abrir Servidor de Testes de Telemetria OBSAT 2026" style="background: rgba(2, 132, 199, 0.15); border-color: rgba(2, 132, 199, 0.4); color: #38bdf8;">
           <span>📡</span> <span class="studio-label">Telemetria</span>
         </button>
         <button class="sat-btn studio" id="btnOpenStudio" onclick="window.open('studio.html', '_blank')" title="Criar novos blocos e exportar imagens / drivers">
-        <span>🛠️</span> <span class="studio-label">SatBlocks Studio</span>
-      </button>
+          <span>🛠️</span> <span class="studio-label">SatBlocks Studio</span>
+        </button>
+      </div>
+
+      <!-- MODO COMPACTO / DROPDOWN DE AÇÕES (TELAS MENORES) -->
+      <div class="sat-actions-dropdown-container" id="satActionsDropdownContainer">
+        <button class="sat-tab-dropdown-btn" id="satActionsDropdownBtn" title="Mais Ações" onclick="SatBlocksApp.toggleActionsDropdown(event)">
+          <span class="dropdown-icon-badge">⚡</span>
+          <span class="dropdown-tab-text">Ações</span>
+          <svg class="dropdown-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+        <div class="sat-tabs-dropdown-menu" id="satActionsDropdownMenu">
+          <div class="sat-dropdown-item" onclick="SatBlocksApp.closeActionsDropdown(); window.SatProfiles ? window.SatProfiles.openMissionsModal() : (document.getElementById('modalMissionsOverlay').style.display='flex')">
+            <span class="item-icon">🚀</span> <span class="item-label">Missões Oficiais</span>
+          </div>
+          <div class="sat-dropdown-item" onclick="SatBlocksApp.closeActionsDropdown(); window.open('flasher.html', '_blank')">
+            <span class="item-icon">⚡</span> <span class="item-label">Flasher Firmware</span>
+          </div>
+          <div class="sat-dropdown-item" onclick="SatBlocksApp.closeActionsDropdown(); window.open('telemetria/', '_blank')">
+            <span class="item-icon">📡</span> <span class="item-label">Telemetria</span>
+          </div>
+          <div class="sat-dropdown-item" onclick="SatBlocksApp.closeActionsDropdown(); window.open('studio.html', '_blank')">
+            <span class="item-icon">🛠️</span> <span class="item-label">SatBlocks Studio</span>
+          </div>
+        </div>
+      </div>
 
       <!-- AVATAR DO USUÁRIO ESTILO BIPES (ROSTINHO) -->
       <button class="sat-user-avatar-btn" id="btnBipesUserAvatar" onclick="SatProfiles.toggleAccountPanel(event)" title="Projetos &amp; Perfil da Equipe">
