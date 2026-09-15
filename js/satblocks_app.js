@@ -982,6 +982,7 @@ window.SatBlocksApp = (function() {
         const newWidth = Math.min(maxW, Math.max(500, startWidth + deltaX));
         
         sidePanelEl.style.width = newWidth + 'px';
+        positionSidePanelToggleBtn();
 
         if (workspace) {
           Blockly.svgResize(workspace);
@@ -1023,6 +1024,7 @@ window.SatBlocksApp = (function() {
           btnToggleSide.title = isExpanded ? 'Expandir Painel' : 'Reduzir Painel';
         }
         localStorage.setItem('satblocks_sidepanel_width', targetW);
+        positionSidePanelToggleBtn();
         setTimeout(() => {
           sidePanelEl.classList.remove('animate-resize');
           if (workspace) {
@@ -1043,6 +1045,7 @@ window.SatBlocksApp = (function() {
         btnToggleSide.textContent = isExpanded ? '⤢' : '⇤';
         btnToggleSide.title = isExpanded ? 'Expandir Painel' : 'Reduzir Painel';
         localStorage.setItem('satblocks_sidepanel_width', targetW);
+        positionSidePanelToggleBtn();
 
         setTimeout(() => {
           sidePanelEl.classList.remove('animate-resize');
@@ -2135,7 +2138,19 @@ window.SatBlocksApp = (function() {
     return !!(el.closest('.sat-side-panel') || el.closest('#panelHoverTrigger') || el.closest('#btnToggleSidePanel'));
   }
 
+  function positionSidePanelToggleBtn() {
+    const btn = document.getElementById('btnToggleSidePanel');
+    const panelEl = document.getElementById('sidePanel');
+    if (!btn || !panelEl) return;
+    const restoreWidth = parseInt(panelEl.style.getPropertyValue('--sat-restore-width'), 10);
+    const w = restoreWidth || parseInt(panelEl.style.width, 10) || panelEl.offsetWidth || 520;
+    // Espelha o botão da barra de blocos: fica no canto interno (esquerdo) do painel,
+    // acompanhando sua largura real em vez de ficar fixo na borda da tela.
+    btn.style.right = Math.max(8, w - 37) + 'px';
+  }
+
   function initSidePanelCollapse() {
+    positionSidePanelToggleBtn();
     const saved = localStorage.getItem('satblocks_sidepanel_collapsed');
     if (saved === 'true' || (saved === null && window.innerWidth <= 768)) {
       setSidePanelCollapsed(true);
@@ -2158,7 +2173,7 @@ window.SatBlocksApp = (function() {
         const hovered = document.querySelector(':hover');
         if (isSidePanelInteractionTarget(hovered)) return;
         if (area) area.classList.remove('side-panel-hover-active');
-      }, 200);
+      }, 350);
     }
 
     if (trigger) trigger.addEventListener('mouseenter', handleEnter);
@@ -2201,14 +2216,16 @@ window.SatBlocksApp = (function() {
       // Preserva a largura atual como variável CSS para restaurar ao abrir via hover
       const currentWidth = panelEl.style.width || (panelEl.offsetWidth + 'px');
       panelEl.style.setProperty('--sat-restore-width', currentWidth);
-      panelEl.classList.add('animate-resize');
-      setTimeout(() => panelEl.classList.remove('animate-resize'), 260);
+      panelEl.classList.add('side-panel-collapse-transition');
+      setTimeout(() => panelEl.classList.remove('side-panel-collapse-transition'), 340);
     }
 
     if (area) {
       area.classList.toggle('side-panel-collapsed', isSidePanelCollapsed);
       area.classList.remove('side-panel-hover-active');
     }
+
+    positionSidePanelToggleBtn();
 
     if (btn) {
       btn.title = isSidePanelCollapsed
@@ -2219,7 +2236,7 @@ window.SatBlocksApp = (function() {
     localStorage.setItem('satblocks_sidepanel_collapsed', isSidePanelCollapsed ? 'true' : 'false');
     setTimeout(() => {
       if (workspace) Blockly.svgResize(workspace);
-    }, 260);
+    }, 340);
   }
 
   function toggleSidePanel() {

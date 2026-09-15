@@ -71,19 +71,24 @@ body {
    TOPBAR GLOBAL ESTILO OBSAT / BIPES RESPONSIVA
    ========================================== */
 .sat-header, .sat-topbar {
-  height: 56px;
+  height: auto;
+  min-height: 56px;
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  padding: 8px 16px;
   box-shadow: var(--shadow-sm);
   z-index: 1000;
   position: relative;
   gap: 10px;
+  row-gap: 6px;
   min-width: 0;
   overflow: visible;
+  /* Se não houver espaço para tudo numa linha, quebra para uma 2ª linha
+     em vez de esconder itens (ex: avatar/perfil) para além da borda da tela. */
+  flex-wrap: wrap;
 }
 
 .sat-topbar-left {
@@ -886,7 +891,9 @@ body {
 .sat-panel-toggle-btn {
   position: absolute;
   top: 6px;
-  right: 8px;
+  /* Acompanha a borda esquerda (interna) do painel — mantido em sincronia via JS
+     conforme a largura do painel muda (arraste, toggle, responsivo). */
+  right: 483px;
   z-index: 1002;
   background: #ffffff;
   border: 1px solid var(--border-color);
@@ -899,8 +906,13 @@ body {
   color: var(--text-muted);
   cursor: pointer;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  transition: background 0.15s, color 0.15s, transform 0.15s;
+  transition: right 0.32s cubic-bezier(0.16, 1, 0.3, 1), background 0.15s, color 0.15s, transform 0.15s;
   user-select: none;
+}
+
+/* Recolhido e sem hover: flutua como uma abinha fixa na borda direita da tela */
+#tab_page_blocks.side-panel-collapsed:not(.side-panel-hover-active) .sat-panel-toggle-btn {
+  right: 8px !important;
 }
 
 .sat-panel-toggle-btn:hover {
@@ -1016,6 +1028,10 @@ body.resizing-active * {
 
 .sat-side-panel.animate-resize {
   transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sat-side-panel.side-panel-collapse-transition {
+  transition: width 0.32s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .sat-side-panel .panel-header {
