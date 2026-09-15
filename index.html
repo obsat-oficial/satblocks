@@ -676,9 +676,9 @@
             <span>💾</span> Datasets / CSV
           </button>
 
-          <div class="databoard-status-pill" id="databoardTelemetryStatus" title="Status de Recepção de Dados do Satélite">
+          <div class="databoard-status-pill" id="databoardTelemetryStatus" title="Status da telemetria recebida via Cabo USB/BLE (pacote JSON do satélite) — canal separado dos canais IoT via HTTP configurados ao lado.">
             <span class="telemetry-status-dot"></span>
-            <span id="telemetryStatusText">Aguardando Satélite</span>
+            <span id="telemetryStatusText">Aguardando Satélite (USB/BLE)</span>
           </div>
 
           <button class="sat-btn danger" id="btnClearDataboardData" title="Limpar todos os dados e histórico dos gráficos">
@@ -729,7 +729,7 @@
         <div>
           <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">1. Tipo de Widget:</label>
           <select id="widgetTypeSelect" class="sat-select" style="width: 100%; padding: 8px 12px; font-size: 13px;">
-            <option value="chart" selected>📈 Gráfico Chart.js (Linhas, Barras, Radar)</option>
+            <option value="chart" selected>📈 Gráfico Chart.js (Linha, Barras, Radar, Dispersão, Pizza)</option>
             <option value="switch">🔘 Interruptor / Chave de Comando HTTP</option>
             <option value="stream">🎥 Câmera / Stream de Vídeo (MJPEG)</option>
           </select>
@@ -1962,7 +1962,7 @@
   <!-- Scripts da Aplicação -->
   <script src="js/sat_connection.js?v=20260911-600"></script>
   <script src="js/sat_files.js?v=20260915-1"></script>
-  <script src="js/sat_databoard.js?v=20260915-2"></script>
+  <script src="js/sat_databoard.js?v=20260915-3"></script>
   <script src="js/sat_profiles.js?v=20260915-2"></script>
   <script src="js/sat_reference.js?v=20260915-3"></script>
   <script src="js/satblocks_tour.js?v=20260915-4"></script>

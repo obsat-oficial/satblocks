@@ -95,19 +95,34 @@ window.SatDataboard = (function() {
         if (chart.dataset === dataset && chart.chartJs) {
           const c = chart.chartJs;
           const rawX = coordinates[0];
-          const label = (chart.timeseries && typeof rawX === 'number') ? rawX : this.formatEpoch(rawX);
-
-          c.data.labels.push(label);
-          for (let i = 1; i < coordinates.length; i++) {
-            if (c.data.datasets[i - 1]) {
-              c.data.datasets[i - 1].data.push(coordinates[i]);
-            }
-          }
-
           const limit = chart.limitPoints || 50;
-          if (c.data.labels.length > limit) {
-            c.data.labels.shift();
-            c.data.datasets.forEach(ds => ds.data.shift());
+
+          // Eixo temporal real: Chart.js só posiciona corretamente pontos
+          // num eixo linear quando cada ponto vem como objeto {x, y} — usar
+          // um array de rótulos numérico em paralelo (como no eixo de
+          // categorias) não funciona para esse tipo de eixo.
+          if (chart.timeseries && typeof rawX === 'number') {
+            for (let i = 1; i < coordinates.length; i++) {
+              if (c.data.datasets[i - 1]) {
+                c.data.datasets[i - 1].data.push({ x: rawX, y: coordinates[i] });
+                if (c.data.datasets[i - 1].data.length > limit) {
+                  c.data.datasets[i - 1].data.shift();
+                }
+              }
+            }
+          } else {
+            const label = this.formatEpoch(rawX);
+            c.data.labels.push(label);
+            for (let i = 1; i < coordinates.length; i++) {
+              if (c.data.datasets[i - 1]) {
+                c.data.datasets[i - 1].data.push(coordinates[i]);
+              }
+            }
+
+            if (c.data.labels.length > limit) {
+              c.data.labels.shift();
+              c.data.datasets.forEach(ds => ds.data.shift());
+            }
           }
 
           c.update('none'); // Update sem recalcular animação para alta taxa de frames
@@ -136,9 +151,18 @@ window.SatDataboard = (function() {
       const useTimeAxis = !!setup.timeseries && rows.every(r => typeof r[0] === 'number');
 
       rows.forEach(row => {
-        labels.push(useTimeAxis ? row[0] : this.formatEpoch(row[0]));
-        for (let i = 1; i < row.length; i++) {
-          seriesData[i - 1].push(row[i]);
+        if (useTimeAxis) {
+          // Cada ponto vira {x, y}: é assim que o Chart.js posiciona
+          // corretamente valores num eixo linear (um array de rótulos em
+          // paralelo, como no eixo de categorias, não funciona aqui).
+          for (let i = 1; i < row.length; i++) {
+            seriesData[i - 1].push({ x: row[0], y: row[i] });
+          }
+        } else {
+          labels.push(this.formatEpoch(row[0]));
+          for (let i = 1; i < row.length; i++) {
+            seriesData[i - 1].push(row[i]);
+          }
         }
       });
 
@@ -1366,12 +1390,12 @@ window.SatDataboard = (function() {
       if (pill && text) {
         pill.classList.add('receiving');
         const eqInfo = data.equipe !== undefined ? ` (Eq. ${data.equipe})` : '';
-        text.innerText = `● Recebendo Telemetria #${packetCounter}${eqInfo}`;
+        text.innerText = `● Recebendo via USB/BLE #${packetCounter}${eqInfo}`;
 
         if (statusResetTimer) clearTimeout(statusResetTimer);
         statusResetTimer = setTimeout(() => {
           pill.classList.remove('receiving');
-          text.innerText = 'Aguardando Satélite';
+          text.innerText = 'Aguardando Satélite (USB/BLE)';
         }, 4000);
       }
 
