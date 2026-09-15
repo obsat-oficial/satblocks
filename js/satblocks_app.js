@@ -239,6 +239,10 @@ window.SatBlocksApp = (function() {
       return;
     }
     setupEvents();
+    updateHeaderCompactMode();
+    // Reavalia depois que fontes/ícones tiverem carregado por completo (a medição
+    // inicial pode ocorrer antes disso e ficar levemente imprecisa).
+    setTimeout(updateHeaderCompactMode, 300);
     SatFiles.init();
     SatDataboard.init();
     SatBlocksTour.init();
@@ -1517,6 +1521,25 @@ window.SatBlocksApp = (function() {
       menu.classList.remove('open');
     }
   }
+
+  let headerCompactRaf = null;
+
+  function updateHeaderCompactMode() {
+    const header = document.querySelector('.sat-topbar');
+    if (!header) return;
+    // Mede no estado "expandido": remove o modo compacto e força um reflow síncrono
+    // antes do próximo paint, então não há flicker visível para o usuário.
+    header.classList.remove('header-force-compact');
+    const overflowing = header.scrollWidth > header.clientWidth + 1;
+    header.classList.toggle('header-force-compact', overflowing);
+  }
+
+  function scheduleHeaderCompactUpdate() {
+    if (headerCompactRaf) cancelAnimationFrame(headerCompactRaf);
+    headerCompactRaf = requestAnimationFrame(updateHeaderCompactMode);
+  }
+
+  window.addEventListener('resize', scheduleHeaderCompactUpdate);
 
   function toggleActionsDropdown(event) {
     if (event) event.stopPropagation();

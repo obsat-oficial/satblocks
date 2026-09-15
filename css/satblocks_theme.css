@@ -395,7 +395,29 @@ body {
 /* Primeiro estágio de compactação: agrupa os botões de ação num menu
    e reduz a pílula de conexão a um único botão, antes de qualquer
    coisa precisar ser cortada/escondida sem alternativa de acesso. */
-@media screen and (max-width: 1650px) {
+/* Aplicado via JS (updateHeaderCompactMode), que mede se o conteúdo do
+   cabeçalho realmente cabe na largura disponível — mais confiável do que
+   um breakpoint fixo, já que a largura necessária varia com zoom, fontes
+   do sistema e nomes de placa/equipe. */
+.sat-topbar.header-force-compact .sat-actions-expanded-list {
+  display: none !important;
+}
+
+.sat-topbar.header-force-compact .sat-actions-dropdown-container {
+  display: flex !important;
+}
+
+.sat-topbar.header-force-compact .channel-connect-pill .channel-pill-btn,
+.sat-topbar.header-force-compact .channel-connect-pill .pill-divider {
+  display: none !important;
+}
+
+.sat-topbar.header-force-compact .connect-status-btn {
+  padding: 6px 10px;
+}
+
+/* Breakpoint fixo como rede de segurança adicional em telas muito estreitas */
+@media screen and (max-width: 1050px) {
   .sat-actions-expanded-list {
     display: none !important;
   }
