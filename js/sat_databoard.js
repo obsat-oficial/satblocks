@@ -189,6 +189,100 @@ window.SatDataboard = (function() {
   const DataStorage = new DataStorageEngine();
 
   /* =========================================================================
+   * 1b. PONTE IOT (Polling HTTP dos canais publicados pelos blocos IoT)
+   *
+   * Não existe broker MQTT: os blocos "Publicar no Painel IoT" fazem uma
+   * requisição HTTP simples para telemetria/iot_publish.php. Esta ponte
+   * pergunta periodicamente por equipe (telemetria/iot_topics.php) quais
+   * canais existem e busca incrementalmente (telemetria/iot_get.php) o que
+   * chegou de novo, alimentando o mesmo DataStorage que os gráficos usam.
+   * ========================================================================= */
+  class IotBridgeEngine {
+    constructor() {
+      this.equipe = localStorage.getItem('satblocks_iot_equipe') || '';
+      this.knownChannels = {}; // canal -> próximo timestamp (unix) a buscar
+      this.timer = null;
+      this.pollIntervalMs = 4000;
+      this.inFlight = false;
+    }
+
+    setEquipe(equipe) {
+      const novo = String(equipe || '').trim();
+      if (novo === this.equipe) return;
+      this.equipe = novo;
+      this.knownChannels = {};
+      localStorage.setItem('satblocks_iot_equipe', this.equipe);
+    }
+
+    getEquipe() {
+      return this.equipe;
+    }
+
+    getKnownChannels() {
+      return Object.keys(this.knownChannels);
+    }
+
+    start() {
+      if (this.timer) return;
+      this.pollOnce();
+      this.timer = setInterval(() => this.pollOnce(), this.pollIntervalMs);
+    }
+
+    stop() {
+      if (this.timer) {
+        clearInterval(this.timer);
+        this.timer = null;
+      }
+    }
+
+    async pollOnce() {
+      if (!this.equipe || this.inFlight) return;
+      this.inFlight = true;
+      try {
+        await this.discoverChannels();
+        const channels = Object.keys(this.knownChannels);
+        for (const canal of channels) {
+          await this.fetchChannel(canal);
+        }
+      } catch (e) {
+        // Silencioso: rede instável não deve gerar ruído contínuo no console
+      } finally {
+        this.inFlight = false;
+      }
+    }
+
+    async discoverChannels() {
+      const resp = await fetch(`telemetria/iot_topics.php?equipe=${encodeURIComponent(this.equipe)}`);
+      const data = await resp.json();
+      if (!data || !data.success || !Array.isArray(data.result)) return;
+      data.result.forEach(canal => {
+        if (!(canal in this.knownChannels)) {
+          this.knownChannels[canal] = 0;
+        }
+      });
+    }
+
+    async fetchChannel(canal) {
+      const since = this.knownChannels[canal];
+      const url = `telemetria/iot_get.php?equipe=${encodeURIComponent(this.equipe)}&canal=${encodeURIComponent(canal)}` +
+        (since ? `&desde=${since}` : '');
+      const resp = await fetch(url);
+      const data = await resp.json();
+      if (!data || !data.success || !Array.isArray(data.result) || data.result.length === 0) return;
+
+      data.result.forEach(ponto => {
+        const d = new Date(ponto.timestamp * 1000);
+        const timeStr = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}:${d.getSeconds().toString().padStart(2, '0')}`;
+        const numerico = parseFloat(ponto.valor);
+        DataStorage.push(canal, [timeStr, isNaN(numerico) ? ponto.valor : numerico]);
+        this.knownChannels[canal] = Math.max(this.knownChannels[canal], ponto.timestamp + 1);
+      });
+    }
+  }
+
+  const IotBridge = new IotBridgeEngine();
+
+  /* =========================================================================
    * 2. CLASSE GRID & MUURI (Gerenciador do Layout Arrastável)
    * ========================================================================= */
   class DataboardGrid {
@@ -601,6 +695,66 @@ window.SatDataboard = (function() {
       this.restoreWorkspaces();
       this.setupDOM();
       this.setupStorageManagerModal();
+      this.setupIotBridge();
+    }
+
+    setupIotBridge() {
+      const input = document.getElementById('iotEquipeInput');
+      if (!input) return;
+
+      if (!IotBridge.getEquipe()) {
+        const detected = this.detectIotIdFromWorkspace();
+        if (detected) IotBridge.setEquipe(detected);
+      }
+
+      input.value = IotBridge.getEquipe();
+      input.onchange = () => {
+        IotBridge.setEquipe(input.value);
+        if (IotBridge.getEquipe()) {
+          IotBridge.start();
+        }
+      };
+
+      if (IotBridge.getEquipe()) {
+        IotBridge.start();
+      }
+    }
+
+    // Acrescenta ao datalist do editor de widget os canais reais já descobertos
+    // pela ponte IoT (além dos datasets padrão OBSAT já cadastrados no HTML),
+    // para o aluno escolher em vez de ter que lembrar o nome exato do canal.
+    refreshDatasetOptions() {
+      const datalist = document.getElementById('widgetDatasetOptions');
+      if (!datalist) return;
+
+      const existentes = new Set(Array.from(datalist.options).map(o => o.value));
+      IotBridge.getKnownChannels().forEach(canal => {
+        if (existentes.has(canal)) return;
+        const opt = document.createElement('option');
+        opt.value = canal;
+        opt.innerText = `${canal} (canal IoT ao vivo)`;
+        datalist.appendChild(opt);
+      });
+    }
+
+    // Tenta descobrir o "ID IoT" já preenchido no bloco Dados do Projeto,
+    // para não obrigar o aluno a digitar o mesmo número duas vezes. Só
+    // funciona quando o campo é um número simples (caso mais comum); em
+    // qualquer outro caso, o aluno preenche manualmente o campo Equipe IoT.
+    detectIotIdFromWorkspace() {
+      try {
+        const workspace = window.SatBlocksApp && window.SatBlocksApp.getWorkspace && window.SatBlocksApp.getWorkspace();
+        if (!workspace) return null;
+        const projectBlock = workspace.getAllBlocks(false).find(b => b.type === 'project_info');
+        if (!projectBlock) return null;
+        const iotIdInput = projectBlock.getInput('project_iot_id');
+        const target = iotIdInput && iotIdInput.connection && iotIdInput.connection.targetBlock();
+        if (target && target.type === 'math_number') {
+          const value = target.getFieldValue('NUM');
+          if (value !== null && value !== '') return String(value);
+        }
+      } catch (e) {}
+      return null;
     }
 
     restoreWorkspaces() {
@@ -738,6 +892,8 @@ window.SatDataboard = (function() {
       const typeSel = document.getElementById('widgetTypeSelect');
 
       if (!modal) return;
+
+      this.refreshDatasetOptions();
 
       if (uid) {
         const streamData = localStorage.getItem(`stream:${uid}`);
@@ -1172,6 +1328,7 @@ window.SatDataboard = (function() {
     DataStorage: DataStorage,
     Workspaces: Workspaces,
     Grid: GridInstance,
+    IotBridge: IotBridge,
     processIncomingTelemetry: processIncomingTelemetry
   };
 
