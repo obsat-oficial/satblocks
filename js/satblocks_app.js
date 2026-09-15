@@ -1887,12 +1887,10 @@ window.SatBlocksApp = (function() {
               <block type="sat_http_server_close"></block>
             </category>
 
-            <category name="☁️ IoT: EasyMQTT &amp; Nuvem" colour="#0284c7">
-              <label text="─── Plataforma IoT EasyMQTT (BIPES Nuvem) ───"></label>
-              <block type="sat_easymqtt_start_session"><field name="SESSION_ID">zi6pi</field></block>
-              <block type="sat_easymqtt_publish_val"><value name="TOPIC"><shadow type="text"><field name="TEXT">temperatura</field></shadow></value><value name="VALUE"><shadow type="math_number"><field name="NUM">24.5</field></shadow></value></block>
-              <block type="sat_easymqtt_publish_http"><value name="SESSION"><shadow type="text"><field name="TEXT">zi6pi</field></shadow></value><value name="TOPIC"><shadow type="text"><field name="TEXT">foto_status</field></shadow></value><value name="VALUE"><shadow type="math_number"><field name="NUM">1</field></shadow></value></block>
-              <block type="sat_easymqtt_subscribe_event"><value name="TOPIC"><shadow type="text"><field name="TEXT">telecomando</field></shadow></value></block>
+            <category name="📡 IoT &amp; Painel" colour="#0284c7">
+              <label text="─── Telemetria via HTTP para o Painel IOT ───"></label>
+              <block type="sat_iot_publish"><value name="VALOR"><shadow type="math_number"><field name="NUM">24.5</field></shadow></value></block>
+              <block type="sat_iot_read"></block>
             </category>
 
             <category name="🔌 Barramentos: I2C &amp; UART" colour="#10b981">

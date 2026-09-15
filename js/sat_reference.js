@@ -1021,40 +1021,48 @@ wlan.connect(<span class="str">"obsat-server"</span>, <span class="str">"obsatse
     },
 
     // ==========================================
-    // 17. EASYMQTT & NUVEM
+    // 17. IOT & PAINEL
     // ==========================================
     mqtt: {
       id: 'mqtt',
-      title: 'IoT: EasyMQTT & Nuvem BIPES',
-      subtitle: 'Telemetria em tempo real para dashboards e painel IOT',
-      icon: '☁️',
-      category: 'IoT: EasyMQTT & Nuvem',
-      summary: 'Publica dados de sensores diretamente no broker MQTT do BIPES / OBSAT para gráficos ao vivo e monitoramento em tempo real no navegador.',
+      title: 'IoT & Painel',
+      subtitle: 'Telemetria em tempo real para o Painel IOT via HTTP',
+      icon: '📡',
+      category: 'IoT & Painel',
+      summary: 'Publica valores de sensores por HTTP em um canal nomeado, exibidos ao vivo no Painel IOT do navegador — sem depender de um broker MQTT externo.',
       conceptSections: [
         {
-          title: 'Arquitetura Publish / Subscribe',
-          type: 'sat_mqtt_publish',
-          xml: '<block type="variables_set"><field name="VAR">topico</field><value name="VALUE"><block type="text"><field name="TEXT">obsat/41/telemetria</field></block></value><next><block type="sat_mqtt_publish"><field name="TOPIC">obsat/41/telemetria</field><value name="VALUE"><block type="variables_get"><field name="VAR">pacote_json</field></block></value><next><block type="text_print"><value name="TEXT"><block type="text"><field name="TEXT">Telemetria publicada no broker MQTT!</field></block></value></block></next></block></next></block>',
+          title: 'Como o dado chega até o Painel IOT',
+          type: 'sat_iot_publish',
+          xml: '<block type="sat_iot_publish"><field name="CANAL">temperatura</field><value name="VALOR"><block type="variables_get"><field name="VAR">leitura</field></block></value></block>',
           content: `
-            <p>O satélite publica (<i>publish</i>) grandezas em tópicos específicos (ex: <code>obsat/41/telemetria</code>), e o Painel IOT no navegador se inscreve (<i>subscribe</i>) para desenhar gráficos em tempo real:</p>
+            <p>O satélite publica um valor em um canal nomeado (ex: <code>temperatura</code>) através de uma requisição HTTP simples para o servidor do SatBlocks. O Painel IOT, aberto no navegador, consulta periodicamente esse mesmo canal e atualiza o gráfico correspondente:</p>
             <div class="sat-ref-code-box">
               <div class="sat-ref-code-content">
                 <button class="btn-copy-snip" onclick="SatReference.copySnippet(this)">Copiar</button>
-                <pre><code>topico = <span class="str">"obsat/41/telemetria"</span>
-publicar_mqtt(topico, pacote_json)
-<span class="fn">print</span>(<span class="str">"Telemetria publicada no broker MQTT!"</span>)</code></pre>
+                <pre><code>_iot_url = <span class="str">"https://obsat.org.br/satblocks/telemetria/iot_publish.php?equipe="</span> + <span class="fn">str</span>(IOT_ID) + <span class="str">"&amp;canal=temperatura&amp;valor="</span> + <span class="fn">str</span>(leitura)
+urequests.get(_iot_url)
+<span class="fn">print</span>(<span class="str">"temperatura publicado:"</span>, leitura)</code></pre>
               </div>
             </div>
+            <p>O <code>IOT_ID</code> vem do campo "ID IoT" do bloco <b>Dados do Projeto</b> — é ele que identifica de qual equipe são os dados, para que o Painel IOT saiba quais canais mostrar. Não existe um broker MQTT de verdade aqui: é uma requisição HTTP comum, o que a torna mais robusta em redes de escola/evento e mais simples de depurar quando algo falha.</p>
           `
         }
       ],
       blocks: [
         {
-          name: 'Publicar Valor no Tópico MQTT',
-          type: 'sat_mqtt_publish',
-          desc: 'Publica uma medição em tempo real para ser exibida nos gráficos da aba Painel IOT.',
-          xml: '<block type="sat_mqtt_publish"><field name="TOPIC">obsat/satelite01/telemetria</field><value name="VALUE"><block type="variables_get"><field name="VAR">json_data</field></block></value></block>',
-          python: `print("[MQTT] Publicado em obsat/satelite01/telemetria")`
+          name: 'Publicar no Painel IoT',
+          type: 'sat_iot_publish',
+          desc: 'Envia um valor por HTTP para um canal nomeado, exibido ao vivo nos gráficos do Painel IOT.',
+          xml: '<block type="sat_iot_publish"><field name="CANAL">temperatura</field><value name="VALOR"><block type="variables_get"><field name="VAR">json_data</field></block></value></block>',
+          python: `print("[Painel IoT] temperatura publicado: 24.5")`
+        },
+        {
+          name: 'Ler Último Valor do Canal IoT',
+          type: 'sat_iot_read',
+          desc: 'Consulta por HTTP o valor mais recente publicado em um canal (útil para receber comandos enviados de outro lugar para a mesma equipe).',
+          xml: '<block type="variables_set"><field name="VAR">comando</field><value name="VALUE"><block type="sat_iot_read"><field name="CANAL">comando</field></block></value></block>',
+          python: `comando = _iot_ler_canal("comando")`
         }
       ]
     },

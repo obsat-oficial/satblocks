@@ -549,15 +549,20 @@
 
   Blockly.Python['project_info'] = function(block) {
     const author = (Blockly.Python.valueToCode(block, 'project_author', Blockly.Python.ORDER_ATOMIC) || '""').replace(/['"]/g, '');
+    const iotIdCode = Blockly.Python.valueToCode(block, 'project_iot_id', Blockly.Python.ORDER_NONE) || '0';
     const iot_id = (Blockly.Python.valueToCode(block, 'project_iot_id', Blockly.Python.ORDER_ATOMIC) || '0').replace(/['"]/g, '');
     const desc = (Blockly.Python.valueToCode(block, 'project_description', Blockly.Python.ORDER_ATOMIC) || '""').replace(/['"]/g, '');
-    
-    Blockly.Python.definitions_['00_project_header'] = 
+
+    Blockly.Python.definitions_['00_project_header'] =
       `# ==========================================\n` +
       `# MISSÃO OBSAT: ${desc || 'Missão CanSat/CubeSat'}\n` +
       `# EQUIPE / AUTOR: ${author || 'Equipe'}\n` +
       `# IOT ID: ${iot_id || '0'}\n` +
       `# ==========================================`;
+
+    // Disponibiliza o ID IoT como variável global, usada pelos blocos de
+    // "IoT & Painel" para identificar a equipe/canal ao publicar ou ler dados.
+    Blockly.Python.definitions_['00b_iot_channel_id'] = `IOT_ID = str(${iotIdCode})`;
     return '';
   };
 
@@ -1015,12 +1020,6 @@ def _sat_bmp_read(field, sea=1013.25):
     return [code, Blockly.Python.ORDER_ATOMIC];
   };
 
-  Blockly.Python['sat_mqtt_publish'] = function(block) {
-    const topic = block.getFieldValue('TOPIC') || 'obsat/telemetria';
-    const value = Blockly.Python.valueToCode(block, 'VALUE', Blockly.Python.ORDER_NONE) || '""';
-    return `print("[MQTT TX] ${topic} ->", str(${value}))\n`;
-  };
-
   // ==========================================
   // 6. ENERGIA & EPS
   // ==========================================
@@ -1435,40 +1434,57 @@ def obsat_led_mcp(pin=0, state=1):
   };
 
   // ==========================================
-  // 9. IOT, EASYMQTT & DATABOARD
+  // 9. IOT & PAINEL (TELEMETRIA VIA HTTP)
   // ==========================================
-  Blockly.Python['sat_easymqtt_init'] = function(block) {
-    const session = block.getFieldValue('SESSION_ID') || 'obsat_missao01';
-    const server = block.getFieldValue('SERVER') || 'bipes.net.br';
-    Blockly.Python.definitions_['import_umqtt'] = 'import umqtt.robust as mqtt\nimport ubinascii\nimport machine';
-    
-    return `easymqtt_session = "${session}"\n` +
-           `try:\n` +
-           `    _client_id = ubinascii.hexlify(machine.unique_id())\n` +
-           `    _mqtt_client = mqtt.MQTTClient(_client_id, server="${server}", port=1883, user="bipes", password="m8YLUr5uW3T")\n` +
-           `    _mqtt_client.connect()\n` +
-           `    print("[IoT] Conectado ao EasyMQTT:", "${server}")\n` +
-           `except Exception as _e:\n` +
-           `    print("[IoT] Erro ao conectar no EasyMQTT:", _e)\n`;
-  };
+  // "IOT_ID" identifica a equipe/canal e vem do campo "ID IoT" do bloco
+  // Dados do Projeto (project_info); se o projeto não tiver esse bloco,
+  // cai no valor "0" definido abaixo como reserva.
+  function ensureIotIdDefault() {
+    if (!Blockly.Python.definitions_['00b_iot_channel_id']) {
+      Blockly.Python.definitions_['00b_iot_channel_id'] = 'IOT_ID = "0"';
+    }
+  }
 
-  Blockly.Python['sat_easymqtt_publish'] = function(block) {
-    const topic = block.getFieldValue('TOPIC') || 'temperatura';
-    const data = Blockly.Python.valueToCode(block, 'DATA', Blockly.Python.ORDER_ATOMIC) || '0';
+  Blockly.Python['sat_iot_publish'] = function(block) {
+    const canal = (block.getFieldValue('CANAL') || 'valor').replace(/[^a-zA-Z0-9_]/g, '_');
+    const valor = Blockly.Python.valueToCode(block, 'VALOR', Blockly.Python.ORDER_NONE) || '0';
+    ensureIotIdDefault();
+
+    if (isRp2040()) {
+      return `print("[Painel IoT] ${canal} =", str(${valor}))\n`;
+    }
+
+    Blockly.Python.definitions_['import_urequests'] = 'import urequests';
     return `try:\n` +
-           `    _payload_str = str(${data})\n` +
-           `    _mqtt_client.publish(easymqtt_session + "/${topic}", _payload_str)\n` +
-           `    print("[IoT Pub] ${topic}:", _payload_str)\n` +
+           `    if urequests is not None:\n` +
+           `        _iot_url = "https://obsat.org.br/satblocks/telemetria/iot_publish.php?equipe=" + str(IOT_ID) + "&canal=${canal}&valor=" + str(${valor})\n` +
+           `        _iot_res = urequests.get(_iot_url)\n` +
+           `        _iot_res.close()\n` +
+           `    print("[Painel IoT] ${canal} publicado:", str(${valor}))\n` +
            `except Exception as _e:\n` +
-           `    print("[IoT Pub Erro]:", _e)\n`;
+           `    print("[Painel IoT] Erro ao publicar:", _e)\n`;
   };
 
-  Blockly.Python['sat_easymqtt_subscribe'] = function(block) {
-    const topic = block.getFieldValue('TOPIC') || 'telecomando';
-    const branch = Blockly.Python.statementToCode(block, 'DO');
-    return `# Callback para telecomando EasyMQTT no tópico: ${topic}\n` +
-           `def _on_msg_${topic}(topic, msg):\n` +
-           `${branch || '    pass\n'}`;
+  Blockly.Python['sat_iot_read'] = function(block) {
+    const canal = (block.getFieldValue('CANAL') || 'comando').replace(/[^a-zA-Z0-9_]/g, '_');
+    ensureIotIdDefault();
+    Blockly.Python.definitions_['import_urequests'] = 'import urequests';
+    Blockly.Python.definitions_['func_iot_read'] =
+`def _iot_ler_canal(canal):
+    try:
+        if urequests is None:
+            return ""
+        _r = urequests.get("https://obsat.org.br/satblocks/telemetria/iot_get.php?equipe=" + str(IOT_ID) + "&canal=" + canal)
+        _j = _r.json()
+        _r.close()
+        if _j.get("success") and len(_j.get("result", [])) > 0:
+            return str(_j["result"][-1]["valor"])
+    except Exception:
+        pass
+    return ""`;
+
+    const code = `_iot_ler_canal("${canal}")`;
+    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
   };
 
   // ==========================================
@@ -1664,57 +1680,6 @@ def obsat_led_mcp(pin=0, state=1):
 
   Blockly.Python['sat_http_server_close'] = function(block) {
     return `try:\n    _http_server.close()\nexcept:\n    pass\n`;
-  };
-
-  // ==========================================
-  // 11. EASYMQTT & IOT EXPANDIDO
-  // ==========================================
-
-  Blockly.Python['sat_easymqtt_start_session'] = function(block) {
-    const session = block.getFieldValue('SESSION_ID') || 'zi6pi';
-    Blockly.Python.definitions_['import_easymqtt'] = 'import easymqtt';
-    return `easymqtt_session = "${session}"\n` +
-           `easymqtt.start_session("${session}")\n`;
-  };
-
-  Blockly.Python['sat_easymqtt_publish_val'] = function(block) {
-    const topic = Blockly.Python.valueToCode(block, 'TOPIC', Blockly.Python.ORDER_NONE) || '"dados"';
-    const val = Blockly.Python.valueToCode(block, 'VALUE', Blockly.Python.ORDER_NONE) || '0';
-    return `easymqtt.publish(str(${topic}), str(${val}))\n`;
-  };
-
-  Blockly.Python['sat_easymqtt_publish_http'] = function(block) {
-    const session = Blockly.Python.valueToCode(block, 'SESSION', Blockly.Python.ORDER_NONE) || '"zi6pi"';
-    const topic = Blockly.Python.valueToCode(block, 'TOPIC', Blockly.Python.ORDER_NONE) || '"dados"';
-    const val = Blockly.Python.valueToCode(block, 'VALUE', Blockly.Python.ORDER_NONE) || '0';
-    Blockly.Python.definitions_['import_urequests'] = 'import urequests';
-
-    return `try:\n` +
-           `    _url_emqtt = "https://bipes.net.br/easymqtt/publish.php?session=" + str(${session}) + "&topic=" + str(${topic}) + "&value=" + str(${val})\n` +
-           `    if urequests is not None:\n` +
-           `        urequests.get(_url_emqtt)\n` +
-           `    else:\n` +
-           `        print("[EasyMQTT HTTP] urequests nao instalado nesta placa")\n` +
-           `except Exception as _e:\n` +
-           `    print("[EasyMQTT HTTP Erro]", _e)\n`;
-  };
-
-  Blockly.Python['sat_easymqtt_subscribe_event'] = function(block) {
-    const topic = Blockly.Python.valueToCode(block, 'TOPIC', Blockly.Python.ORDER_NONE) || '"cmd"';
-    const branch = Blockly.Python.statementToCode(block, 'DO');
-    return `def _on_easymqtt_rx(data):\n` +
-           `${branch || '    pass\n'}` +
-           `easymqtt.subscribe(str(${topic}), _on_easymqtt_rx)\n`;
-  };
-
-  Blockly.Python['sat_easymqtt_receive_data'] = function(block) {
-    const wait = block.getFieldValue('WAIT') === 'YES';
-    const code = `easymqtt.receive_data(wait=${wait ? 'True' : 'False'})`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
-  };
-
-  Blockly.Python['sat_easymqtt_stop'] = function(block) {
-    return `easymqtt.stop()\n`;
   };
 
   // ==========================================

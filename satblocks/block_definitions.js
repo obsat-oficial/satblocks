@@ -1005,21 +1005,6 @@
       "colour": SENSOR_COLORS.LORA,
       "tooltip": "Lê a última mensagem ou telecomando enviado pela base terrestre."
     },
-    {
-      "type": "sat_mqtt_publish",
-      "message0": "☁️ Publicar Telemetria IoT / MQTT %1 Tópico: %2 %3 Valor: %4",
-      "args0": [
-        { "type": "input_dummy" },
-        { "type": "field_input", "name": "TOPIC", "text": "obsat/satelite01/telemetria" },
-        { "type": "input_dummy" },
-        { "type": "input_value", "name": "VALUE" }
-      ],
-      "previousStatement": null,
-      "nextStatement": null,
-      "colour": SENSOR_COLORS.LORA,
-      "tooltip": "Publica telemetria na nuvem através do protocolo MQTT / EasyMQTT via Wi-Fi."
-    },
-
     // ==========================================
     // 6. ENERGIA & EPS (DOURADO / ÂMBAR)
     // ==========================================
@@ -1362,59 +1347,30 @@
       "tooltip": "Aciona as luzes de navegação via expansor MCP23017 do CanSat OBSAT (aceita número fixo 0 a 7 ou variável de um laço 'para / for' para percorrer todos os LEDs)."
     },
     // ==========================================
-    // 9. IOT, EASYMQTT & DATABOARD (BIPES IOT)
+    // 9. IOT & PAINEL (TELEMETRIA VIA HTTP)
     // ==========================================
     {
-      "type": "sat_easymqtt_init",
-      "message0": "☁️ Iniciar Conexão EasyMQTT / IoT %1 ID da Sessão: %2 Servidor: %3",
+      "type": "sat_iot_publish",
+      "message0": "📊 Publicar no Painel IoT %1 Canal: %2 Valor: %3",
       "args0": [
         { "type": "input_dummy" },
-        { "type": "field_input", "name": "SESSION_ID", "text": "obsat_missao01" },
-        { "type": "field_input", "name": "SERVER", "text": "bipes.net.br" }
+        { "type": "field_input", "name": "CANAL", "text": "temperatura" },
+        { "type": "input_value", "name": "VALOR", "check": ["Number", "String"] }
       ],
       "previousStatement": null,
       "nextStatement": null,
       "colour": "#0284c7",
-      "tooltip": "Inicia o cliente MQTT conectado ao servidor EasyMQTT do BIPES ou nuvem espacial."
+      "tooltip": "Envia um valor por HTTP para o canal informado, para exibição ao vivo nos gráficos do Painel IOT. Usa o 'ID IoT' definido no bloco Dados do Projeto para identificar a equipe."
     },
     {
-      "type": "sat_easymqtt_publish",
-      "message0": "📊 Publicar no Painel IoT (EasyMQTT) %1 Tópico / Widget: %2 Valor / Dado: %3",
+      "type": "sat_iot_read",
+      "message0": "📥 Ler último valor do Canal IoT %1",
       "args0": [
-        { "type": "input_dummy" },
-        { "type": "field_input", "name": "TOPIC", "text": "temperatura" },
-        { "type": "input_value", "name": "DATA", "check": ["Number", "String"] }
+        { "type": "field_input", "name": "CANAL", "text": "comando" }
       ],
-      "previousStatement": null,
-      "nextStatement": null,
+      "output": "String",
       "colour": "#0284c7",
-      "tooltip": "Envia um dado para exibição automática nos gráficos e medidores da aba IOT / Painéis."
-    },
-    {
-      "type": "sat_easymqtt_subscribe",
-      "message0": "📥 Quando Receber Telecomando IoT no Tópico: %1 %2 Fazer: %3",
-      "args0": [
-        { "type": "field_input", "name": "TOPIC", "text": "telecomando" },
-        { "type": "input_dummy" },
-        { "type": "input_statement", "name": "DO" }
-      ],
-      "previousStatement": null,
-      "nextStatement": null,
-      "colour": "#0284c7",
-      "tooltip": "Executa ações automáticas quando um telecomando é emitido a partir do painel IoT."
-    },
-    {
-      "type": "sat_bipes_plot",
-      "message0": "📈 Plotar no Painel IoT Serial %1 Tópico / Canal: %2 Valor: %3",
-      "args0": [
-        { "type": "input_dummy" },
-        { "type": "field_input", "name": "TOPIC", "text": "altitude" },
-        { "type": "input_value", "name": "VALUE", "check": "Number" }
-      ],
-      "previousStatement": null,
-      "nextStatement": null,
-      "colour": "#0284c7",
-      "tooltip": "Envia dados via USB Serial / Bluetooth no formato do Databoard do BIPES para plotagem direta."
+      "tooltip": "Consulta por HTTP o valor mais recente publicado nesse canal (para a mesma equipe/ID IoT). Retorna texto vazio se nada foi publicado ainda."
     }
   ]);
 
@@ -1766,103 +1722,6 @@
       this.setPreviousStatement(true);
       this.setNextStatement(true);
       this.setTooltip("Encerra a execução do servidor Web e libera o socket.");
-    }
-  };
-
-  // =========================================================================
-  // CATEGORIA: IOT — EASYMQTT (BIPES COMPLETO)
-  // =========================================================================
-
-  // EasyMQTT Start session ID
-  Blockly.Blocks['sat_easymqtt_start_session'] = {
-    init: function() {
-      this.setColour('#3b82f6');
-      this.appendDummyInput()
-          .appendField("☁️ EasyMQTT Start")
-          .appendField("session ID")
-          .appendField(new Blockly.FieldTextInput("zi6pi"), "SESSION_ID");
-      this.setPreviousStatement(true);
-      this.setNextStatement(true);
-      this.setTooltip("Inicia a conexão IoT com o broker EasyMQTT usando a sessão BIPES.");
-    }
-  };
-
-  // EasyMQTT Publish Data
-  Blockly.Blocks['sat_easymqtt_publish_val'] = {
-    init: function() {
-      this.setColour('#3b82f6');
-      this.appendValueInput("TOPIC")
-          .setCheck("String")
-          .appendField("📤 EasyMQTT Publish Data")
-          .appendField("topic");
-      this.appendValueInput("VALUE")
-          .appendField("value");
-      this.setPreviousStatement(true);
-      this.setNextStatement(true);
-      this.setTooltip("Publica um valor em um tópico EasyMQTT.");
-    }
-  };
-
-  // EasyMQTT Publish Data (HTTP)
-  Blockly.Blocks['sat_easymqtt_publish_http'] = {
-    init: function() {
-      this.setColour('#3b82f6');
-      this.appendValueInput("SESSION")
-          .setCheck("String")
-          .appendField("📤 EasyMQTT Publish Data (HTTP)")
-          .appendField("session");
-      this.appendValueInput("TOPIC")
-          .setCheck("String")
-          .appendField("topic");
-      this.appendValueInput("VALUE")
-          .appendField("value");
-      this.setPreviousStatement(true);
-      this.setNextStatement(true);
-      this.setTooltip("Publica dados no EasyMQTT diretamente via requisição HTTP REST.");
-    }
-  };
-
-  // EasyMQTT Subscribe
-  Blockly.Blocks['sat_easymqtt_subscribe_event'] = {
-    init: function() {
-      this.setColour('#3b82f6');
-      this.appendValueInput("TOPIC")
-          .setCheck("String")
-          .appendField("📥 EasyMQTT subscribe to topic");
-      this.appendDummyInput()
-          .appendField("when")
-          .appendField(new Blockly.FieldVariable("data"), "VAR")
-          .appendField("is received");
-      this.appendStatementInput("DO")
-          .appendField("do");
-      this.setPreviousStatement(true);
-      this.setNextStatement(true);
-      this.setTooltip("Inscreve o satélite em um tópico e executa o bloco de código ao receber novas mensagens.");
-    }
-  };
-
-  // EasyMQTT Receive Data
-  Blockly.Blocks['sat_easymqtt_receive_data'] = {
-    init: function() {
-      this.setColour('#3b82f6');
-      this.appendDummyInput()
-          .appendField("📥 EasyMQTT receive data")
-          .appendField("wait for data")
-          .appendField(new Blockly.FieldDropdown([["no", "NO"], ["yes", "YES"]]), "WAIT");
-      this.setOutput(true, "String");
-      this.setTooltip("Verifica ou aguarda o recebimento de mensagens no EasyMQTT.");
-    }
-  };
-
-  // EasyMQTT Stop
-  Blockly.Blocks['sat_easymqtt_stop'] = {
-    init: function() {
-      this.setColour('#3b82f6');
-      this.appendDummyInput()
-          .appendField("🛑 EasyMQTT Stop");
-      this.setPreviousStatement(true);
-      this.setNextStatement(true);
-      this.setTooltip("Desconecta e finaliza a sessão EasyMQTT.");
     }
   };
 

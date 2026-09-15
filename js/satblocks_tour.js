@@ -16,7 +16,7 @@ window.SatBlocksTour = (function() {
     {
       title: "📦 Blocos Aeroespaciais & Sensores",
       badge: "Toolbox de Voo",
-      text: "Acesse sensores oficiais dos kits OBSAT: Temperatura/Umidade (SHT20), Pressão (BMP280), IMU/Giroscópio (MPU9250), CO2 (CCS811), Rádio LoRa, EasyMQTT e Pacote de Telemetria com engrenagem.",
+      text: "Acesse sensores oficiais dos kits OBSAT: Temperatura/Umidade (SHT20), Pressão (BMP280), IMU/Giroscópio (MPU9250), CO2 (CCS811), Rádio LoRa, IoT & Painel e Pacote de Telemetria com engrenagem.",
       targets: [".blocklyToolbox"],
       position: "right",
       forceOpen: "toolbox"
@@ -45,8 +45,8 @@ window.SatBlocksTour = (function() {
     },
     {
       title: "📊 Painéis IOT & Telemetria",
-      badge: "EasyMQTT & Databoard",
-      text: "Crie seus próprios painéis com gráficos temporais, gauges circulares e telecomandos integrados ao EasyMQTT.",
+      badge: "IoT & Databoard",
+      text: "Crie seus próprios painéis com gráficos temporais, gauges circulares e telecomandos alimentados pelos canais IoT publicados pela placa.",
       targets: ["button.sat-tab-btn[data-tab='iot']", ".sat-dropdown-item[data-tab='iot']"],
       position: "bottom"
     }

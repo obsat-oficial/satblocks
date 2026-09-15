@@ -31,8 +31,8 @@
   <script src="core/msg/pt-br.js?v=2026.3"></script>
 
   <!-- Biblioteca Aeroespacial SatBlocks -->
-  <script src="satblocks/block_definitions.js?v=20260915-3"></script>
-  <script src="satblocks/generator_python.js?v=20260915-2"></script>
+  <script src="satblocks/block_definitions.js?v=20260915-4"></script>
+  <script src="satblocks/generator_python.js?v=20260915-3"></script>
 
   <!-- Bibliotecas do BIPES Databoard Oficial (Chart.js e Muuri Grid Offline) -->
   <script src="core/chart.umd.min.js?v=2026.2"></script>
@@ -360,7 +360,7 @@
             <button class="ref-nav-chip" onclick="SatReference.showTopic('telemetry')">📦 Telemetria</button>
             <button class="ref-nav-chip" onclick="SatReference.showTopic('lora')">📻 LoRa</button>
             <button class="ref-nav-chip" onclick="SatReference.showTopic('wifi')">🌐 Wi-Fi</button>
-            <button class="ref-nav-chip" onclick="SatReference.showTopic('mqtt')">☁️ EasyMQTT</button>
+            <button class="ref-nav-chip" onclick="SatReference.showTopic('mqtt')">📡 IoT &amp; Painel</button>
             <button class="ref-nav-chip" onclick="SatReference.showTopic('camera')">📷 Câmera</button>
             <button class="ref-nav-chip" onclick="SatReference.showTopic('eps')">⚡ EPS</button>
             <button class="ref-nav-chip" onclick="SatReference.showTopic('files')">📁 Arquivos</button>
@@ -651,6 +651,12 @@
             <select id="bipesWorkspaceSelect" class="databoard-select"></select>
             <button class="sat-btn-icon" id="btnNewWorkspace" title="Criar Novo Workspace" style="width: 24px; height: 24px;">➕</button>
           </div>
+
+          <!-- EQUIPE / CANAL IOT MONITORADO -->
+          <div class="databoard-control-pill" title="Equipe cujos canais IoT (publicados pelo bloco 'Publicar no Painel IoT') este painel deve buscar. Use o mesmo valor do campo 'ID IoT' do bloco Dados do Projeto.">
+            <span style="font-size: 11px; font-weight: 700; color: #64748b;">📡 Equipe IoT:</span>
+            <input type="text" id="iotEquipeInput" class="sat-input-pill" style="width: 70px; padding: 4px 8px; font-size: 12px;" placeholder="ID IoT">
+          </div>
         </div>
 
         <div class="databoard-header-right">
@@ -732,15 +738,17 @@
         <!-- CAMPOS ESPECÍFICOS DE GRÁFICO -->
         <div id="widgetChartFields" style="display: flex; flex-direction: column; gap: 12px;">
           <div>
-            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">2. Tópico / Dataset (Fonte de Dados):</label>
-            <select id="widgetDatasetSelect" class="sat-select" style="width: 100%; padding: 8px 12px; font-size: 13px;">
-              <option value="obsat_altitude" selected>⛰️ obsat_altitude (Altitude Barométrica / Apogeu)</option>
-              <option value="obsat_temperatura">🌡️ obsat_temperatura (SHT20 &amp; BMP280)</option>
-              <option value="obsat_pressao">🌪️ obsat_pressao (Pressão Atmosférica hPa)</option>
-              <option value="obsat_bateria">🔋 obsat_bateria (Tensão &amp; Carga %)</option>
-              <option value="obsat_giroscopio">🧭 obsat_giroscopio (Eixos X, Y, Z)</option>
-              <option value="obsat_acelerometro">🚀 obsat_acelerometro (G-Force X, Y, Z)</option>
-            </select>
+            <label style="font-size: 12px; color: #475569; font-weight: 700; display: block; margin-bottom: 6px;">2. Canal / Dataset (Fonte de Dados):</label>
+            <input type="text" id="widgetDatasetSelect" class="sat-input-pill" list="widgetDatasetOptions" style="width: 100%; padding: 8px 12px; font-size: 13px;" value="obsat_altitude" placeholder="Ex: temperatura (canal publicado pelo bloco IoT)">
+            <datalist id="widgetDatasetOptions">
+              <option value="obsat_altitude">obsat_altitude (Altitude Barométrica / Apogeu)</option>
+              <option value="obsat_temperatura">obsat_temperatura (SHT20 &amp; BMP280)</option>
+              <option value="obsat_pressao">obsat_pressao (Pressão Atmosférica hPa)</option>
+              <option value="obsat_bateria">obsat_bateria (Tensão &amp; Carga %)</option>
+              <option value="obsat_giroscopio">obsat_giroscopio (Eixos X, Y, Z)</option>
+              <option value="obsat_acelerometro">obsat_acelerometro (G-Force X, Y, Z)</option>
+            </datalist>
+            <div style="font-size: 11px; color: #94a3b8; margin-top: 4px;">Digite o mesmo nome de canal usado no bloco "Publicar no Painel IoT", ou escolha um dos sensores padrão OBSAT.</div>
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
@@ -1352,7 +1360,6 @@
       <block type="sat_lora_setup"><field name="FREQ">915.0</field><field name="POWER">20</field><field name="SF">7</field></block>
       <block type="sat_lora_send_packet"></block>
       <block type="sat_lora_receive_cmd"></block>
-      <block type="sat_mqtt_publish"><field name="TOPIC">obsat/satelite01/telemetria</field></block>
     </category>
 
     <category name="🌐 Rede &amp; Internet (HTTP &amp; Wi-Fi)" colour="#4338ca">
@@ -1380,12 +1387,10 @@
       <block type="sat_http_server_close"></block>
     </category>
 
-    <category name="☁️ IoT: EasyMQTT &amp; Nuvem" colour="#0284c7">
-      <label text="─── Plataforma IoT EasyMQTT (BIPES Nuvem) ───"></label>
-      <block type="sat_easymqtt_start_session"><field name="SESSION_ID">zi6pi</field></block>
-      <block type="sat_easymqtt_publish_val"><value name="TOPIC"><shadow type="text"><field name="TEXT">temperatura</field></shadow></value><value name="VALUE"><shadow type="math_number"><field name="NUM">24.5</field></shadow></value></block>
-      <block type="sat_easymqtt_publish_http"><value name="SESSION"><shadow type="text"><field name="TEXT">zi6pi</field></shadow></value><value name="TOPIC"><shadow type="text"><field name="TEXT">altitude</field></shadow></value><value name="VALUE"><shadow type="math_number"><field name="NUM">450</field></shadow></value></block>
-      <block type="sat_easymqtt_subscribe_event"><value name="TOPIC"><shadow type="text"><field name="TEXT">telecomando</field></shadow></value></block>
+    <category name="📡 IoT &amp; Painel" colour="#0284c7">
+      <label text="─── Telemetria via HTTP para o Painel IOT ───"></label>
+      <block type="sat_iot_publish"><value name="VALOR"><shadow type="math_number"><field name="NUM">24.5</field></shadow></value></block>
+      <block type="sat_iot_read"></block>
     </category>
 
     <category name="🔌 Barramentos: I2C &amp; UART" colour="#10b981">
@@ -1939,10 +1944,10 @@
   <!-- Scripts da Aplicação -->
   <script src="js/sat_connection.js?v=20260911-600"></script>
   <script src="js/sat_files.js?v=20260915-1"></script>
-  <script src="js/sat_databoard.js?v=20260911-600"></script>
+  <script src="js/sat_databoard.js?v=20260915-1"></script>
   <script src="js/sat_profiles.js?v=20260915-2"></script>
-  <script src="js/sat_reference.js?v=20260915-2"></script>
-  <script src="js/satblocks_tour.js?v=20260915-3"></script>
+  <script src="js/sat_reference.js?v=20260915-3"></script>
+  <script src="js/satblocks_tour.js?v=20260915-4"></script>
   <script src="js/satblocks_app.js?v=20260915-3"></script>
 
   <script src="js/sat_capture.js?v=20260911-600"></script>
