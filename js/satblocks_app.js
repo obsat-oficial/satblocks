@@ -853,7 +853,19 @@ window.SatBlocksApp = (function() {
     try {
       const dom = Blockly.Xml.workspaceToDom(workspace);
       const xmlText = Blockly.Xml.domToText(dom);
-      const blob = new Blob([xmlText], { type: 'text/xml;charset=utf-8' });
+
+      // Formato novo: envelope JSON com o XML dos blocos + o layout do
+      // Painel IOT (workspaces/widgets), para não perder os gráficos
+      // configurados ao reabrir o projeto em outra máquina.
+      const fileData = {
+        format: 'satblocks-project-v1',
+        blocklyXml: xmlText,
+        databoard: (window.SatDataboard && window.SatDataboard.Workspaces)
+          ? window.SatDataboard.Workspaces.exportProjectData()
+          : null
+      };
+
+      const blob = new Blob([JSON.stringify(fileData)], { type: 'application/json;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -863,7 +875,7 @@ window.SatBlocksApp = (function() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       if (window.SatFiles && window.SatFiles.showDriverToast) {
-        window.SatFiles.showDriverToast('💾 Projeto salvo e exportado com sucesso!');
+        window.SatFiles.showDriverToast('💾 Projeto salvo e exportado com sucesso (blocos + Painel IOT)!');
       }
     } catch (e) {
       alert('Erro ao exportar projeto: ' + e.message);
@@ -875,13 +887,33 @@ window.SatBlocksApp = (function() {
     const reader = new FileReader();
     reader.onload = function(e) {
       try {
-        const xmlText = e.target.result;
+        const rawText = e.target.result;
+        let blocklyXmlText = rawText;
+        let databoardData = null;
+
+        // Projetos salvos antes desta mudança são puro XML do Blockly;
+        // projetos novos são um envelope JSON. Detecta qual é qual.
+        try {
+          const parsed = JSON.parse(rawText);
+          if (parsed && parsed.format === 'satblocks-project-v1') {
+            blocklyXmlText = parsed.blocklyXml || '';
+            databoardData = parsed.databoard || null;
+          }
+        } catch (jsonErr) {
+          // Não é JSON: assume o formato antigo (XML puro), sem alterações.
+        }
+
         const parser = Blockly.Xml.textToDom || (Blockly.utils && Blockly.utils.xml && Blockly.utils.xml.textToDom);
-        const dom = parser(xmlText);
+        const dom = parser(blocklyXmlText);
         workspace.clear();
         Blockly.Xml.domToWorkspace(dom, workspace);
         updateGeneratedCode();
         saveWorkspaceToStorage();
+
+        if (databoardData && window.SatDataboard && window.SatDataboard.Workspaces) {
+          window.SatDataboard.Workspaces.importProjectData(databoardData);
+        }
+
         if (window.SatFiles && window.SatFiles.showDriverToast) {
           window.SatFiles.showDriverToast(`📂 Projeto "${file.name}" carregado com sucesso!`);
         }
