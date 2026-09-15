@@ -199,6 +199,11 @@ window.SatDataboard = (function() {
                 }
               }
             }
+            // Um ponto que chegue fora de ordem (ex.: eco atrasado de uma
+            // fonte assíncrona) faz o Chart.js desenhar um zigue-zague
+            // voltando no tempo — reordenar por x garante a linha sempre
+            // cronológica, independente da ordem real de chegada.
+            c.data.datasets.forEach(ds => ds.data.sort((a, b) => a.x - b.x));
           } else {
             const label = this.formatEpoch(rawX);
             c.data.labels.push(label);
@@ -229,6 +234,14 @@ window.SatDataboard = (function() {
       if (rows.length > limit) {
         rows = rows.slice(-limit);
       }
+
+      // O Chart.js desenha os pontos na ordem do array, não pela posição
+      // real no tempo — um ponto que chegue "atrasado" (ex.: eco duplicado
+      // de uma fonte assíncrona) fora de ordem faz a linha desenhar um
+      // zigue-zague voltando no tempo antes de continuar. Ordenar por
+      // timestamp aqui garante que a linha sempre siga cronologicamente,
+      // não importa a ordem real de chegada.
+      rows.sort((a, b) => (a[0] > b[0] ? 1 : a[0] < b[0] ? -1 : 0));
 
       const labels = [];
       const numSeries = rows.length > 0 ? rows[0].length - 1 : 1;
