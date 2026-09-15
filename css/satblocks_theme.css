@@ -834,6 +834,106 @@ body {
   display: none;
 }
 
+/* ==========================================
+   PAINEL LATERAL DIREITO — RETRÁTIL / AUTO-HOVER
+   (mesmo padrão da barra de blocos à esquerda)
+   ========================================== */
+#tab_page_blocks {
+  position: relative;
+}
+
+.sat-panel-hover-trigger {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 24px;
+  height: 100%;
+  z-index: 940;
+  display: none;
+}
+
+#tab_page_blocks.side-panel-collapsed .sat-panel-hover-trigger {
+  display: block;
+}
+
+#tab_page_blocks.side-panel-collapsed .sat-side-panel {
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  overflow: hidden;
+  border-left: none;
+  box-shadow: none;
+}
+
+#tab_page_blocks.side-panel-collapsed .sat-panel-resizer {
+  display: none;
+}
+
+#tab_page_blocks.side-panel-collapsed.side-panel-hover-active .sat-side-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  height: 100%;
+  width: var(--sat-restore-width, 520px) !important;
+  min-width: 500px !important;
+  max-width: 85vw !important;
+  overflow: visible;
+  z-index: 950;
+  box-shadow: -6px 0 25px rgba(15, 23, 42, 0.16);
+}
+
+.sat-panel-toggle-btn {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  z-index: 1002;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: background 0.15s, color 0.15s, transform 0.15s;
+  user-select: none;
+}
+
+.sat-panel-toggle-btn:hover {
+  background: var(--bg-subtle);
+  color: var(--obsat-pink);
+  border-color: var(--obsat-pink-border);
+  transform: scale(1.08);
+}
+
+.sat-panel-toggle-btn .toggle-icon-collapse {
+  display: block;
+}
+
+.sat-panel-toggle-btn .toggle-icon-expand {
+  display: none;
+}
+
+#tab_page_blocks.side-panel-collapsed .sat-panel-toggle-btn .toggle-icon-collapse {
+  display: none;
+}
+
+#tab_page_blocks.side-panel-collapsed .sat-panel-toggle-btn .toggle-icon-expand {
+  display: block;
+}
+
+#tab_page_blocks.side-panel-collapsed.side-panel-hover-active .sat-panel-toggle-btn .toggle-icon-collapse {
+  display: block;
+}
+
+#tab_page_blocks.side-panel-collapsed.side-panel-hover-active .sat-panel-toggle-btn .toggle-icon-expand {
+  display: none;
+}
+
 /* Divisor Arrastável com Setas (Resizer) */
 .sat-panel-resizer {
   width: 10px;
@@ -3017,5 +3117,71 @@ textarea#fileEditorTextarea {
   background: #f8fafc;
   font-weight: 700;
   color: #0f172a;
+}
+
+/* ==========================================
+   RESPONSIVIDADE DO LAYOUT PRINCIPAL (BLOCOS + PAINEL LATERAL)
+   Retrocompatibilidade com notebooks pequenos, tablets e celulares.
+   ========================================== */
+@media screen and (max-width: 1024px) {
+  .sat-side-panel {
+    width: 420px !important;
+    min-width: 320px !important;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .blocklyToolboxDiv {
+    width: 230px !important;
+    min-width: 230px !important;
+    max-width: 230px !important;
+  }
+
+  #blocklyArea.toolbox-collapsed.hover-active .sat-toolbox-toggle-btn {
+    left: 194px;
+  }
+
+  /* Em telas pequenas o painel de código vira uma gaveta sobreposta (drawer),
+     independente do estado de "fixado", para nunca competir por espaço com o workspace. */
+  #tab_page_blocks .sat-side-panel {
+    position: absolute !important;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    height: 100%;
+    width: 86vw !important;
+    min-width: 0 !important;
+    max-width: 420px !important;
+    z-index: 950;
+    box-shadow: -6px 0 25px rgba(15, 23, 42, 0.16);
+  }
+
+  #tab_page_blocks .sat-panel-resizer {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .blocklyToolboxDiv {
+    width: 80vw !important;
+    min-width: 200px !important;
+    max-width: 320px !important;
+  }
+
+  #tab_page_blocks .sat-side-panel {
+    width: 94vw !important;
+    max-width: 94vw !important;
+  }
+
+  .sat-toolbox-toggle-btn,
+  .sat-panel-toggle-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .sat-toolbox-hover-trigger,
+  .sat-panel-hover-trigger {
+    width: 32px;
+  }
 }
 

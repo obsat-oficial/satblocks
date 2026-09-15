@@ -341,6 +341,21 @@
         <div id="refTopicContent" class="ref-topic-container"></div>
       </div>
     </aside>
+
+    <!-- ZONA DE GATILHO HOVER LATERAL DIREITA QUANDO RECOLHIDO -->
+    <div class="sat-panel-hover-trigger" id="panelHoverTrigger"></div>
+
+    <!-- BOTÃO MINIMALISTA DE RECOLHER / FIXAR PAINEL LATERAL DIREITO -->
+    <button class="sat-panel-toggle-btn" id="btnToggleSidePanel" title="Recolher / Fixar Painel de Código" onclick="SatBlocksApp.toggleSidePanel()">
+      <svg class="toggle-icon-collapse" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+      <svg class="toggle-icon-expand" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
   </section>
 
   <!-- 2. ABA CONSOLE / TERMINAL REPL -->

@@ -224,7 +224,20 @@ window.SatBlocksApp = (function() {
     if (window.SatProfiles) {
       window.SatProfiles.init();
     }
-    setupBlockly();
+    try {
+      setupBlockly();
+    } catch (err) {
+      console.error('Erro fatal ao inicializar o workspace Blockly:', err);
+      const blocklyDiv = document.getElementById('blocklyDiv');
+      if (blocklyDiv) {
+        blocklyDiv.innerHTML = '<div style="padding:24px;font-family:sans-serif;color:#7f1d1d;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;margin:16px;">'
+          + '<strong>⚠️ Não foi possível carregar o editor de blocos.</strong><br>'
+          + 'Tente recarregar a página. Se o problema persistir, use o botão "Novo Projeto" '
+          + 'para descartar um bloco customizado corrompido, ou contate a equipe OBSAT.'
+          + '</div>';
+      }
+      return;
+    }
     setupEvents();
     SatFiles.init();
     SatDataboard.init();
@@ -453,16 +466,10 @@ window.SatBlocksApp = (function() {
           event.type === Blockly.Events.BLOCK_MOVE) {
         updateGeneratedCode();
         saveWorkspaceToStorage();
-        if (window.SatProfiles && window.SatProfiles.syncFromWorkspace) {
-          window.SatProfiles.syncFromWorkspace();
-        }
       }
     });
 
     updateGeneratedCode();
-    if (window.SatProfiles && window.SatProfiles.syncFromWorkspace) {
-      window.SatProfiles.syncFromWorkspace();
-    }
   }
 
   function loadInitialProgram() {
@@ -752,8 +759,8 @@ window.SatBlocksApp = (function() {
         const dom = Blockly.Xml.workspaceToDom(workspace);
         const xmlText = Blockly.Xml.domToText(dom);
         localStorage.setItem('satblocks_saved_workspace_v2', xmlText);
-        if (window.SatProfiles && typeof window.SatProfiles.saveCurrentMissionXml === 'function') {
-          window.SatProfiles.saveCurrentMissionXml(xmlText);
+        if (window.SatProfiles && typeof window.SatProfiles.saveCurrentWorkspace === 'function') {
+          window.SatProfiles.saveCurrentWorkspace(xmlText);
         }
       } catch (err) {
         console.warn('Erro ao salvar workspace no localStorage:', err);
@@ -943,6 +950,9 @@ window.SatBlocksApp = (function() {
     } else if (sidePanelEl) {
       sidePanelEl.style.width = '520px';
     }
+
+    // Inicializa preferência de recolher/auto-hover do painel de código (já com a largura restaurada acima)
+    initSidePanelCollapse();
 
     if (resizerEl && sidePanelEl) {
       let isDragging = false;
@@ -2012,6 +2022,8 @@ window.SatBlocksApp = (function() {
 
   let isToolboxCollapsed = false;
   let toolboxHoverTimeout = null;
+  let isSidePanelCollapsed = false;
+  let sidePanelHoverTimeout = null;
 
   function isFlyoutOpen() {
     if (!workspace) return false;
@@ -2025,7 +2037,7 @@ window.SatBlocksApp = (function() {
 
   function initToolboxCollapse() {
     const saved = localStorage.getItem('satblocks_toolbox_collapsed');
-    if (saved === 'true') {
+    if (saved === 'true' || (saved === null && window.innerWidth <= 768)) {
       setToolboxCollapsed(true);
     }
 
@@ -2057,6 +2069,8 @@ window.SatBlocksApp = (function() {
 
     if (trigger) trigger.addEventListener('mouseenter', handleEnter);
     if (toggleBtn) toggleBtn.addEventListener('mouseenter', handleEnter);
+    if (trigger) trigger.addEventListener('touchstart', handleEnter, { passive: true });
+    if (toggleBtn) toggleBtn.addEventListener('touchstart', handleEnter, { passive: true });
 
     document.addEventListener('mousemove', (e) => {
       if (!isToolboxCollapsed) return;
@@ -2116,6 +2130,102 @@ window.SatBlocksApp = (function() {
     setToolboxCollapsed(!isToolboxCollapsed);
   }
 
+  function isSidePanelInteractionTarget(el) {
+    if (!el) return false;
+    return !!(el.closest('.sat-side-panel') || el.closest('#panelHoverTrigger') || el.closest('#btnToggleSidePanel'));
+  }
+
+  function initSidePanelCollapse() {
+    const saved = localStorage.getItem('satblocks_sidepanel_collapsed');
+    if (saved === 'true' || (saved === null && window.innerWidth <= 768)) {
+      setSidePanelCollapsed(true);
+    }
+
+    const area = document.getElementById('tab_page_blocks');
+    const trigger = document.getElementById('panelHoverTrigger');
+    const toggleBtn = document.getElementById('btnToggleSidePanel');
+
+    function handleEnter() {
+      if (!isSidePanelCollapsed) return;
+      clearTimeout(sidePanelHoverTimeout);
+      if (area) area.classList.add('side-panel-hover-active');
+    }
+
+    function handleLeave() {
+      if (!isSidePanelCollapsed) return;
+      clearTimeout(sidePanelHoverTimeout);
+      sidePanelHoverTimeout = setTimeout(() => {
+        const hovered = document.querySelector(':hover');
+        if (isSidePanelInteractionTarget(hovered)) return;
+        if (area) area.classList.remove('side-panel-hover-active');
+      }, 200);
+    }
+
+    if (trigger) trigger.addEventListener('mouseenter', handleEnter);
+    if (toggleBtn) toggleBtn.addEventListener('mouseenter', handleEnter);
+    if (trigger) trigger.addEventListener('touchstart', handleEnter, { passive: true });
+    if (toggleBtn) toggleBtn.addEventListener('touchstart', handleEnter, { passive: true });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isSidePanelCollapsed) return;
+      const panelEl = document.getElementById('sidePanel');
+      const winWidth = window.innerWidth;
+
+      if (e.clientX >= winWidth - 25) {
+        handleEnter();
+      } else if (panelEl && panelEl.contains(e.target)) {
+        handleEnter();
+      } else if (!(panelEl && panelEl.contains(e.target)) && !(toggleBtn && toggleBtn.contains(e.target))) {
+        handleLeave();
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!isSidePanelCollapsed) return;
+      const panelEl = document.getElementById('sidePanel');
+      if (panelEl && !panelEl.contains(e.target) && !(toggleBtn && toggleBtn.contains(e.target))) {
+        setTimeout(() => {
+          if (area) area.classList.remove('side-panel-hover-active');
+        }, 150);
+      }
+    });
+  }
+
+  function setSidePanelCollapsed(collapsed) {
+    isSidePanelCollapsed = !!collapsed;
+    const area = document.getElementById('tab_page_blocks');
+    const panelEl = document.getElementById('sidePanel');
+    const btn = document.getElementById('btnToggleSidePanel');
+
+    if (panelEl) {
+      // Preserva a largura atual como variável CSS para restaurar ao abrir via hover
+      const currentWidth = panelEl.style.width || (panelEl.offsetWidth + 'px');
+      panelEl.style.setProperty('--sat-restore-width', currentWidth);
+      panelEl.classList.add('animate-resize');
+      setTimeout(() => panelEl.classList.remove('animate-resize'), 260);
+    }
+
+    if (area) {
+      area.classList.toggle('side-panel-collapsed', isSidePanelCollapsed);
+      area.classList.remove('side-panel-hover-active');
+    }
+
+    if (btn) {
+      btn.title = isSidePanelCollapsed
+        ? 'Painel de Código Recolhido (Passe o mouse na borda direita para abrir) • Clique para fixar'
+        : 'Recolher Painel de Código (Modo Auto-Hover)';
+    }
+
+    localStorage.setItem('satblocks_sidepanel_collapsed', isSidePanelCollapsed ? 'true' : 'false');
+    setTimeout(() => {
+      if (workspace) Blockly.svgResize(workspace);
+    }, 260);
+  }
+
+  function toggleSidePanel() {
+    setSidePanelCollapsed(!isSidePanelCollapsed);
+  }
+
   function switchPinoutImage(src) {
     const img = document.getElementById('deviceBoardImage');
     if (img) {
@@ -2131,6 +2241,8 @@ window.SatBlocksApp = (function() {
     toggleTabsDropdown,
     toggleToolbox,
     setToolboxCollapsed,
+    toggleSidePanel,
+    setSidePanelCollapsed,
     renderDeviceTab,
     sendQuickCmd,
     switchPinoutImage,

@@ -1576,7 +1576,9 @@ window.SatProfiles = (function() {
 
   function saveCurrentWorkspace(xmlText) {
     if (!currentProject.uid) {
-      createNewProject();
+      // Registra o workspace em andamento como um projeto novo, SEM recarregar/limpar
+      // o workspace (createNewProject() faria isso via openProject, perdendo a edição atual).
+      currentProject.uid = 'proj_' + Math.random().toString(36).substr(2, 9);
     }
     if (currentProject.uid) {
       currentProject.xml = xmlText;
