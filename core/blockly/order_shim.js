@@ -44,4 +44,47 @@
   P.ORDER_CONDITIONAL = Order.CONDITIONAL;
   P.ORDER_LAMBDA = Order.LAMBDA;
   P.ORDER_NONE = Order.NONE;
+
+  // ==========================================================
+  // Compatibilidade com o registro de geradores por bloco.
+  //
+  // Achado ao investigar o erro "Python generator does not know how to
+  // generate code for block type X": a partir do Blockly >= v9, blockToCode()
+  // só procura a função geradora em `this.forBlock[tipo]` (um objeto próprio
+  // por instância, Object.create(null)) — NUNCA em `this[tipo]` diretamente.
+  // Todo o gerador customizado do SatBlocks (satblocks/generator_python.js,
+  // ~145 blocos) e o motor de síntese do SatBlocks Studio foram escritos no
+  // padrão antigo `Blockly.Python['nome_do_bloco'] = function(block) {...}`,
+  // que grava a função como propriedade direta de Blockly.Python, não dentro
+  // de `forBlock`. Sem isso, TODO bloco customizado falha ao gerar código —
+  // só aparece um erro por vez porque workspaceToCode() aborta no primeiro.
+  //
+  // Em vez de editar as ~145 atribuições (e as que o Studio cria em runtime
+  // via eval), interceptamos workspaceToCode()/blockToCode() para sincronizar
+  // automaticamente qualquer função própria de Blockly.Python (velho padrão)
+  // para dentro de forBlock (novo padrão) bem antes de cada geração de código.
+  // ==========================================================
+  function syncPythonGeneratorForBlock() {
+    if (!P.forBlock) return;
+    for (var key in P) {
+      if (Object.prototype.hasOwnProperty.call(P, key) && typeof P[key] === 'function') {
+        P.forBlock[key] = P[key];
+      }
+    }
+  }
+
+  if (P.forBlock && typeof P.workspaceToCode === 'function' && typeof P.blockToCode === 'function') {
+    var origWorkspaceToCode = P.workspaceToCode.bind(P);
+    var origBlockToCode = P.blockToCode.bind(P);
+
+    P.workspaceToCode = function (ws) {
+      syncPythonGeneratorForBlock();
+      return origWorkspaceToCode(ws);
+    };
+
+    P.blockToCode = function (block, optThisOnly) {
+      syncPythonGeneratorForBlock();
+      return origBlockToCode(block, optThisOnly);
+    };
+  }
 })();
