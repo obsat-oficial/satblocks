@@ -670,6 +670,11 @@ window.SatDataboard = (function() {
         const scalesConfig = noScales ? {} : {
           x: {
             type: chartData.useTimeAxis ? 'linear' : 'category',
+            // Sem isso, o Chart.js arredonda o início/fim do eixo para
+            // "números redondos" de tick, deixando um vão antes do
+            // primeiro ponto e depois do último. "data" força o eixo a
+            // começar/terminar exatamente no primeiro/último timestamp.
+            bounds: chartData.useTimeAxis ? 'data' : undefined,
             grid: { color: 'rgba(0,0,0,0.04)' },
             ticks: {
               maxTicksLimit: 8,
