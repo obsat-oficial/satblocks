@@ -158,6 +158,17 @@ body.studio-body {
   margin: 4px 2px;
 }
 
+/* .sat-tabs-dropdown-menu (herdada do tema) abre para a direita a partir da
+   borda ESQUERDA do botão (left:0) — funciona quando sobra espaço à
+   direita do botão, mas aqui "Mais Ações" é o último item da topbar,
+   encostado na borda direita da tela, e o menu (min-width: 175px) saía
+   cortado pela viewport. Abre para a ESQUERDA a partir da borda direita
+   do botão em vez disso. */
+#studioMoreActionsMenu {
+  left: auto;
+  right: 0;
+}
+
 /* BARRA DE CRIAÇÃO INTELIGENTE (MICROPYTHON & PROMPT/IA) */
 .studio-creation-bar {
   background: #ffffff;
