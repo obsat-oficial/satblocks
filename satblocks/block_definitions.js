@@ -43,6 +43,35 @@
     }
   }
 
+  // Guarda o estado do bloco "shadow" (valor padrão de fundo, ex.: o "41" do
+  // ID da equipe ou o "estavel" do Payload Extra nos presets de missão) que
+  // porventura esteja preenchendo um input ANTES de updateShape_() descartar
+  // esse input (e, junto com ele, o próprio shadow — ver comentário de
+  // satMutatorReconnect acima). Sem isso, um campo com shadow simplesmente
+  // fica vazio depois de abrir a engrenagem, mesmo sem o usuário ter mexido
+  // em nada.
+  function satMutatorCaptureShadowState(connection) {
+    if (!connection) return null;
+    try {
+      return connection.getShadowState(true) || null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Recria o shadow capturado por satMutatorCaptureShadowState() no input já
+  // reconstruído, só se ninguém (nenhum bloco real) foi reencaixado ali.
+  function satMutatorRespawnShadow(block, inputName, shadowState) {
+    if (!shadowState) return;
+    const input = block.getInput(inputName);
+    if (!input || !input.connection || input.connection.isConnected()) return;
+    try {
+      input.connection.setShadowState(shadowState);
+    } catch (e) {
+      console.warn('[SatBlocks] Falha ao recriar o valor padrão do campo ' + inputName + ':', e);
+    }
+  }
+
   // Paleta de Cores Lúdicas e Didáticas SatBlocks (Cores individuais por grandeza física)
   const SENSOR_COLORS = {
     MISSION: '#7c3aed',         // Púrpura Orbital (Missão & Satélite)
@@ -192,6 +221,7 @@
         // já conectado é desconectado e não consegue mais ser reencaixado.
         const existingInput = this.getInput('ADD' + i);
         itemBlock.valueConnection_ = existingInput && existingInput.connection.targetConnection;
+        itemBlock.shadowState_ = existingInput && satMutatorCaptureShadowState(existingInput.connection);
         connection.connect(itemBlock.previousConnection);
         connection = itemBlock.nextConnection;
       }
@@ -202,10 +232,12 @@
       let itemBlock = containerBlock.getInputTargetBlock('STACK');
       const connections = [];
       const labels = [];
+      const shadowStates = [];
 
       while (itemBlock) {
         if (!itemBlock.isInsertionMarker()) {
           connections.push(itemBlock.valueConnection_);
+          shadowStates.push(itemBlock.shadowState_ || null);
           labels.push(itemBlock.getFieldValue('ITEM_LABEL') || 'dado');
         }
         itemBlock = itemBlock.getNextBlock();
@@ -223,7 +255,8 @@
       this.updateShape_();
 
       for (let i = 0; i < this.itemCount_; i++) {
-        satMutatorReconnect(connections[i], this, 'ADD' + i);
+        const reconnected = satMutatorReconnect(connections[i], this, 'ADD' + i);
+        if (!reconnected) satMutatorRespawnShadow(this, 'ADD' + i, shadowStates[i]);
       }
     },
 
@@ -234,6 +267,7 @@
         if (!itemBlock.isInsertionMarker()) {
           const input = this.getInput('ADD' + i);
           itemBlock.valueConnection_ = input && input.connection.targetConnection;
+          itemBlock.shadowState_ = input && satMutatorCaptureShadowState(input.connection);
           i++;
         }
         itemBlock = itemBlock.getNextBlock();
@@ -331,6 +365,7 @@
         // reencaixá-lo depois.
         const existingInput = this.getInput('VAL' + i);
         itemBlock.valueConnection_ = existingInput && existingInput.connection.targetConnection;
+        itemBlock.shadowState_ = existingInput && satMutatorCaptureShadowState(existingInput.connection);
         connection.connect(itemBlock.previousConnection);
         connection = itemBlock.nextConnection;
       }
@@ -341,10 +376,12 @@
       let itemBlock = containerBlock.getInputTargetBlock('STACK');
       const connections = [];
       const keys = [];
+      const shadowStates = [];
 
       while (itemBlock) {
         if (!itemBlock.isInsertionMarker()) {
           connections.push(itemBlock.valueConnection_);
+          shadowStates.push(itemBlock.shadowState_ || null);
           keys.push(itemBlock.getFieldValue('KEY_NAME') || 'campo');
         }
         itemBlock = itemBlock.getNextBlock();
@@ -362,7 +399,8 @@
       this.updateShape_();
 
       for (let i = 0; i < this.itemCount_; i++) {
-        satMutatorReconnect(connections[i], this, 'VAL' + i);
+        const reconnected = satMutatorReconnect(connections[i], this, 'VAL' + i);
+        if (!reconnected) satMutatorRespawnShadow(this, 'VAL' + i, shadowStates[i]);
       }
     },
 
@@ -373,6 +411,7 @@
         if (!itemBlock.isInsertionMarker()) {
           const input = this.getInput('VAL' + i);
           itemBlock.valueConnection_ = input && input.connection.targetConnection;
+          itemBlock.shadowState_ = input && satMutatorCaptureShadowState(input.connection);
           i++;
         }
         itemBlock = itemBlock.getNextBlock();
@@ -477,6 +516,7 @@
         // reencaixá-lo depois.
         const existingInput = this.getInput('VAL' + i);
         itemBlock.valueConnection_ = existingInput && existingInput.connection.targetConnection;
+        itemBlock.shadowState_ = existingInput && satMutatorCaptureShadowState(existingInput.connection);
         connection.connect(itemBlock.previousConnection);
         connection = itemBlock.nextConnection;
       }
@@ -487,10 +527,12 @@
       let itemBlock = containerBlock.getInputTargetBlock('STACK');
       const connections = [];
       const keys = [];
+      const shadowStates = [];
 
       while (itemBlock) {
         if (!itemBlock.isInsertionMarker()) {
           connections.push(itemBlock.valueConnection_);
+          shadowStates.push(itemBlock.shadowState_ || null);
           keys.push(itemBlock.getFieldValue('KEY_NAME') || 'campo');
         }
         itemBlock = itemBlock.getNextBlock();
@@ -509,7 +551,8 @@
       this.updateShape_();
 
       for (let i = 0; i < this.itemCount_; i++) {
-        satMutatorReconnect(connections[i], this, 'VAL' + i);
+        const reconnected = satMutatorReconnect(connections[i], this, 'VAL' + i);
+        if (!reconnected) satMutatorRespawnShadow(this, 'VAL' + i, shadowStates[i]);
       }
     },
 
@@ -520,6 +563,7 @@
         if (!itemBlock.isInsertionMarker()) {
           const input = this.getInput('VAL' + i);
           itemBlock.valueConnection_ = input && input.connection.targetConnection;
+          itemBlock.shadowState_ = input && satMutatorCaptureShadowState(input.connection);
           i++;
         }
         itemBlock = itemBlock.getNextBlock();
@@ -1567,6 +1611,7 @@
         // reencaixá-lo depois.
         const existingInput = this.getInput('VAL' + i);
         itemBlock.valueConnection_ = existingInput && existingInput.connection && existingInput.connection.targetConnection;
+        itemBlock.shadowState_ = existingInput && satMutatorCaptureShadowState(existingInput.connection);
         connection.connect(itemBlock.previousConnection);
         connection = itemBlock.nextConnection;
       }
@@ -1578,10 +1623,12 @@
       const connections = [];
       const keys = [];
       const labels = [];
+      const shadowStates = [];
 
       while (itemBlock) {
         if (!itemBlock.isInsertionMarker()) {
           connections.push(itemBlock.valueConnection_);
+          shadowStates.push(itemBlock.shadowState_ || null);
           const lbl = itemBlock.getFieldValue('LABEL_NAME') || 'Campo';
           const k = itemBlock.getFieldValue('KEY_NAME') || 'campo';
           labels.push(lbl);
@@ -1604,7 +1651,8 @@
       this.updateShape_();
 
       for (let i = 0; i < this.itemCount_; i++) {
-        satMutatorReconnect(connections[i], this, 'VAL' + i);
+        const reconnected = satMutatorReconnect(connections[i], this, 'VAL' + i);
+        if (!reconnected) satMutatorRespawnShadow(this, 'VAL' + i, shadowStates[i]);
       }
     },
 
@@ -1615,6 +1663,7 @@
         if (!itemBlock.isInsertionMarker()) {
           const input = this.getInput('VAL' + i);
           itemBlock.valueConnection_ = input && input.connection && input.connection.targetConnection;
+          itemBlock.shadowState_ = input && satMutatorCaptureShadowState(input.connection);
           i++;
         }
         itemBlock = itemBlock.getNextBlock();
