@@ -497,6 +497,20 @@ pre.code-output {
   letter-spacing: 0.2px;
 }
 
+/* Os 4 painéis de código dos quadrantes 3 e 4 são contenteditable (dá pra
+   editar o JS/XML/Python à mão e clicar em "Recompilar") mas, sem isso,
+   ficavam com a cara idêntica ao painel de PREVIEW (só leitura) — nenhuma
+   pista visual de que são editáveis. Só aparece ao focar, pra não virar
+   mais um elemento de sobra sempre visível. */
+pre.code-output.editable {
+  cursor: text;
+}
+
+pre.code-output.editable:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 2px rgba(56, 189, 248, 0.55);
+}
+
 pre.code-output.mini {
   padding: 8px 12px;
   font-size: 11px;
