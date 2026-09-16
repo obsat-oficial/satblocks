@@ -45,12 +45,15 @@ body.studio-body {
   z-index: 100;
   white-space: nowrap;
   flex-wrap: nowrap;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.studio-header::-webkit-scrollbar {
-  display: none;
+  /* Precisa ser "visible" (como .sat-topbar da IDE principal) e não
+     "auto"/scroll em nenhum eixo: overflow-x:auto força o navegador a
+     tratar overflow-y também como auto (não dá pra misturar "visible" com
+     "auto"/"scroll" entre os dois eixos), o que corta o menu suspenso
+     ".sat-tabs-dropdown-menu" (ele nasce abaixo do cabeçalho via
+     position:absolute) antes mesmo dele conseguir aparecer. Como agora a
+     toolbar tem só 2 botões + 1 menu, não precisa mais de rolagem
+     horizontal — as media queries abaixo já cuidam de telas estreitas. */
+  overflow: visible;
 }
 
 .studio-brand {
