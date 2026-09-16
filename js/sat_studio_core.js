@@ -498,7 +498,8 @@ window.SatStudioCore = (function() {
       code += `    this.setNextStatement(true, null);\n`;
     }
 
-    code += `    this.setTooltip('Bloco gerado via SatBlocks Studio Pro.');\n`;
+    const tooltipText = (cfg.tooltip && cfg.tooltip.trim()) || 'Bloco gerado via SatBlocks Studio Pro.';
+    code += `    this.setTooltip(${JSON.stringify(tooltipText)});\n`;
     code += `  }\n`;
     code += `};\n`;
 

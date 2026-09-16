@@ -10,7 +10,7 @@
 
   <!-- Estilos e Fontes -->
   <link rel="stylesheet" href="css/satblocks_theme.css?v=20260916-1">
-  <link rel="stylesheet" href="css/studio.css?v=20260916-6">
+  <link rel="stylesheet" href="css/studio.css?v=20260916-7">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -30,7 +30,7 @@
   <!-- Módulos do SatBlocks Studio Pro -->
   <script src="js/sat_driver_hub.js?v=20260916-1"></script>
   <script src="js/sat_ai_synthesizer.js?v=20260916-3"></script>
-  <script src="js/sat_studio_core.js?v=20260916-2"></script>
+  <script src="js/sat_studio_core.js?v=20260916-3"></script>
 </head>
 <body class="studio-body">
 
@@ -228,11 +228,16 @@
           </div>
         </div>
 
+        <div class="form-group">
+          <label>Descrição de Ajuda (Tooltip ao passar o mouse):</label>
+          <textarea id="cfgTooltip" rows="3" placeholder="Bloco gerado via SatBlocks Studio Pro." onchange="updateBlockFromForm()"></textarea>
+        </div>
+
         <!-- Removido o botão "Atualizar Prévia do Bloco": todo campo acima já
-             tem onchange="updateBlockFromForm()" (linhas 180-222), então a
-             prévia (quadrante 2) já é atualizada sozinha a cada mudança —
-             o botão só duplicava isso e ocupava espaço sem fazer nada a
-             mais. Fica só uma dica discreta pra quem não percebeu. -->
+             tem onchange="updateBlockFromForm()", então a prévia (quadrante 2)
+             já é atualizada sozinha a cada mudança — o botão só duplicava
+             isso e ocupava espaço sem fazer nada a mais. Fica só uma dica
+             discreta pra quem não percebeu. -->
         <p class="form-live-hint">✓ A prévia ao lado é atualizada automaticamente a cada mudança aqui.</p>
       </div>
     </section>
@@ -547,6 +552,7 @@
       document.getElementById('cfgColor').value = cfg.color;
       document.getElementById('cfgBlockType').value = cfg.blockType;
       document.getElementById('cfgInputsInline').value = cfg.inputsInline ? 'true' : 'false';
+      document.getElementById('cfgTooltip').value = cfg.tooltip || '';
       updateBlockTypeBadge(cfg.blockType);
     }
 
@@ -558,6 +564,7 @@
       cfg.color = document.getElementById('cfgColor').value;
       cfg.blockType = document.getElementById('cfgBlockType').value;
       cfg.inputsInline = document.getElementById('cfgInputsInline').value === 'true';
+      cfg.tooltip = document.getElementById('cfgTooltip').value;
 
       // Recompila com a nova configuração do formulário
       SatStudioCore.applyBlockConfiguration(cfg);

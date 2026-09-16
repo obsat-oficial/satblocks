@@ -349,7 +349,11 @@ body.studio-body {
 .studio-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1.15fr 0.85fr;
+  /* Era 1.15fr/0.85fr: a linha de cima (Configuração + Prévia) ficava maior
+     que o necessário e sobrava bastante espaço vazio no quadrante de
+     Configuração (poucos campos), enquanto os painéis de código de baixo
+     — normalmente mais longos — ficavam espremidos. Dividido igualmente. */
+  grid-template-rows: 1fr 1fr;
   flex: 1;
   gap: 1px;
   background: var(--border-studio);
@@ -424,7 +428,8 @@ body.studio-body {
 }
 
 .form-group input,
-.form-group select {
+.form-group select,
+.form-group textarea {
   background: #ffffff;
   border: 1px solid var(--border-studio-dark);
   border-radius: 6px;
@@ -436,8 +441,15 @@ body.studio-body {
   transition: border-color 0.2s;
 }
 
+.form-group textarea {
+  font-family: inherit;
+  resize: vertical;
+  min-height: 44px;
+}
+
 .form-group input:focus,
-.form-group select:focus {
+.form-group select:focus,
+.form-group textarea:focus {
   border-color: var(--obsat-pink);
 }
 
