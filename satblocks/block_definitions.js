@@ -13,23 +13,34 @@
     return;
   }
 
-  // Substitui Blockly.Mutator.reconnect (classe Blockly.Mutator removida no Blockly >= v9,
-  // migrado para o sistema de MutatorIcon). Reconecta uma conexão salva do mutator
-  // (connectionChild, tipicamente a saída de um bloco de valor) ao input indicado do
-  // bloco principal, só se ela ainda não estiver conectada a outro lugar.
+  // Reencaixa uma conexão salva do mutator (connectionChild, tipicamente a
+  // saída de um bloco de valor) ao input indicado do bloco principal.
+  //
+  // Antes esta função reimplementava a lógica manualmente (checando apenas
+  // connectionChild.getSourceBlock().workspace), o que NÃO é suficiente para
+  // detectar um bloco em processo de descarte (ex.: um shadow block cujo
+  // input foi removido e recriado por updateShape_() — Connection.dispose()
+  // chama unplug() no filho, que para um shadow o descarta em vez de deixá-lo
+  // flutuando). Nesse estado o bloco ainda tem uma referência a .workspace,
+  // mas connect() por baixo dos panos lança um erro ao tentar montar o
+  // evento de movimento ("could not be found" — o bloco já não está mais
+  // registrado no workspace). Isso acontecia bem no primeiro item (VAL0,
+  // ligado a um shadow), e como não havia nenhum try/catch, TODOS os itens
+  // seguintes do loop de compose() — inclusive os blocos reais dos sensores
+  // — nunca chegavam a ser reconectados.
+  //
+  // Blockly.Connection já expõe nativamente um reconnect(block, inputName)
+  // (usado pelos próprios mutators oficiais, ex.: lists_create_with,
+  // controls_if) que guarda corretamente contra isso via
+  // getSourceBlock().isDeadOrDying(). Delegamos para ele.
   function satMutatorReconnect(connectionChild, block, inputName) {
-    if (!connectionChild || !connectionChild.getSourceBlock() || !connectionChild.getSourceBlock().workspace) {
+    if (!connectionChild) return false;
+    try {
+      return !!connectionChild.reconnect(block, inputName);
+    } catch (e) {
+      console.warn('[SatBlocks] Falha ao reencaixar bloco no mutator (' + inputName + '):', e);
       return false;
     }
-    const input = block.getInput(inputName);
-    const connectionParent = input && input.connection;
-    if (!connectionParent) return false;
-    const currentParent = connectionChild.targetBlock();
-    if ((!currentParent || currentParent !== block) && !connectionParent.isConnected()) {
-      connectionParent.connect(connectionChild);
-      return true;
-    }
-    return false;
   }
 
   // Paleta de Cores Lúdicas e Didáticas SatBlocks (Cores individuais por grandeza física)
