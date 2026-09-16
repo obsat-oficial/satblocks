@@ -53,7 +53,7 @@ Você DEVE responder ESTRITAMENTE em formato JSON com as seguintes chaves (sem t
     }
   ],
   "jsDefinition": "Código JS completo Blockly.Blocks['blockName'] = { ... };",
-  "pyGenerator": "Código JS do gerador Python Blockly.Python['blockName'] = function(block) { ... };",
+  "pyGenerator": "Código JS do gerador Python no formato moderno Blockly.Python.forBlock['blockName'] = function(block) { ... }; usando python.Order.* (ex: python.Order.NONE, python.Order.FUNCTION_CALL) em vez de Blockly.Python.ORDER_*, que está obsoleto.",
   "toolboxXml": "Snippet XML com sombras <block type='blockName'>...</block>",
   "driverFilename": "nome_do_driver.py ou null se usar apenas bibliotecas nativas como machine",
   "driverPyCode": "Código Python do driver .py caso seja necessário criar uma classe externa, ou comentário explicando o uso nativo."
@@ -143,10 +143,10 @@ Regras Cruciais:
           `    this.setTooltip('Retorna Verdadeiro (1) quando o sensor de toque capacitivo TTP223B for pressionado.');\n` +
           `  }\n` +
           `};`,
-        pyGenerator: `Blockly.Python['${blockName}'] = function(block) {\n` +
+        pyGenerator: `Blockly.Python.forBlock['${blockName}'] = function(block) {\n` +
           `  Blockly.Python.definitions_['import_pin'] = 'from machine import Pin';\n` +
-          `  const pin = Blockly.Python.valueToCode(block, 'PIN', Blockly.Python.ORDER_NONE) || '4';\n` +
-          `  return [\`Pin(\${pin}, Pin.IN).value() == 1\`, Blockly.Python.ORDER_RELATIONAL];\n` +
+          `  const pin = Blockly.Python.valueToCode(block, 'PIN', python.Order.NONE) || '4';\n` +
+          `  return [\`Pin(\${pin}, Pin.IN).value() == 1\`, python.Order.RELATIONAL];\n` +
           `};`,
         toolboxXml: `<block type="${blockName}">\n` +
           `  <value name="PIN">\n` +
@@ -183,13 +183,13 @@ Regras Cruciais:
           `    this.setTooltip('Mede a distância em centímetros usando pulso ultrassônico.');\n` +
           `  }\n` +
           `};`,
-        pyGenerator: `Blockly.Python['${blockName}'] = function(block) {\n` +
+        pyGenerator: `Blockly.Python.forBlock['${blockName}'] = function(block) {\n` +
           `  Blockly.Python.definitions_['import_pin'] = 'from machine import Pin, time_pulse_us';\n` +
           `  Blockly.Python.definitions_['import_time'] = 'import time';\n` +
           `  Blockly.Python.definitions_['fn_hcsr04'] = 'def _read_hcsr04(trig_p, echo_p):\\n    t = Pin(trig_p, Pin.OUT)\\n    e = Pin(echo_p, Pin.IN)\\n    t.value(0)\\n    time.sleep_us(5)\\n    t.value(1)\\n    time.sleep_us(10)\\n    t.value(0)\\n    dur = time_pulse_us(e, 1, 30000)\\n    return round((dur / 2.0) / 29.1, 2) if dur > 0 else -1\\n';\n` +
-          `  const trig = Blockly.Python.valueToCode(block, 'TRIG', Blockly.Python.ORDER_NONE) || '5';\n` +
-          `  const echo = Blockly.Python.valueToCode(block, 'ECHO', Blockly.Python.ORDER_NONE) || '18';\n` +
-          `  return [\`_read_hcsr04(\${trig}, \${echo})\`, Blockly.Python.ORDER_FUNCTION_CALL];\n` +
+          `  const trig = Blockly.Python.valueToCode(block, 'TRIG', python.Order.NONE) || '5';\n` +
+          `  const echo = Blockly.Python.valueToCode(block, 'ECHO', python.Order.NONE) || '18';\n` +
+          `  return [\`_read_hcsr04(\${trig}, \${echo})\`, python.Order.FUNCTION_CALL];\n` +
           `};`,
         toolboxXml: `<block type="${blockName}">\n` +
           `  <value name="TRIG"><shadow type="math_number"><field name="NUM">5</field></shadow></value>\n` +
@@ -240,10 +240,10 @@ Regras Cruciais:
         `    this.setTooltip('Bloco gerado via SatBlocks Studio Pro.');\n` +
         `  }\n` +
         `};`,
-      pyGenerator: `Blockly.Python['${blockName}'] = function(block) {\n` +
+      pyGenerator: `Blockly.Python.forBlock['${blockName}'] = function(block) {\n` +
         `  Blockly.Python.definitions_['import_pin'] = 'from machine import Pin';\n` +
-        `  const pin = Blockly.Python.valueToCode(block, 'PIN', Blockly.Python.ORDER_NONE) || '4';\n` +
-        `  return ${blockType === 'statement' ? '`Pin(${pin}, Pin.OUT).value(1)\\n`' : '[`Pin(${pin}, Pin.IN).value()`, Blockly.Python.ORDER_FUNCTION_CALL]'};\n` +
+        `  const pin = Blockly.Python.valueToCode(block, 'PIN', python.Order.NONE) || '4';\n` +
+        `  return ${blockType === 'statement' ? '`Pin(${pin}, Pin.OUT).value(1)\\n`' : '[`Pin(${pin}, Pin.IN).value()`, python.Order.FUNCTION_CALL]'};\n` +
         `};`,
       toolboxXml: `<block type="${blockName}">\n  <value name="PIN"><shadow type="math_number"><field name="NUM">4</field></shadow></value>\n</block>`,
       driverFilename: hubDriver ? hubDriver.driverFilename : null,

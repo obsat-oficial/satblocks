@@ -37,11 +37,11 @@ window.SatStudioCore = (function() {
         { type: 'input_value', name: 'ADDR', label: 'Endereço I2C:', check: 'String', defaultShadow: '"0x40"' }
       ],
       pyTemplate: (blockName) => 
-        `Blockly.Python['${blockName}'] = function(block) {\n` +
+        `Blockly.Python.forBlock['${blockName}'] = function(block) {\n` +
         `  Blockly.Python.definitions_['import_i2c'] = 'from machine import Pin, I2C';\n` +
         `  const metric = block.getFieldValue('METRIC') || 'temp';\n` +
-        `  const addr = Blockly.Python.valueToCode(block, 'ADDR', Blockly.Python.ORDER_NONE) || '"0x40"';\n` +
-        `  return [\`sensor.read_\${metric}()\`, Blockly.Python.ORDER_FUNCTION_CALL];\n` +
+        `  const addr = Blockly.Python.valueToCode(block, 'ADDR', python.Order.NONE) || '"0x40"';\n` +
+        `  return [\`sensor.read_\${metric}()\`, python.Order.FUNCTION_CALL];\n` +
         `};`
     },
     {
@@ -59,11 +59,11 @@ window.SatStudioCore = (function() {
         { type: 'dropdown', name: 'STATE', label: 'Estado:', options: [['Ligar / Ativar (HIGH)', '1'], ['Desligar (LOW)', '0']] }
       ],
       pyTemplate: (blockName) =>
-        `Blockly.Python['${blockName}'] = function(block) {\n` +
+        `Blockly.Python.forBlock['${blockName}'] = function(block) {\n` +
         `  Blockly.Python.definitions_['import_pin'] = 'from machine import Pin';\n` +
         `  Blockly.Python.definitions_['import_time'] = 'import time';\n` +
-        `  const pin = Blockly.Python.valueToCode(block, 'PIN', Blockly.Python.ORDER_NONE) || '18';\n` +
-        `  const duration = Blockly.Python.valueToCode(block, 'DURATION', Blockly.Python.ORDER_NONE) || '2000';\n` +
+        `  const pin = Blockly.Python.valueToCode(block, 'PIN', python.Order.NONE) || '18';\n` +
+        `  const duration = Blockly.Python.valueToCode(block, 'DURATION', python.Order.NONE) || '2000';\n` +
         `  const state = block.getFieldValue('STATE') || '1';\n` +
         `  return \`_p = Pin(\${pin}, Pin.OUT)\\n_p.value(\${state})\\ntime.sleep_ms(\${duration})\\n_p.value(0)\\n\`;\n` +
         `};`
@@ -83,8 +83,8 @@ window.SatStudioCore = (function() {
         { type: 'dropdown', name: 'SF', label: 'Spreading Factor:', options: [['SF7 (Rápido)', '7'], ['SF9 (Médio)', '9'], ['SF12 (Longo Alcance)', '12']] }
       ],
       pyTemplate: (blockName) =>
-        `Blockly.Python['${blockName}'] = function(block) {\n` +
-        `  const payload = Blockly.Python.valueToCode(block, 'PAYLOAD', Blockly.Python.ORDER_NONE) || '"OBSAT"';\n` +
+        `Blockly.Python.forBlock['${blockName}'] = function(block) {\n` +
+        `  const payload = Blockly.Python.valueToCode(block, 'PAYLOAD', python.Order.NONE) || '"OBSAT"';\n` +
         `  const sf = block.getFieldValue('SF') || '7';\n` +
         `  return \`lora.set_sf(\${sf})\\nlora.send(str(\${payload}))\\n\`;\n` +
         `};`
@@ -102,11 +102,11 @@ window.SatStudioCore = (function() {
         { type: 'input_value', name: 'FACTOR', label: 'Fator Divisor de Tensão:', check: 'Number', defaultShadow: '2.0' }
       ],
       pyTemplate: (blockName) =>
-        `Blockly.Python['${blockName}'] = function(block) {\n` +
+        `Blockly.Python.forBlock['${blockName}'] = function(block) {\n` +
         `  Blockly.Python.definitions_['import_adc'] = 'from machine import Pin, ADC';\n` +
-        `  const pin = Blockly.Python.valueToCode(block, 'PIN', Blockly.Python.ORDER_NONE) || '36';\n` +
-        `  const factor = Blockly.Python.valueToCode(block, 'FACTOR', Blockly.Python.ORDER_NONE) || '2.0';\n` +
-        `  return [\`round((ADC(Pin(\${pin})).read() / 4095.0 * 3.3) * \${factor}, 2)\`, Blockly.Python.ORDER_FUNCTION_CALL];\n` +
+        `  const pin = Blockly.Python.valueToCode(block, 'PIN', python.Order.NONE) || '36';\n` +
+        `  const factor = Blockly.Python.valueToCode(block, 'FACTOR', python.Order.NONE) || '2.0';\n` +
+        `  return [\`round((ADC(Pin(\${pin})).read() / 4095.0 * 3.3) * \${factor}, 2)\`, python.Order.FUNCTION_CALL];\n` +
         `};`
     }
   ];
@@ -199,6 +199,15 @@ window.SatStudioCore = (function() {
    * Sintetizador Universal MicroPython para Bloco Blockly (Python-to-Block Synthesizer)
    * Converte qualquer trecho ou driver MicroPython em bloco visual, gerador e toolbox
    */
+  // Sequências de escape do Python (ex: \xE3, \r\n — comuns em drivers I2C)
+  // e crases não podem entrar cruas num template literal JavaScript: o
+  // JS interpretaria \x/\r/\n ele mesmo antes do código nem chegar na
+  // placa, corrompendo o driver silenciosamente. Escapa ANTES de inserir
+  // qualquer placeholder ${...} nosso (que devem continuar sem escape).
+  function escapeForTemplateLiteral(text) {
+    return text.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$\{/g, '\\${');
+  }
+
   function synthesizeFromPython(pyCode, options = {}) {
     if (!pyCode || !pyCode.trim()) {
       alert('Por favor, digite ou cole um trecho de código MicroPython.');
@@ -207,6 +216,7 @@ window.SatStudioCore = (function() {
 
     const cleanCode = pyCode.trim();
     const lines = cleanCode.split('\n').map(l => l.trim()).filter(l => l.length > 0 && !l.startsWith('#'));
+    const isSingleLine = lines.length === 1;
 
     // 1. Detecção de imports necessários
     const imports = [];
@@ -228,16 +238,12 @@ window.SatStudioCore = (function() {
     if (cleanCode.includes('math.')) imports.push('import math');
     if (cleanCode.includes('uos.') || cleanCode.includes('os.')) imports.push('import os');
 
-    // 2. Extração semântica de Parâmetros e Variáveis Dinâmicas
-    const fields = [];
-    let parameterizedPy = cleanCode;
+    // 2. Heurística de Tipo de Retorno vs Comando
     let blockType = 'statement';
     let blockColor = '#0284c7';
     let defaultLabel = '🛰️ Executar Comando MicroPython';
     let category = options.category || 'Atuadores & Ejeção';
 
-    // Heurística de Tipo de Retorno vs Comando
-    const isSingleLine = lines.length === 1;
     const isExpression = isSingleLine && !cleanCode.includes('=') && !cleanCode.startsWith('def ') && !cleanCode.startsWith('for ') && !cleanCode.startsWith('if ');
     const isGetter = isExpression || (isSingleLine && (cleanCode.includes('.read(') || cleanCode.includes('.read_') || cleanCode.includes('.temperature') || cleanCode.includes('.pressure') || cleanCode.includes('.humidity') || cleanCode.includes('.voltage') || cleanCode.includes('.distance') || cleanCode.includes('.acceleration') || cleanCode.includes('.gyro')));
 
@@ -248,75 +254,87 @@ window.SatStudioCore = (function() {
       defaultLabel = '🌡️ Leitura de Sensor';
     }
 
-    // Extração de Pinos GPIO (ex: Pin(18), pin=25, etc.)
-    const pinMatch = cleanCode.match(/Pin\((\d+)/i) || cleanCode.match(/pin\s*=\s*(\d+)/i);
-    if (pinMatch) {
-      const pinNum = pinMatch[1];
-      fields.push({
-        type: 'input_value',
-        name: 'PIN',
-        label: 'Pino GPIO:',
-        check: 'Number',
-        defaultShadow: pinNum
+    // 3. Extração semântica de parâmetros: coleta uma lista de substituições
+    // { regex, pyParamName, makeReplacement(target) } a partir do código
+    // ORIGINAL (não escapado, pra números/textos combinarem certinho).
+    // `makeReplacement` recebe o texto final a inserir no lugar do valor
+    // literal — ou o nome puro do parâmetro Python (função auxiliar) ou o
+    // placeholder ${var} JS (bloco inline) — ver uso mais abaixo.
+    const fields = [];
+    const substitutions = [];
+
+    // 3a. Pinos GPIO — TODOS os distintos, não só o primeiro (ex: I2C tem
+    // SCL + SDA; um atuador pode ter pino + pino de status). Tenta herdar
+    // o nome da variável Python (ex: "scl = Pin(22)" -> campo "SCL_PIN").
+    const pinRegex = /(?:(\w+)\s*=\s*)?Pin\((\d+)\b/g;
+    const seenPins = new Set();
+    let pinCount = 0;
+    let pm;
+    while ((pm = pinRegex.exec(cleanCode)) !== null) {
+      const varHint = pm[1];
+      const pinNum = pm[2];
+      if (seenPins.has(pinNum)) continue;
+      seenPins.add(pinNum);
+      pinCount++;
+      const fieldName = varHint ? `${varHint.toUpperCase()}_PIN` : (pinCount === 1 ? 'PIN' : `PIN_${pinCount}`);
+      const label = varHint ? `Pino ${varHint.toUpperCase()}:` : (pinCount === 1 ? 'Pino GPIO:' : `Pino GPIO ${pinCount}:`);
+      fields.push({ type: 'input_value', name: fieldName, label, check: 'Number', defaultShadow: pinNum });
+      substitutions.push({
+        regex: new RegExp(`Pin\\(${pinNum}\\b`, 'g'),
+        pyParamName: fieldName.toLowerCase(),
+        makeReplacement: (target) => `Pin(${target}`
       });
-      parameterizedPy = parameterizedPy.replace(new RegExp(`Pin\\(${pinNum}`, 'g'), 'Pin(${pin}');
-      parameterizedPy = parameterizedPy.replace(new RegExp(`pin\\s*=\\s*${pinNum}`, 'g'), 'pin = ${pin}');
+    }
+    if (pinCount > 0) {
       defaultLabel = blockType === 'output_number' ? '📊 Leitura ADC / Pino GPIO' : '⚙️ Acionar Pino GPIO';
     }
 
-    // Extração de Tempo de Espera (ex: sleep_ms(500), sleep(2))
+    // 3b. Tempo de espera em milissegundos
     const sleepMsMatch = cleanCode.match(/sleep_ms\((\d+)\)/);
     if (sleepMsMatch) {
       const ms = sleepMsMatch[1];
-      fields.push({
-        type: 'input_value',
-        name: 'DELAY_MS',
-        label: 'Tempo (ms):',
-        check: 'Number',
-        defaultShadow: ms
+      fields.push({ type: 'input_value', name: 'DELAY_MS', label: 'Tempo (ms):', check: 'Number', defaultShadow: ms });
+      substitutions.push({
+        regex: new RegExp(`sleep_ms\\(${ms}\\)`, 'g'),
+        pyParamName: 'delay_ms',
+        makeReplacement: (target) => `sleep_ms(${target})`
       });
-      parameterizedPy = parameterizedPy.replace(new RegExp(`sleep_ms\\(${ms}\\)`, 'g'), 'sleep_ms(${delay_ms})');
     }
 
+    // 3c. Tempo de espera em segundos
     const sleepSecMatch = cleanCode.match(/sleep\((\d+(\.\d+)?)\)/);
     if (sleepSecMatch && !sleepMsMatch) {
       const sec = sleepSecMatch[1];
-      fields.push({
-        type: 'input_value',
-        name: 'DELAY_SEC',
-        label: 'Tempo (segundos):',
-        check: 'Number',
-        defaultShadow: sec
+      fields.push({ type: 'input_value', name: 'DELAY_SEC', label: 'Tempo (segundos):', check: 'Number', defaultShadow: sec });
+      substitutions.push({
+        regex: new RegExp(`sleep\\(${sec}\\)`, 'g'),
+        pyParamName: 'delay_sec',
+        makeReplacement: (target) => `sleep(${target})`
       });
-      parameterizedPy = parameterizedPy.replace(new RegExp(`sleep\\(${sec}\\)`, 'g'), 'sleep(${delay_sec})');
     }
 
-    // Extração de Endereço I2C (ex: 0x40, 0x76, 0x68, etc.)
+    // 3d. Endereço I2C
     const i2cAddrMatch = cleanCode.match(/0x[0-9a-fA-F]{2}/);
     if (i2cAddrMatch) {
       const addrHex = i2cAddrMatch[0];
-      fields.push({
-        type: 'input_value',
-        name: 'ADDR',
-        label: 'Endereço I2C:',
-        check: 'String',
-        defaultShadow: `"${addrHex}"`
+      fields.push({ type: 'input_value', name: 'ADDR', label: 'Endereço I2C:', check: 'String', defaultShadow: `"${addrHex}"` });
+      substitutions.push({
+        regex: new RegExp(addrHex, 'g'),
+        pyParamName: 'addr',
+        makeReplacement: (target) => target
       });
-      parameterizedPy = parameterizedPy.replace(new RegExp(addrHex, 'g'), '${addr}');
     }
 
-    // Extração de Mensagem / Payload em Strings (ex: "telemetria", "dados", etc.)
+    // 3e. Mensagem / Payload em Strings
     const stringMatch = cleanCode.match(/"([^"\n]{2,30})"/);
     if (stringMatch && !stringMatch[1].startsWith('0x')) {
       const strVal = stringMatch[1];
-      fields.push({
-        type: 'input_value',
-        name: 'TEXT_VAL',
-        label: 'Texto / Mensagem:',
-        check: 'String',
-        defaultShadow: `"${strVal}"`
+      fields.push({ type: 'input_value', name: 'TEXT_VAL', label: 'Texto / Mensagem:', check: 'String', defaultShadow: `"${strVal}"` });
+      substitutions.push({
+        regex: new RegExp(`"${strVal}"`, 'g'),
+        pyParamName: 'text_val',
+        makeReplacement: (target) => `str(${target})`
       });
-      parameterizedPy = parameterizedPy.replace(new RegExp(`"${strVal}"`, 'g'), 'str(${text_val})');
     }
 
     // Identificador único do bloco
@@ -324,7 +342,7 @@ window.SatStudioCore = (function() {
     safeName = safeName.toLowerCase().replace(/[^a-z0-9_]/g, '_');
 
     // Montagem do gerador Python em JS
-    let pyGenCode = `Blockly.Python['${safeName}'] = function(block) {\n`;
+    let pyGenCode = `Blockly.Python.forBlock['${safeName}'] = function(block) {\n`;
     imports.forEach((imp, i) => {
       pyGenCode += `  Blockly.Python.definitions_['import_custom_${i}'] = '${imp}';\n`;
     });
@@ -335,19 +353,61 @@ window.SatStudioCore = (function() {
         pyGenCode += `  const ${varName} = block.getFieldValue('${f.name}') || '${f.options[0][1]}';\n`;
       } else {
         const fallback = f.defaultShadow ? `${f.defaultShadow}` : "''";
-        pyGenCode += `  const ${varName} = Blockly.Python.valueToCode(block, '${f.name}', Blockly.Python.ORDER_NONE) || ${fallback};\n`;
+        pyGenCode += `  const ${varName} = Blockly.Python.valueToCode(block, '${f.name}', python.Order.NONE) || ${fallback};\n`;
       }
     });
 
-    if (blockType.startsWith('output_')) {
-      // Se tiver atribuição do tipo `leitura = expressao`, pegamos a expressao
-      let expr = cleanCode;
-      if (expr.includes('=')) {
-        const parts = expr.split('=');
-        expr = parts.slice(1).join('=').trim();
+    if (blockType.startsWith('output_') && !isSingleLine) {
+      // Corpo com mais de uma linha não pode virar uma expressão Python
+      // direta — haveria várias instruções onde o Blockly só espera uma
+      // expressão. Empacota como função auxiliar definida uma única vez
+      // (mesmo padrão dos drivers oficiais do projeto, ex: _sat_bmp_read()),
+      // com os valores variáveis virando PARÂMETROS PYTHON de verdade (não
+      // interpolação JS, já que a função é definida uma vez só).
+      const helperName = `_${safeName}_helper`;
+      let helperBody = cleanCode;
+      substitutions.forEach(s => {
+        helperBody = helperBody.replace(s.regex, s.makeReplacement(s.pyParamName));
+      });
+
+      // Se o trecho não tiver um "return" explícito mas terminar
+      // atribuindo a uma variável, assume que é essa variável que se quer
+      // devolver — comum em snippets colados de drivers (lê, guarda,
+      // "esquece" de retornar).
+      if (!/\breturn\b/.test(helperBody)) {
+        const bodyLines = helperBody.split('\n').map(l => l.trim()).filter(Boolean);
+        const lastLine = bodyLines[bodyLines.length - 1] || '';
+        const assignMatch = lastLine.match(/^(\w+)\s*=[^=]/);
+        if (assignMatch) {
+          helperBody += `\nreturn ${assignMatch[1]}`;
+        }
       }
-      pyGenCode += `  return [\`${parameterizedPy}\`, Blockly.Python.ORDER_FUNCTION_CALL];\n`;
+
+      const paramList = substitutions.map(s => s.pyParamName).join(', ');
+      const indentedBody = helperBody.split('\n').map(l => '    ' + l).join('\n');
+      const helperDef = `def ${helperName}(${paramList}):\n${indentedBody}`;
+      // JSON.stringify escapa aspas/quebras de linha/barras corretamente —
+      // mais seguro aqui do que tentar aninhar outro template literal.
+      pyGenCode += `  Blockly.Python.definitions_['func_${safeName}'] = ${JSON.stringify(helperDef)};\n`;
+
+      const callArgs = substitutions.map(s => '${' + s.pyParamName + '}').join(', ');
+      pyGenCode += `  return [\`${helperName}(${callArgs})\`, python.Order.FUNCTION_CALL];\n`;
+    } else if (blockType.startsWith('output_')) {
+      let parameterizedPy = escapeForTemplateLiteral(cleanCode);
+      substitutions.forEach(s => {
+        parameterizedPy = parameterizedPy.replace(s.regex, s.makeReplacement('${' + s.pyParamName + '}'));
+      });
+      // Se tiver atribuição do tipo `leitura = expressao`, pegamos a expressão
+      if (parameterizedPy.includes('=') && !parameterizedPy.includes('==')) {
+        const parts = parameterizedPy.split('=');
+        parameterizedPy = parts.slice(1).join('=').trim();
+      }
+      pyGenCode += `  return [\`${parameterizedPy}\`, python.Order.FUNCTION_CALL];\n`;
     } else {
+      let parameterizedPy = escapeForTemplateLiteral(cleanCode);
+      substitutions.forEach(s => {
+        parameterizedPy = parameterizedPy.replace(s.regex, s.makeReplacement('${' + s.pyParamName + '}'));
+      });
       pyGenCode += `  return \`${parameterizedPy}\\n\`;\n`;
     }
     pyGenCode += `};`;
@@ -640,7 +700,7 @@ window.SatStudioCore = (function() {
   }
 
   /**
-   * Validador de Segurança com 5 Travas Pré-Injeção
+   * Validador de Segurança com 6 Travas Pré-Injeção
    */
   function validateBlockSafety(jsDef, pyGen, toolboxXml, blockName) {
     // Trava 1: Validação de Sintaxe JavaScript da Definição
@@ -682,7 +742,12 @@ window.SatStudioCore = (function() {
       if (previewWorkspace) {
         const tempBlock = previewWorkspace.newBlock(blockName);
         tempBlock.initSvg();
-        if (Blockly.Python && Blockly.Python[blockName]) {
+        // Aceita tanto o formato moderno (forBlock, usado pelo Studio a partir
+        // desta versão) quanto o legado (Blockly.Python['nome'] direto, ainda
+        // usado por blocos custom antigos salvos no localStorage de quem
+        // criou antes desta migração) — o order_shim.js sincroniza um no
+        // outro a cada chamada de blockToCode().
+        if (Blockly.Python && (Blockly.Python.forBlock[blockName] || Blockly.Python[blockName])) {
           if (!Blockly.Python.definitions_) Blockly.Python.definitions_ = Object.create(null);
           Blockly.Python.blockToCode(tempBlock);
         }
@@ -739,7 +804,7 @@ window.SatStudioCore = (function() {
   }
 
   /**
-   * Injeta o bloco criado diretamente na IDE SatBlocks com verificação rigorosa das 5 travas
+   * Injeta o bloco criado diretamente na IDE SatBlocks com verificação rigorosa das 6 travas
    */
   function injectIntoSatBlocksIDE() {
     if (!currentBlockConfig) {
@@ -752,7 +817,7 @@ window.SatStudioCore = (function() {
     const toolboxXml = getEditedPanelCode('toolboxSnippetOutput') || generateToolboxXmlSnippet(currentBlockConfig);
     const driverPy = getEditedPanelCode('driverPyOutput');
 
-    // Executa as 5 travas de segurança antes de permitir injeção
+    // Executa as 6 travas de segurança antes de permitir injeção
     const check = validateBlockSafety(jsDef, pyGen, toolboxXml, currentBlockConfig.blockName);
     if (!check.valid) {
       alert(`⛔ INJEÇÃO BLOQUEADA POR SEGURANÇA:\n\n${check.message}\n\nPor favor, corrija o código no editor antes de injetar na IDE.`);
@@ -941,6 +1006,81 @@ ${toolboxXml}
     document.body.removeChild(a);
   }
 
+  /**
+   * Exporta o bloco atual para um arquivo .satblock.json — permite enviar o
+   * bloco para outra pessoa (e-mail, WhatsApp, Drive etc.) sem depender do
+   * botão "Enviar para Avaliação" (que abre uma Issue pública no GitHub).
+   * Quem receber o arquivo usa "Importar Bloco (.json)" para carregá-lo no
+   * PRÓPRIO navegador — continua sendo local-only até essa pessoa decidir
+   * injetar na sua IDE ou propor para avaliação.
+   */
+  function exportBlockToFile() {
+    if (!currentBlockConfig) {
+      alert('Crie ou carregue um bloco antes de exportar.');
+      return false;
+    }
+
+    const jsDef = getEditedPanelCode('blockDefinitionOutput') || generateBlockJsDefinition(currentBlockConfig);
+    const pyGen = getEditedPanelCode('generatorStubOutput') || currentBlockConfig.pyCodeGenerator;
+    const toolboxXml = getEditedPanelCode('toolboxSnippetOutput') || generateToolboxXmlSnippet(currentBlockConfig);
+    const driverPy = getEditedPanelCode('driverPyOutput');
+
+    const payload = {
+      format: 'satblocks-studio-block-v1',
+      exportedAt: new Date().toISOString(),
+      config: {
+        ...currentBlockConfig,
+        jsDefinition: jsDef,
+        pyCodeGenerator: pyGen,
+        toolboxXml: toolboxXml,
+        driverPyCode: driverPy
+      }
+    };
+
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
+    downloadBlob(blob, `${currentBlockConfig.blockName || 'bloco_satblocks'}.satblock.json`);
+    return true;
+  }
+
+  /**
+   * Importa um bloco a partir do conteúdo (texto) de um arquivo .satblock.json
+   * exportado por outra pessoa via exportBlockToFile(). Passa pelas mesmas 6
+   * travas de segurança de qualquer outro bloco antes de carregar na prévia
+   * — a pessoa ainda precisa clicar em "Injetar na IDE" (ou "Enviar para
+   * Avaliação") explicitamente depois de revisar o código nos painéis.
+   */
+  function importBlockFromFile(jsonText) {
+    let payload;
+    try {
+      payload = JSON.parse(jsonText);
+    } catch (e) {
+      alert(`Arquivo inválido: não é um JSON válido.\n${e.message}`);
+      return false;
+    }
+
+    const config = payload && payload.config ? payload.config : payload;
+    if (!config || !config.blockName || !config.jsDefinition || !config.pyCodeGenerator) {
+      alert('Este arquivo não parece ser um bloco exportado do SatBlocks Studio (faltam campos obrigatórios).');
+      return false;
+    }
+
+    const toolboxXml = config.toolboxXml || generateToolboxXmlSnippet(config);
+    const check = validateBlockSafety(config.jsDefinition, config.pyCodeGenerator, toolboxXml, config.blockName);
+    if (!check.valid) {
+      alert(`⛔ Este bloco não passou nas travas de segurança e não foi importado:\n\n${check.message}`);
+      return false;
+    }
+
+    applyBlockConfiguration({
+      ...config,
+      pyCodeGenerator: config.pyCodeGenerator,
+      driverInfo: config.driverPyCode ? { driverPyCode: config.driverPyCode, driverFilename: config.driverFilename || 'driver.py', protocol: config.driverProtocol || '' } : null
+    });
+
+    alert(`✅ Bloco "${config.label || config.blockName}" importado! Revise o código nos painéis abaixo e clique em "Injetar na IDE" quando estiver pronto — ele ainda não foi salvo em lugar nenhum.`);
+    return true;
+  }
+
   return {
     init: initPreviewWorkspace,
     getBaseTemplates: () => BASE_TEMPLATES,
@@ -953,6 +1093,8 @@ ${toolboxXml}
     getCurrentConfig: () => currentBlockConfig,
     injectIntoSatBlocksIDE,
     submitBlockForReview,
-    exportBlockImage
+    exportBlockImage,
+    exportBlockToFile,
+    importBlockFromFile
   };
 })();

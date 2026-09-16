@@ -29,8 +29,8 @@
 
   <!-- Módulos do SatBlocks Studio Pro -->
   <script src="js/sat_driver_hub.js?v=20260916-1"></script>
-  <script src="js/sat_ai_synthesizer.js?v=20260916-1"></script>
-  <script src="js/sat_studio_core.js?v=20260916-1"></script>
+  <script src="js/sat_ai_synthesizer.js?v=20260916-2"></script>
+  <script src="js/sat_studio_core.js?v=20260916-2"></script>
 </head>
 <body class="studio-body">
 
@@ -78,6 +78,15 @@
       <button class="sat-btn accent" id="btnExportSvg" title="Exportar vetor SVG escalável">
         <span>📐</span> <span class="btn-label">Exportar SVG</span>
       </button>
+
+      <button class="sat-btn" id="btnExportBlockJson" title="Salvar este bloco em um arquivo .json para guardar ou enviar para outra pessoa importar no Studio dela">
+        <span>💾</span> <span class="btn-label">Exportar Bloco (.json)</span>
+      </button>
+
+      <button class="sat-btn" id="btnImportBlockJson" title="Carregar um bloco a partir de um arquivo .json exportado por outra pessoa">
+        <span>📂</span> <span class="btn-label">Importar Bloco (.json)</span>
+      </button>
+      <input type="file" id="inputImportBlockJson" accept="application/json,.json" style="display:none;">
     </div>
   </header>
 
@@ -502,6 +511,26 @@
 
       document.getElementById('btnExportSvg').addEventListener('click', () => {
         SatStudioCore.exportBlockImage('svg');
+      });
+
+      document.getElementById('btnExportBlockJson').addEventListener('click', () => {
+        SatStudioCore.exportBlockToFile();
+      });
+
+      document.getElementById('btnImportBlockJson').addEventListener('click', () => {
+        document.getElementById('inputImportBlockJson').click();
+      });
+
+      document.getElementById('inputImportBlockJson').addEventListener('change', (ev) => {
+        const file = ev.target.files && ev.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          SatStudioCore.importBlockFromFile(String(reader.result || ''));
+          syncFormFromCurrentConfig();
+        };
+        reader.readAsText(file);
+        ev.target.value = ''; // permite importar o mesmo arquivo de novo depois
       });
     });
   </script>
