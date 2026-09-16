@@ -172,6 +172,15 @@
         const itemBlock = workspace.newBlock('sat_telemetry_item');
         itemBlock.initSvg();
         itemBlock.setFieldValue(this.itemLabels_[i] || ("Campo" + (i + 1)), 'ITEM_LABEL');
+        // Registra desde já a conexão real deste item (o bloco de valor já
+        // encaixado no ADD+i do bloco principal, se houver). Sem isso, existe
+        // uma janela entre a criação deste item e a primeira chamada de
+        // saveConnections() em que valueConnection_ fica indefinido — se o
+        // Blockly disparar um compose() prematuro nesse meio-tempo (ex.: ao
+        // simplesmente abrir a engrenagem, antes de qualquer edição), o bloco
+        // já conectado é desconectado e não consegue mais ser reencaixado.
+        const existingInput = this.getInput('ADD' + i);
+        itemBlock.valueConnection_ = existingInput && existingInput.connection.targetConnection;
         connection.connect(itemBlock.previousConnection);
         connection = itemBlock.nextConnection;
       }
@@ -184,9 +193,11 @@
       const labels = [];
 
       while (itemBlock) {
-        connections.push(itemBlock.valueConnection_);
-        labels.push(itemBlock.getFieldValue('ITEM_LABEL') || 'dado');
-        itemBlock = itemBlock.nextConnection && itemBlock.nextConnection.targetBlock();
+        if (!itemBlock.isInsertionMarker()) {
+          connections.push(itemBlock.valueConnection_);
+          labels.push(itemBlock.getFieldValue('ITEM_LABEL') || 'dado');
+        }
+        itemBlock = itemBlock.getNextBlock();
       }
 
       for (let i = 0; i < this.itemCount_; i++) {
@@ -209,10 +220,12 @@
       let itemBlock = containerBlock.getInputTargetBlock('STACK');
       let i = 0;
       while (itemBlock) {
-        const input = this.getInput('ADD' + i);
-        itemBlock.valueConnection_ = input && input.connection.targetConnection;
-        i++;
-        itemBlock = itemBlock.nextConnection && itemBlock.nextConnection.targetBlock();
+        if (!itemBlock.isInsertionMarker()) {
+          const input = this.getInput('ADD' + i);
+          itemBlock.valueConnection_ = input && input.connection.targetConnection;
+          i++;
+        }
+        itemBlock = itemBlock.getNextBlock();
       }
     }
   }, undefined, ['sat_telemetry_item']);
@@ -301,6 +314,12 @@
         const itemBlock = workspace.newBlock('sat_json_object_item');
         itemBlock.initSvg();
         itemBlock.setFieldValue(this.itemKeys_[i] || ("campo" + (i + 1)), 'KEY_NAME');
+        // Ver comentário equivalente em sat_telemetry_packet_mutator: fecha a
+        // janela de corrida em que um compose() prematuro (ex.: só ao abrir a
+        // engrenagem) desconectaria um bloco já encaixado sem conseguir
+        // reencaixá-lo depois.
+        const existingInput = this.getInput('VAL' + i);
+        itemBlock.valueConnection_ = existingInput && existingInput.connection.targetConnection;
         connection.connect(itemBlock.previousConnection);
         connection = itemBlock.nextConnection;
       }
@@ -313,9 +332,11 @@
       const keys = [];
 
       while (itemBlock) {
-        connections.push(itemBlock.valueConnection_);
-        keys.push(itemBlock.getFieldValue('KEY_NAME') || 'campo');
-        itemBlock = itemBlock.nextConnection && itemBlock.nextConnection.targetBlock();
+        if (!itemBlock.isInsertionMarker()) {
+          connections.push(itemBlock.valueConnection_);
+          keys.push(itemBlock.getFieldValue('KEY_NAME') || 'campo');
+        }
+        itemBlock = itemBlock.getNextBlock();
       }
 
       for (let i = 0; i < this.itemCount_; i++) {
@@ -338,10 +359,12 @@
       let itemBlock = containerBlock.getInputTargetBlock('STACK');
       let i = 0;
       while (itemBlock) {
-        const input = this.getInput('VAL' + i);
-        itemBlock.valueConnection_ = input && input.connection.targetConnection;
-        i++;
-        itemBlock = itemBlock.nextConnection && itemBlock.nextConnection.targetBlock();
+        if (!itemBlock.isInsertionMarker()) {
+          const input = this.getInput('VAL' + i);
+          itemBlock.valueConnection_ = input && input.connection.targetConnection;
+          i++;
+        }
+        itemBlock = itemBlock.getNextBlock();
       }
     }
   }, undefined, ['sat_json_object_item']);
@@ -437,6 +460,12 @@
         const itemBlock = workspace.newBlock('sat_payload_object_item');
         itemBlock.initSvg();
         itemBlock.setFieldValue(this.itemKeys_[i] || ("campo" + (i + 1)), 'KEY_NAME');
+        // Ver comentário equivalente em sat_telemetry_packet_mutator: fecha a
+        // janela de corrida em que um compose() prematuro (ex.: só ao abrir a
+        // engrenagem) desconectaria um bloco já encaixado sem conseguir
+        // reencaixá-lo depois.
+        const existingInput = this.getInput('VAL' + i);
+        itemBlock.valueConnection_ = existingInput && existingInput.connection.targetConnection;
         connection.connect(itemBlock.previousConnection);
         connection = itemBlock.nextConnection;
       }
@@ -449,9 +478,11 @@
       const keys = [];
 
       while (itemBlock) {
-        connections.push(itemBlock.valueConnection_);
-        keys.push(itemBlock.getFieldValue('KEY_NAME') || 'campo');
-        itemBlock = itemBlock.nextConnection && itemBlock.nextConnection.targetBlock();
+        if (!itemBlock.isInsertionMarker()) {
+          connections.push(itemBlock.valueConnection_);
+          keys.push(itemBlock.getFieldValue('KEY_NAME') || 'campo');
+        }
+        itemBlock = itemBlock.getNextBlock();
       }
 
       for (let i = 0; i < this.itemCount_; i++) {
@@ -475,10 +506,12 @@
       let itemBlock = containerBlock.getInputTargetBlock('STACK');
       let i = 0;
       while (itemBlock) {
-        const input = this.getInput('VAL' + i);
-        itemBlock.valueConnection_ = input && input.connection.targetConnection;
-        i++;
-        itemBlock = itemBlock.nextConnection && itemBlock.nextConnection.targetBlock();
+        if (!itemBlock.isInsertionMarker()) {
+          const input = this.getInput('VAL' + i);
+          itemBlock.valueConnection_ = input && input.connection.targetConnection;
+          i++;
+        }
+        itemBlock = itemBlock.getNextBlock();
       }
     }
   }, undefined, ['sat_payload_object_item']);
@@ -1517,6 +1550,12 @@
         itemBlock.initSvg();
         itemBlock.setFieldValue(this.itemLabels_[i] || ("Campo " + (i + 1)), 'LABEL_NAME');
         itemBlock.setFieldValue(this.itemKeys_[i] || ("campo" + (i + 1)), 'KEY_NAME');
+        // Ver comentário equivalente em sat_telemetry_packet_mutator: fecha a
+        // janela de corrida em que um compose() prematuro (ex.: só ao abrir a
+        // engrenagem) desconectaria um bloco já encaixado sem conseguir
+        // reencaixá-lo depois.
+        const existingInput = this.getInput('VAL' + i);
+        itemBlock.valueConnection_ = existingInput && existingInput.connection && existingInput.connection.targetConnection;
         connection.connect(itemBlock.previousConnection);
         connection = itemBlock.nextConnection;
       }
@@ -1530,12 +1569,14 @@
       const labels = [];
 
       while (itemBlock) {
-        connections.push(itemBlock.valueConnection_);
-        const lbl = itemBlock.getFieldValue('LABEL_NAME') || 'Campo';
-        const k = itemBlock.getFieldValue('KEY_NAME') || 'campo';
-        labels.push(lbl);
-        keys.push(k);
-        itemBlock = itemBlock.nextConnection && itemBlock.nextConnection.targetBlock();
+        if (!itemBlock.isInsertionMarker()) {
+          connections.push(itemBlock.valueConnection_);
+          const lbl = itemBlock.getFieldValue('LABEL_NAME') || 'Campo';
+          const k = itemBlock.getFieldValue('KEY_NAME') || 'campo';
+          labels.push(lbl);
+          keys.push(k);
+        }
+        itemBlock = itemBlock.getNextBlock();
       }
 
       for (let i = 0; i < this.itemCount_; i++) {
@@ -1560,10 +1601,12 @@
       let itemBlock = containerBlock.getInputTargetBlock('STACK');
       let i = 0;
       while (itemBlock) {
-        const input = this.getInput('VAL' + i) || (this.itemKeys_[i] ? this.getInput(this.itemKeys_[i].toUpperCase()) : null);
-        itemBlock.valueConnection_ = input && input.connection && input.connection.targetConnection;
-        i++;
-        itemBlock = itemBlock.nextConnection && itemBlock.nextConnection.targetBlock();
+        if (!itemBlock.isInsertionMarker()) {
+          const input = this.getInput('VAL' + i);
+          itemBlock.valueConnection_ = input && input.connection && input.connection.targetConnection;
+          i++;
+        }
+        itemBlock = itemBlock.getNextBlock();
       }
     }
   }, undefined, ['sat_obsat_telemetry_item']);
