@@ -10,7 +10,7 @@
 
   <!-- Estilos e Fontes -->
   <link rel="stylesheet" href="css/satblocks_theme.css?v=20260916-1">
-  <link rel="stylesheet" href="css/studio.css?v=20260916-4">
+  <link rel="stylesheet" href="css/studio.css?v=20260916-5">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -197,6 +197,8 @@
               <option value="Câmera & Payload">📷 Câmera & Payload</option>
               <option value="Atuadores & Ejeção">⚙️ Atuadores & Ejeção</option>
               <option value="Arquivos & Flash">📁 Arquivos & Flash</option>
+              <option value="Barramentos: I2C & UART">🔌 Barramentos: I2C & UART</option>
+              <option value="Lógica & Condição">🔀 Lógica & Condição</option>
             </select>
           </div>
 
@@ -226,11 +228,12 @@
           </div>
         </div>
 
-        <div class="form-actions">
-          <button class="sat-btn primary full-width" onclick="updateBlockFromForm()">
-            🔄 Atualizar Prévia do Bloco
-          </button>
-        </div>
+        <!-- Removido o botão "Atualizar Prévia do Bloco": todo campo acima já
+             tem onchange="updateBlockFromForm()" (linhas 180-222), então a
+             prévia (quadrante 2) já é atualizada sozinha a cada mudança —
+             o botão só duplicava isso e ocupava espaço sem fazer nada a
+             mais. Fica só uma dica discreta pra quem não percebeu. -->
+        <p class="form-live-hint">✓ A prévia ao lado é atualizada automaticamente a cada mudança aqui.</p>
       </div>
     </section>
 
@@ -518,14 +521,33 @@
       executePromptGeneration();
     }
 
+    // Rótulo amigável do badge "Comando / Retorno" no cabeçalho do quadrante
+    // 1 — antes ficava sempre travado no texto estático "Comando / Retorno"
+    // do HTML, mesmo depois de trocar o Tipo de Conexão: parecia um status
+    // ao vivo, mas nunca era atualizado. Chamado tanto ao sincronizar o
+    // formulário (template/IA/MicroPython) quanto ao editar manualmente.
+    const BLOCK_TYPE_BADGE_LABELS = {
+      output_number: '🔢 Retorno de Número',
+      output_string: '🔤 Retorno de Texto',
+      output_boolean: '✅ Retorno Lógico',
+      statement: '▶️ Comando de Encaixe'
+    };
+
+    function updateBlockTypeBadge(blockType) {
+      const badge = document.getElementById('blockTypeBadge');
+      if (badge) badge.textContent = BLOCK_TYPE_BADGE_LABELS[blockType] || 'Comando / Retorno';
+    }
+
     function syncFormFromCurrentConfig() {
       const cfg = SatStudioCore.getCurrentConfig();
       if (!cfg) return;
       document.getElementById('cfgBlockName').value = cfg.blockName;
       document.getElementById('cfgBlockLabel').value = cfg.label;
+      if (cfg.category) document.getElementById('cfgCategory').value = cfg.category;
       document.getElementById('cfgColor').value = cfg.color;
       document.getElementById('cfgBlockType').value = cfg.blockType;
       document.getElementById('cfgInputsInline').value = cfg.inputsInline ? 'true' : 'false';
+      updateBlockTypeBadge(cfg.blockType);
     }
 
     function updateBlockFromForm() {
@@ -539,6 +561,7 @@
 
       // Recompila com a nova configuração do formulário
       SatStudioCore.applyBlockConfiguration(cfg);
+      updateBlockTypeBadge(cfg.blockType);
     }
 
     // Inicialização ao carregar o DOM
