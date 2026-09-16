@@ -325,13 +325,13 @@
   // ==========================================
   // BLOCO MUTATOR: GERADOR DINÂMICO CSV E JSON
   // ==========================================
-  Blockly.Python['sat_telemetry_packet_builder'] = function(block) {
+  Blockly.Python.forBlock['sat_telemetry_packet_builder'] = function(block) {
     const format = block.getFieldValue('FORMAT') || 'CSV';
     const values = [];
     const labels = block.itemLabels_ || [];
 
     for (let i = 0; i < block.itemCount_; i++) {
-      const val = Blockly.Python.valueToCode(block, 'ADD' + i, Blockly.Python.ORDER_NONE) || '0';
+      const val = Blockly.Python.valueToCode(block, 'ADD' + i, python.Order.NONE) || '0';
       values.push({
         label: labels[i] || `campo_${i+1}`,
         val: val
@@ -342,23 +342,23 @@
       Blockly.Python.definitions_['import_json'] = 'import json';
       const dictEntries = values.map(v => `"${v.label}": ${v.val}`).join(', ');
       const code = `json.dumps({${dictEntries}})`;
-      return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+      return [code, python.Order.FUNCTION_CALL];
     } else {
       // Formato CSV
       if (values.length === 0) {
-        return ['""', Blockly.Python.ORDER_ATOMIC];
+        return ['""', python.Order.ATOMIC];
       }
       const placeholders = values.map(() => '{}').join(',');
       const argsList = values.map(v => v.val).join(', ');
       const code = `"${placeholders}".format(${argsList})`;
-      return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+      return [code, python.Order.FUNCTION_CALL];
     }
   };
 
   // ==========================================
   // 0. GERENCIAMENTO DE DRIVERS & BIBLIOTECAS
   // ==========================================
-  Blockly.Python['sat_include_sensor_driver'] = function(block) {
+  Blockly.Python.forBlock['sat_include_sensor_driver'] = function(block) {
     const driver = block.getFieldValue('DRIVER');
     return `# Garante carregamento do driver ${driver}.py\n` +
            `try:\n` +
@@ -368,7 +368,7 @@
            `    # Codigo do driver e inicializado na memoria flash\n`;
   };
 
-  Blockly.Python['sat_install_lib_mip'] = function(block) {
+  Blockly.Python.forBlock['sat_install_lib_mip'] = function(block) {
     const pkg = block.getFieldValue('PKG');
     Blockly.Python.definitions_['import_mip'] = 'import mip';
     return `# Instalacao automatica da biblioteca via mip\n` +
@@ -379,7 +379,7 @@
            `except Exception as e:\n` +
            `    print("Erro ao baixar biblioteca:", e)\n`;
   };
-  Blockly.Python['sat_json_object_builder'] = function(block) {
+  Blockly.Python.forBlock['sat_json_object_builder'] = function(block) {
     const pairs = [];
     const defaultFallbacks = {
       "equipe": "41",
@@ -394,14 +394,14 @@
     for (let i = 0; i < block.itemCount_; i++) {
       const key = block.itemKeys_[i] || ("campo" + (i + 1));
       const fallback = defaultFallbacks[key] || 'None';
-      const val = Blockly.Python.valueToCode(block, 'VAL' + i, Blockly.Python.ORDER_NONE) || fallback;
+      const val = Blockly.Python.valueToCode(block, 'VAL' + i, python.Order.NONE) || fallback;
       pairs.push(`"${key}": ${val}`);
     }
     const code = `{\n  ${pairs.join(',\n  ')}\n}`;
-    return [code, Blockly.Python.ORDER_ATOMIC];
+    return [code, python.Order.ATOMIC];
   };
 
-  Blockly.Python['sat_obsat_payload_builder'] = function(block) {
+  Blockly.Python.forBlock['sat_obsat_payload_builder'] = function(block) {
     const defaultFallbacks = {
       "sensor_status": '"work work work"',
       "temperature": '22.8',
@@ -424,23 +424,23 @@
     for (let i = 0; i < (block.itemCount_ || 0); i++) {
       const key = (block.itemKeys_ && block.itemKeys_[i]) || ("campo" + (i + 1));
       const fallback = defaultFallbacks[key] || 'None';
-      let val = Blockly.Python.valueToCode(block, 'VAL' + i, Blockly.Python.ORDER_NONE);
+      let val = Blockly.Python.valueToCode(block, 'VAL' + i, python.Order.NONE);
       if (!val && legacyInputMap[key]) {
-        val = Blockly.Python.valueToCode(block, legacyInputMap[key], Blockly.Python.ORDER_NONE);
+        val = Blockly.Python.valueToCode(block, legacyInputMap[key], python.Order.NONE);
       }
       val = val || fallback;
       pairs.push(`"${key}": ${val}`);
     }
 
     const code = pairs.length > 0 ? `{\n  ${pairs.join(',\n  ')}\n}` : `{}`;
-    return [code, Blockly.Python.ORDER_ATOMIC];
+    return [code, python.Order.ATOMIC];
   };
 
-  Blockly.Python['sat_telemetry_packet_builder'] = function(block) {
+  Blockly.Python.forBlock['sat_telemetry_packet_builder'] = function(block) {
     const format = block.getFieldValue('FORMAT') || 'CSV';
     const items = [];
     for (let i = 0; i < block.itemCount_; i++) {
-      const val = Blockly.Python.valueToCode(block, 'ADD' + i, Blockly.Python.ORDER_NONE) || '""';
+      const val = Blockly.Python.valueToCode(block, 'ADD' + i, python.Order.NONE) || '""';
       items.push(val);
     }
     let code = '';
@@ -452,19 +452,19 @@
       const objPairs = [];
       for (let i = 0; i < block.itemCount_; i++) {
         const label = (block.itemLabels_ && block.itemLabels_[i]) || ('campo' + (i + 1));
-        const val = Blockly.Python.valueToCode(block, 'ADD' + i, Blockly.Python.ORDER_NONE) || 'None';
+        const val = Blockly.Python.valueToCode(block, 'ADD' + i, python.Order.NONE) || 'None';
         objPairs.push(`"${label}": ${val}`);
       }
       code = `ujson.dumps({\n  ${objPairs.join(',\n  ')}\n})`;
     }
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_vector_3d'] = function(block) {
+  Blockly.Python.forBlock['sat_vector_3d'] = function(block) {
     const format = block.getFieldValue('FORMAT');
-    const x = Blockly.Python.valueToCode(block, 'X', Blockly.Python.ORDER_NONE) || '0';
-    const y = Blockly.Python.valueToCode(block, 'Y', Blockly.Python.ORDER_NONE) || '0';
-    const z = Blockly.Python.valueToCode(block, 'Z', Blockly.Python.ORDER_NONE) || '0';
+    const x = Blockly.Python.valueToCode(block, 'X', python.Order.NONE) || '0';
+    const y = Blockly.Python.valueToCode(block, 'Y', python.Order.NONE) || '0';
+    const z = Blockly.Python.valueToCode(block, 'Z', python.Order.NONE) || '0';
     
     let code;
     if (format === 'OBJECT') {
@@ -472,7 +472,7 @@
     } else {
       code = `[${x}, ${y}, ${z}]`;
     }
-    return [code, Blockly.Python.ORDER_ATOMIC];
+    return [code, python.Order.ATOMIC];
   };
 
   function getMpu9250InitCode() {
@@ -510,7 +510,7 @@
            `    except Exception: _imu = None\n`;
   }
 
-  Blockly.Python['sat_imu_gyro_vector'] = function(block) {
+  Blockly.Python.forBlock['sat_imu_gyro_vector'] = function(block) {
     const format = block.getFieldValue('FORMAT');
     Blockly.Python.definitions_['import_machine'] = 'from machine import Pin, I2C, SPI, ADC, PWM';
     Blockly.Python.definitions_['init_i2c_bus'] = 'i2c = I2C(0, scl=Pin(22), sda=Pin(21))';
@@ -522,10 +522,10 @@
     } else {
       code = `(list(_imu.gyro) if (_imu and hasattr(_imu, 'gyro')) else [0, 0, 0])`;
     }
-    return [code, Blockly.Python.ORDER_ATOMIC];
+    return [code, python.Order.ATOMIC];
   };
 
-  Blockly.Python['sat_imu_accel_vector'] = function(block) {
+  Blockly.Python.forBlock['sat_imu_accel_vector'] = function(block) {
     const format = block.getFieldValue('FORMAT');
     Blockly.Python.definitions_['import_machine'] = 'from machine import Pin, I2C, SPI, ADC, PWM';
     Blockly.Python.definitions_['init_i2c_bus'] = 'i2c = I2C(0, scl=Pin(22), sda=Pin(21))';
@@ -537,21 +537,21 @@
     } else {
       code = `(list(_imu.acceleration if hasattr(_imu, 'acceleration') else _imu.accel) if _imu else [0, 0, 0])`;
     }
-    return [code, Blockly.Python.ORDER_ATOMIC];
+    return [code, python.Order.ATOMIC];
   };
 
-  Blockly.Python['sat_json_dumps'] = function(block) {
+  Blockly.Python.forBlock['sat_json_dumps'] = function(block) {
     Blockly.Python.definitions_['import_ujson'] = 'import ujson';
-    const data = Blockly.Python.valueToCode(block, 'DATA', Blockly.Python.ORDER_NONE) || '{}';
+    const data = Blockly.Python.valueToCode(block, 'DATA', python.Order.NONE) || '{}';
     const code = `ujson.dumps(${data})`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['project_info'] = function(block) {
-    const author = (Blockly.Python.valueToCode(block, 'project_author', Blockly.Python.ORDER_ATOMIC) || '""').replace(/['"]/g, '');
-    const iotIdCode = Blockly.Python.valueToCode(block, 'project_iot_id', Blockly.Python.ORDER_NONE) || '0';
-    const iot_id = (Blockly.Python.valueToCode(block, 'project_iot_id', Blockly.Python.ORDER_ATOMIC) || '0').replace(/['"]/g, '');
-    const desc = (Blockly.Python.valueToCode(block, 'project_description', Blockly.Python.ORDER_ATOMIC) || '""').replace(/['"]/g, '');
+  Blockly.Python.forBlock['project_info'] = function(block) {
+    const author = (Blockly.Python.valueToCode(block, 'project_author', python.Order.ATOMIC) || '""').replace(/['"]/g, '');
+    const iotIdCode = Blockly.Python.valueToCode(block, 'project_iot_id', python.Order.NONE) || '0';
+    const iot_id = (Blockly.Python.valueToCode(block, 'project_iot_id', python.Order.ATOMIC) || '0').replace(/['"]/g, '');
+    const desc = (Blockly.Python.valueToCode(block, 'project_description', python.Order.ATOMIC) || '""').replace(/['"]/g, '');
 
     Blockly.Python.definitions_['00_project_header'] =
       `# ==========================================\n` +
@@ -566,7 +566,7 @@
     return '';
   };
 
-  Blockly.Python['sat_mission_start'] = function(block) {
+  Blockly.Python.forBlock['sat_mission_start'] = function(block) {
     const missionName = block.getFieldValue('MISSION_NAME') || 'OBSAT_MISSION';
     Blockly.Python.definitions_['import_time'] = 'import time';
     Blockly.Python.definitions_['import_machine'] = 'from machine import Pin, I2C, SPI, ADC, PWM';
@@ -580,7 +580,7 @@
     return `print("[OBSAT] Iniciando voo da missao: ${missionName}")\n`;
   };
 
-  Blockly.Python['sat_emit_beep'] = function(block) {
+  Blockly.Python.forBlock['sat_emit_beep'] = function(block) {
     const count = block.getFieldValue('COUNT') || 3;
     const interval = block.getFieldValue('INTERVAL') || 500;
     Blockly.Python.definitions_['import_time'] = 'import time';
@@ -609,7 +609,7 @@
            `    time.sleep_ms(${interval})\n`;
   };
 
-  Blockly.Python['sat_wait'] = function(block) {
+  Blockly.Python.forBlock['sat_wait'] = function(block) {
     const timeVal = block.getFieldValue('TIME') || 1;
     const unit = block.getFieldValue('UNIT');
     Blockly.Python.definitions_['import_time'] = 'import time';
@@ -620,12 +620,12 @@
     return `time.sleep(${timeVal})\n`;
   };
 
-  Blockly.Python['sat_watchdog_feed'] = function(block) {
+  Blockly.Python.forBlock['sat_watchdog_feed'] = function(block) {
     Blockly.Python.definitions_['import_wdt'] = 'from machine import WDT';
     return `if 'wdt' in globals():\n    wdt.feed()\n`;
   };
 
-  Blockly.Python['sat_deploy_antenna'] = function(block) {
+  Blockly.Python.forBlock['sat_deploy_antenna'] = function(block) {
     const burnTime = block.getFieldValue('BURN_TIME') || 2000;
     Blockly.Python.definitions_['import_time'] = 'import time';
     Blockly.Python.definitions_['import_pin'] = 'from machine import Pin';
@@ -638,7 +638,7 @@
            `print("[PAYLOAD] Antenas liberadas com sucesso!")\n`;
   };
 
-  Blockly.Python['sat_mission_end'] = function(block) {
+  Blockly.Python.forBlock['sat_mission_end'] = function(block) {
     return `print("[OBSAT] Fim da sequencia de voo. Entrando em modo standby.")\n`;
   };
 
@@ -646,7 +646,7 @@
   // 2. SENSORES AMBIENTAIS & TÉRMICOS
   // ==========================================
   // SHT20 (Temperatura e Umidade I2C 0x40)
-  Blockly.Python['sat_sensor_sht20_temp'] = function(block) {
+  Blockly.Python.forBlock['sat_sensor_sht20_temp'] = function(block) {
     Blockly.Python.definitions_['import_machine'] = 'from machine import Pin, I2C, SPI, ADC, PWM';
     Blockly.Python.definitions_['init_i2c_bus'] = 'i2c = I2C(0, scl=Pin(22), sda=Pin(21))';
     Blockly.Python.definitions_['init_i2c_sht20'] = 
@@ -656,10 +656,10 @@
       `except:\n` +
       `    _sht = None\n`;
     const code = `(_sht.temperature() if _sht else 24.5)`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_sensor_sht20_hum'] = function(block) {
+  Blockly.Python.forBlock['sat_sensor_sht20_hum'] = function(block) {
     Blockly.Python.definitions_['import_machine'] = 'from machine import Pin, I2C, SPI, ADC, PWM';
     Blockly.Python.definitions_['init_i2c_bus'] = 'i2c = I2C(0, scl=Pin(22), sda=Pin(21))';
     Blockly.Python.definitions_['init_i2c_sht20'] = 
@@ -669,17 +669,17 @@
       `except:\n` +
       `    _sht = None\n`;
     const code = `(_sht.humidity() if _sht else 55.0)`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_sensor_als_light'] = function(block) {
+  Blockly.Python.forBlock['sat_sensor_als_light'] = function(block) {
     Blockly.Python.definitions_['import_machine'] = 'from machine import Pin, I2C, SPI, ADC, PWM';
     Blockly.Python.definitions_['init_adc_34'] = `_adc_34 = ADC(Pin(34))\n_adc_34.atten(ADC.ATTN_11DB)`;
     const code = `round((_adc_34.read() / 4095.0) * 100.0, 1)`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_sensor_ccs811_co2'] = function(block) {
+  Blockly.Python.forBlock['sat_sensor_ccs811_co2'] = function(block) {
     Blockly.Python.definitions_['import_machine'] = 'from machine import Pin, I2C, SPI, ADC, PWM';
     Blockly.Python.definitions_['init_i2c_bus'] = 'i2c = I2C(0, scl=Pin(22), sda=Pin(21))';
     Blockly.Python.definitions_['init_i2c_ccs811'] = 
@@ -689,10 +689,10 @@
       `except:\n` +
       `    _ccs = None\n`;
     const code = `(_ccs.eCO2 if _ccs else 415)`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_mcp23017_leds'] = function(block) {
+  Blockly.Python.forBlock['sat_mcp23017_leds'] = function(block) {
     const led = block.getFieldValue('LED_INDEX');
     const color = block.getFieldValue('COLOR');
     Blockly.Python.definitions_['import_machine'] = 'from machine import Pin, I2C, SPI, ADC, PWM';
@@ -793,40 +793,40 @@ def _sat_bmp_read(field, sea=1013.25):
         return 0.0`;
   }
 
-  Blockly.Python['sat_sensor_bmp280_temp'] = function(block) {
+  Blockly.Python.forBlock['sat_sensor_bmp280_temp'] = function(block) {
     ensureSatBmpDriver();
-    return [`_sat_bmp_read('temp')`, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [`_sat_bmp_read('temp')`, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_sensor_bmp280_press'] = function(block) {
+  Blockly.Python.forBlock['sat_sensor_bmp280_press'] = function(block) {
     ensureSatBmpDriver();
-    return [`_sat_bmp_read('press')`, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [`_sat_bmp_read('press')`, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_sensor_bmp280_alt'] = function(block) {
+  Blockly.Python.forBlock['sat_sensor_bmp280_alt'] = function(block) {
     ensureSatBmpDriver();
     const seaLevel = Number(block.getFieldValue('SEA_LEVEL')) || 1013.25;
-    return [`_sat_bmp_read('alt', ${seaLevel})`, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [`_sat_bmp_read('alt', ${seaLevel})`, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_sensor_dht_hum'] = function(block) {
+  Blockly.Python.forBlock['sat_sensor_dht_hum'] = function(block) {
     const pin = block.getFieldValue('PIN') || '4';
     Blockly.Python.definitions_['import_dht'] = 'import dht';
     Blockly.Python.definitions_['init_dht_' + pin] = `_dht_${pin} = dht.DHT22(Pin(${pin}))`;
 
     const code = `(_dht_${pin}.measure() or _dht_${pin}.humidity())`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_sensor_light_ldr'] = function(block) {
+  Blockly.Python.forBlock['sat_sensor_light_ldr'] = function(block) {
     const pin = block.getFieldValue('PIN') || '34';
     Blockly.Python.definitions_['init_adc_' + pin] = `_adc_${pin} = ADC(Pin(${pin}))\n_adc_${pin}.atten(ADC.ATTN_11DB)`;
     
     const code = `_adc_${pin}.read()`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_sensor_bh1750_lux'] = function(block) {
+  Blockly.Python.forBlock['sat_sensor_bh1750_lux'] = function(block) {
     Blockly.Python.definitions_['import_machine'] = 'from machine import Pin, I2C, SPI, ADC, PWM';
     Blockly.Python.definitions_['init_i2c_bus'] = 'i2c = I2C(0, scl=Pin(22), sda=Pin(21))';
     Blockly.Python.definitions_['init_i2c_bh1750'] = 
@@ -836,17 +836,17 @@ def _sat_bmp_read(field, sea=1013.25):
       `except:\n` +
       `    _light = None\n`;
     const code = `(_light.luminance(bh1750.BH1750.ONCE_HIRES_1) if _light else 500.0)`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_sensor_air_mq135'] = function(block) {
+  Blockly.Python.forBlock['sat_sensor_air_mq135'] = function(block) {
     const pin = block.getFieldValue('PIN') || '34';
     Blockly.Python.definitions_['init_adc_' + pin] = `_adc_${pin} = ADC(Pin(${pin}))\n_adc_${pin}.atten(ADC.ATTN_11DB)`;
     const code = `round((_adc_${pin}.read() / 4095.0) * 1000.0, 1)`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_sensor_mlx90614_ir'] = function(block) {
+  Blockly.Python.forBlock['sat_sensor_mlx90614_ir'] = function(block) {
     Blockly.Python.definitions_['import_machine'] = 'from machine import Pin, I2C, SPI, ADC, PWM';
     Blockly.Python.definitions_['init_i2c_bus'] = 'i2c = I2C(0, scl=Pin(22), sda=Pin(21))';
     Blockly.Python.definitions_['init_i2c_mlx'] = 
@@ -856,10 +856,10 @@ def _sat_bmp_read(field, sea=1013.25):
       `except:\n` +
       `    _mlx = None\n`;
     const code = `(_mlx.read_object_temp() if _mlx else 18.5)`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_sensor_ina219_power'] = function(block) {
+  Blockly.Python.forBlock['sat_sensor_ina219_power'] = function(block) {
     Blockly.Python.definitions_['import_machine'] = 'from machine import Pin, I2C, SPI, ADC, PWM';
     Blockly.Python.definitions_['init_i2c_bus'] = 'i2c = I2C(0, scl=Pin(22), sda=Pin(21))';
     Blockly.Python.definitions_['init_i2c_ina'] = 
@@ -869,7 +869,7 @@ def _sat_bmp_read(field, sea=1013.25):
       `except:\n` +
       `    _ina = None\n`;
     const code = `(_ina.power if _ina else 450.0)`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
   // ==========================================
@@ -910,11 +910,11 @@ def _sat_bmp_read(field, sea=1013.25):
            `        _mpu = None\n`;
   }
 
-  Blockly.Python['sat_imu_mpu6050_accel'] = function(block) {
+  Blockly.Python.forBlock['sat_imu_mpu6050_accel'] = function(block) {
     if (isRp2040()) {
       Blockly.Python.definitions_['init_i2c_bus'] = Blockly.Python.getBoardI2CInit();
       Blockly.Python.definitions_['init_sat_mpu'] = "class _SatMPU6050:\n    def __init__(self, bus):\n        import time\n        self.bus, self.addr = bus, None\n        for addr in (0x68, 0x69):\n            try:\n                if bus.readfrom_mem(addr, 0x75, 1)[0] == 0x68:\n                    self.addr = addr\n                    break\n            except OSError:\n                pass\n        if self.addr is None:\n            raise OSError('MPU6050 ausente em 0x68/0x69; verifique SDA GP0 e SCL GP1')\n        bus.writeto_mem(self.addr, 0x6B, bytes([0x01]))\n        time.sleep_ms(100)\n        bus.writeto_mem(self.addr, 0x1C, bytes([0x00]))\n        bus.writeto_mem(self.addr, 0x1B, bytes([0x00]))\n\n    def read(self, kind, axis):\n        import struct\n        v = struct.unpack('>hhhhhhh', self.bus.readfrom_mem(self.addr, 0x3B, 14))\n        values = [round(n / 16384.0 * 9.80665, 3) for n in v[:3]] if kind == 'accel' else [round(n / 131.0, 3) for n in v[4:]]\n        if axis == 'vector': return values\n        if axis == 'total': return sum(n * n for n in values) ** 0.5\n        return values[{'x': 0, 'y': 1, 'z': 2}[axis]]\n\n_sat_mpu = None\ndef _sat_mpu_read(kind, axis):\n    global _sat_mpu\n    try:\n        if _sat_mpu is None:\n            _sat_mpu = _SatMPU6050(i2c)\n        return _sat_mpu.read(kind, axis)\n    except Exception:\n        _sat_mpu = None\n        raise\n";
-      return [`_sat_mpu_read('accel', '${block.getFieldValue('AXIS')}')`, Blockly.Python.ORDER_FUNCTION_CALL];
+      return [`_sat_mpu_read('accel', '${block.getFieldValue('AXIS')}')`, python.Order.FUNCTION_CALL];
     }
     const axis = block.getFieldValue('AXIS');
     Blockly.Python.definitions_['import_machine'] = 'from machine import Pin, I2C, SPI, ADC, PWM';
@@ -923,25 +923,25 @@ def _sat_bmp_read(field, sea=1013.25):
 
     if (axis === 'vector') {
       const code = `([_mpu.get_values()['AcX'], _mpu.get_values()['AcY'], _mpu.get_values()['AcZ']] if _mpu else [0.0, 0.0, 9.81])`;
-      return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+      return [code, python.Order.FUNCTION_CALL];
     }
 
     if (axis === 'total') {
       Blockly.Python.definitions_['import_math'] = 'import math';
       const code = `(math.sqrt(_mpu.get_values()['AcX']**2 + _mpu.get_values()['AcY']**2 + _mpu.get_values()['AcZ']**2) if _mpu else 9.81)`;
-      return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+      return [code, python.Order.FUNCTION_CALL];
     }
 
     const key = axis === 'x' ? 'AcX' : (axis === 'y' ? 'AcY' : 'AcZ');
     const code = `(_mpu.get_values()['${key}'] if _mpu else 0.0)`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_imu_mpu6050_gyro'] = function(block) {
+  Blockly.Python.forBlock['sat_imu_mpu6050_gyro'] = function(block) {
     if (isRp2040()) {
       Blockly.Python.definitions_['init_i2c_bus'] = Blockly.Python.getBoardI2CInit();
       Blockly.Python.definitions_['init_sat_mpu'] = "class _SatMPU6050:\n    def __init__(self, bus):\n        import time\n        self.bus, self.addr = bus, None\n        for addr in (0x68, 0x69):\n            try:\n                if bus.readfrom_mem(addr, 0x75, 1)[0] == 0x68:\n                    self.addr = addr\n                    break\n            except OSError:\n                pass\n        if self.addr is None:\n            raise OSError('MPU6050 ausente em 0x68/0x69; verifique SDA GP0 e SCL GP1')\n        bus.writeto_mem(self.addr, 0x6B, bytes([0x01]))\n        time.sleep_ms(100)\n        bus.writeto_mem(self.addr, 0x1C, bytes([0x00]))\n        bus.writeto_mem(self.addr, 0x1B, bytes([0x00]))\n\n    def read(self, kind, axis):\n        import struct\n        v = struct.unpack('>hhhhhhh', self.bus.readfrom_mem(self.addr, 0x3B, 14))\n        values = [round(n / 16384.0 * 9.80665, 3) for n in v[:3]] if kind == 'accel' else [round(n / 131.0, 3) for n in v[4:]]\n        if axis == 'vector': return values\n        if axis == 'total': return sum(n * n for n in values) ** 0.5\n        return values[{'x': 0, 'y': 1, 'z': 2}[axis]]\n\n_sat_mpu = None\ndef _sat_mpu_read(kind, axis):\n    global _sat_mpu\n    try:\n        if _sat_mpu is None:\n            _sat_mpu = _SatMPU6050(i2c)\n        return _sat_mpu.read(kind, axis)\n    except Exception:\n        _sat_mpu = None\n        raise\n";
-      return [`_sat_mpu_read('gyro', '${block.getFieldValue('AXIS')}')`, Blockly.Python.ORDER_FUNCTION_CALL];
+      return [`_sat_mpu_read('gyro', '${block.getFieldValue('AXIS')}')`, python.Order.FUNCTION_CALL];
     }
     const axis = block.getFieldValue('AXIS');
     Blockly.Python.definitions_['import_machine'] = 'from machine import Pin, I2C, SPI, ADC, PWM';
@@ -950,58 +950,58 @@ def _sat_bmp_read(field, sea=1013.25):
 
     if (axis === 'vector') {
       const code = `([_mpu.get_values()['GyX'], _mpu.get_values()['GyY'], _mpu.get_values()['GyZ']] if _mpu else [0.0, 0.0, 0.0])`;
-      return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+      return [code, python.Order.FUNCTION_CALL];
     }
 
     const key = axis === 'x' ? 'GyX' : (axis === 'y' ? 'GyY' : 'GyZ');
     const code = `(_mpu.get_values()['${key}'] if _mpu else 0.0)`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_imu_detect_freefall'] = function(block) {
+  Blockly.Python.forBlock['sat_imu_detect_freefall'] = function(block) {
     const threshold = block.getFieldValue('THRESHOLD') || 0.15;
     Blockly.Python.definitions_['import_math'] = 'import math';
     const code = `(abs((math.sqrt(_mpu.get_values()['AcX']**2 + _mpu.get_values()['AcY']**2 + _mpu.get_values()['AcZ']**2) / 16384.0)) < ${threshold} if _mpu else False)`;
-    return [code, Blockly.Python.ORDER_RELATIONAL];
+    return [code, python.Order.RELATIONAL];
   };
 
-  Blockly.Python['sat_mag_heading'] = function(block) {
+  Blockly.Python.forBlock['sat_mag_heading'] = function(block) {
     const code = `0.0 # Azimute magnetometro`;
-    return [code, Blockly.Python.ORDER_ATOMIC];
+    return [code, python.Order.ATOMIC];
   };
 
   // ==========================================
   // 4. NAVEGAÇÃO & GPS
   // ==========================================
-  Blockly.Python['sat_gps_lat'] = function(block) {
+  Blockly.Python.forBlock['sat_gps_lat'] = function(block) {
     const code = `(_gps.latitude if '_gps' in globals() else -23.5505)`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_gps_lng'] = function(block) {
+  Blockly.Python.forBlock['sat_gps_lng'] = function(block) {
     const code = `(_gps.longitude if '_gps' in globals() else -46.6333)`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_gps_alt'] = function(block) {
+  Blockly.Python.forBlock['sat_gps_alt'] = function(block) {
     const code = `(_gps.altitude if '_gps' in globals() else 760.0)`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_gps_speed'] = function(block) {
+  Blockly.Python.forBlock['sat_gps_speed'] = function(block) {
     const code = `(_gps.speed if '_gps' in globals() else 0.0)`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_gps_time_utc'] = function(block) {
+  Blockly.Python.forBlock['sat_gps_time_utc'] = function(block) {
     const code = `(_gps.timestamp if '_gps' in globals() else "12:00:00")`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
   // ==========================================
   // 5. COMUNICAÇÃO ESPACIAL & LORA
   // ==========================================
-  Blockly.Python['sat_lora_setup'] = function(block) {
+  Blockly.Python.forBlock['sat_lora_setup'] = function(block) {
     const freq = block.getFieldValue('FREQ') || '915.0';
     const pwr = block.getFieldValue('POWER') || 20;
     const sf = block.getFieldValue('SF') || 7;
@@ -1010,20 +1010,20 @@ def _sat_bmp_read(field, sea=1013.25):
            `print("[LORA] Configurado Freq: ${freq}MHz, Potencia: ${pwr}dBm, SF: ${sf}")\n`;
   };
 
-  Blockly.Python['sat_lora_send_packet'] = function(block) {
-    const payload = Blockly.Python.valueToCode(block, 'PAYLOAD', Blockly.Python.ORDER_NONE) || '""';
+  Blockly.Python.forBlock['sat_lora_send_packet'] = function(block) {
+    const payload = Blockly.Python.valueToCode(block, 'PAYLOAD', python.Order.NONE) || '""';
     return `print("[LORA TX] Enviando pacote:", ${payload})\n`;
   };
 
-  Blockly.Python['sat_lora_receive_cmd'] = function(block) {
+  Blockly.Python.forBlock['sat_lora_receive_cmd'] = function(block) {
     const code = `("[CMD_PING]")`;
-    return [code, Blockly.Python.ORDER_ATOMIC];
+    return [code, python.Order.ATOMIC];
   };
 
   // ==========================================
   // 6. ENERGIA & EPS
   // ==========================================
-  Blockly.Python['sat_battery_adc'] = function(block) {
+  Blockly.Python.forBlock['sat_battery_adc'] = function(block) {
     let board = 'pion_cubesat';
     if (typeof window !== 'undefined' && window.SatBlocksApp && typeof window.SatBlocksApp.getCurrentBoard === 'function') {
       board = window.SatBlocksApp.getCurrentBoard();
@@ -1035,17 +1035,17 @@ def _sat_bmp_read(field, sea=1013.25):
     Blockly.Python.definitions_['import_machine_adc'] = 'from machine import Pin, ADC';
     if (board === 'rp2040_zero') {
       Blockly.Python.definitions_['init_adc_bat'] = `_adc_bat = ADC(Pin(28)) # RP2040 ADC2 Bateria\n`;
-      return [`_adc_bat.read_u16() >> 7`, Blockly.Python.ORDER_FUNCTION_CALL];
+      return [`_adc_bat.read_u16() >> 7`, python.Order.FUNCTION_CALL];
     } else {
       Blockly.Python.definitions_['init_adc_bat'] = 
         `_adc_bat = ADC(Pin(35))\n` +
         `_adc_bat.atten(ADC.ATTN_11DB)\n` +
         `_adc_bat.width(ADC.WIDTH_9BIT)\n`;
-      return [`_adc_bat.read()`, Blockly.Python.ORDER_FUNCTION_CALL];
+      return [`_adc_bat.read()`, python.Order.FUNCTION_CALL];
     }
   };
 
-  Blockly.Python['sat_eps_battery_voltage'] = function(block) {
+  Blockly.Python.forBlock['sat_eps_battery_voltage'] = function(block) {
     let board = 'pion_cubesat';
     if (typeof window !== 'undefined' && window.SatBlocksApp && typeof window.SatBlocksApp.getCurrentBoard === 'function') {
       board = window.SatBlocksApp.getCurrentBoard();
@@ -1058,7 +1058,7 @@ def _sat_bmp_read(field, sea=1013.25):
     if (board === 'rp2040_zero') {
       Blockly.Python.definitions_['init_adc_bat'] = `_adc_bat = ADC(Pin(28)) # RP2040 ADC2 Bateria\n`;
       const code = `round((_adc_bat.read_u16() / 65535.0) * 3.3 * 2.0, 2)`;
-      return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+      return [code, python.Order.FUNCTION_CALL];
     } else {
       Blockly.Python.definitions_['init_adc_bat'] = 
         `_adc_bat = ADC(Pin(35))\n` +
@@ -1066,16 +1066,16 @@ def _sat_bmp_read(field, sea=1013.25):
         `_adc_bat.width(ADC.WIDTH_9BIT)\n`;
 
       const code = `round((_adc_bat.read() / 511.0) * 3.3 * 2.0, 2)`;
-      return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+      return [code, python.Order.FUNCTION_CALL];
     }
   };
 
-  Blockly.Python['sat_eps_solar_current'] = function(block) {
+  Blockly.Python.forBlock['sat_eps_solar_current'] = function(block) {
     const code = `150.0 # Corrente solar mA`;
-    return [code, Blockly.Python.ORDER_ATOMIC];
+    return [code, python.Order.ATOMIC];
   };
 
-  Blockly.Python['sat_eps_battery_percent'] = function(block) {
+  Blockly.Python.forBlock['sat_eps_battery_percent'] = function(block) {
     let board = 'pion_cubesat';
     if (typeof window !== 'undefined' && window.SatBlocksApp && typeof window.SatBlocksApp.getCurrentBoard === 'function') {
       board = window.SatBlocksApp.getCurrentBoard();
@@ -1088,7 +1088,7 @@ def _sat_bmp_read(field, sea=1013.25):
     if (board === 'rp2040_zero') {
       Blockly.Python.definitions_['init_adc_bat'] = `_adc_bat = ADC(Pin(28)) # RP2040 ADC2 Bateria\n`;
       const code = `int(max(0, min(100, ((((_adc_bat.read_u16() / 65535.0) * 3.3 * 2.0) - 3.2) / 1.0) * 100)))`;
-      return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+      return [code, python.Order.FUNCTION_CALL];
     } else {
       Blockly.Python.definitions_['init_adc_bat'] = 
         `_adc_bat = ADC(Pin(35))\n` +
@@ -1096,11 +1096,11 @@ def _sat_bmp_read(field, sea=1013.25):
         `_adc_bat.width(ADC.WIDTH_9BIT)\n`;
 
       const code = `int(max(0, min(100, ((((_adc_bat.read() / 511.0) * 3.3 * 2.0) - 3.2) / 1.0) * 100)))`;
-      return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+      return [code, python.Order.FUNCTION_CALL];
     }
   };
 
-  Blockly.Python['sat_eps_deepsleep'] = function(block) {
+  Blockly.Python.forBlock['sat_eps_deepsleep'] = function(block) {
     const sec = block.getFieldValue('SECONDS') || 10;
     Blockly.Python.definitions_['import_deepsleep'] = 'import machine';
     return `print("[EPS] Entrando em deep sleep por ${sec}s...")\nmachine.deepsleep(${sec * 1000})\n`;
@@ -1109,7 +1109,7 @@ def _sat_bmp_read(field, sea=1013.25):
   // ==========================================
   // 5.1 HOTSPOT & REDE LOCAL
   // ==========================================
-  Blockly.Python['sat_wifi_ap_start'] = function(block) {
+  Blockly.Python.forBlock['sat_wifi_ap_start'] = function(block) {
     const ssid = block.getFieldValue('SSID') || 'ESP32CAM_OBSAT';
     const pwd = block.getFieldValue('PASSWORD') || '12345678';
     Blockly.Python.definitions_['import_network'] = 'import network';
@@ -1122,16 +1122,16 @@ def _sat_bmp_read(field, sea=1013.25):
            `print("[WIFI AP] Hotspot ativo: '${ssid}', IP: " + str(_ap.ifconfig()[0]))\n`;
   };
 
-  Blockly.Python['sat_wifi_ap_ip'] = function(block) {
+  Blockly.Python.forBlock['sat_wifi_ap_ip'] = function(block) {
     Blockly.Python.definitions_['import_network'] = 'import network';
     const code = `(network.WLAN(network.AP_IF).ifconfig()[0] if network.WLAN(network.AP_IF).active() else "192.168.4.1")`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
   // ==========================================
   // 7. CÂMERA OV2640, WEB SERVER & PAYLOAD
   // ==========================================
-  Blockly.Python['sat_camera_init_advanced'] = function(block) {
+  Blockly.Python.forBlock['sat_camera_init_advanced'] = function(block) {
     const framesize = block.getFieldValue('FRAMESIZE') || 'FRAMESIZE_QVGA';
     const quality = block.getFieldValue('QUALITY') || 12;
     const effect = block.getFieldValue('EFFECT') || '0';
@@ -1181,7 +1181,7 @@ def _sat_bmp_read(field, sea=1013.25):
     return code;
   };
 
-  Blockly.Python['sat_camera_flash_intensity'] = function(block) {
+  Blockly.Python.forBlock['sat_camera_flash_intensity'] = function(block) {
     const brightness = block.getFieldValue('BRIGHTNESS') || 100;
     Blockly.Python.definitions_['from_machine_pin_pwm'] = 'from machine import Pin, PWM';
     Blockly.Python.definitions_['init_flash_pwm'] = '_flash_pwm = PWM(Pin(4), freq=1000)\n';
@@ -1189,7 +1189,7 @@ def _sat_bmp_read(field, sea=1013.25):
     return `_flash_pwm.duty(${duty}) # Flash frontal em ${brightness}%\n`;
   };
 
-  Blockly.Python['sat_camera_status_led'] = function(block) {
+  Blockly.Python.forBlock['sat_camera_status_led'] = function(block) {
     const state = block.getFieldValue('STATE') || '1';
     Blockly.Python.definitions_['from_machine_pin'] = 'from machine import Pin';
     Blockly.Python.definitions_['init_led_red'] = '_led_cam_red = Pin(33, Pin.OUT)\n';
@@ -1197,7 +1197,7 @@ def _sat_bmp_read(field, sea=1013.25):
     return `_led_cam_red.value(${val}) # LED Vermelho GPIO 33 (${state === '1' ? 'LIGADO' : 'DESLIGADO'})\n`;
   };
 
-  Blockly.Python['sat_camera_capture'] = function(block) {
+  Blockly.Python.forBlock['sat_camera_capture'] = function(block) {
     const filename = block.getFieldValue('FILENAME') || 'foto_obsat_%d.jpg';
     Blockly.Python.definitions_['import_camera'] = 'import camera';
     
@@ -1222,7 +1222,7 @@ def _sat_bmp_read(field, sea=1013.25):
     return code;
   };
 
-  Blockly.Python['sat_camera_capture_base64'] = function(block) {
+  Blockly.Python.forBlock['sat_camera_capture_base64'] = function(block) {
     Blockly.Python.definitions_['import_camera'] = 'import camera';
     Blockly.Python.definitions_['import_ubinascii'] = 'import ubinascii';
     Blockly.Python.definitions_['fn_capture_b64'] = 
@@ -1235,10 +1235,10 @@ def _sat_bmp_read(field, sea=1013.25):
       `        print("[B64 CAPTURE ERROR]", _e)\n` +
       `    return ""\n`;
     const code = `_capturar_foto_base64()`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_camera_webserver_start'] = function(block) {
+  Blockly.Python.forBlock['sat_camera_webserver_start'] = function(block) {
     const port = block.getFieldValue('PORT') || 80;
     const title = block.getFieldValue('TITLE') || 'ESP32-CAM Estação OBSAT';
     Blockly.Python.definitions_['import_camera'] = 'import camera';
@@ -1259,7 +1259,7 @@ def _sat_bmp_read(field, sea=1013.25):
     return `_iniciar_webserver_cam(${port}, "${title}")\n`;
   };
 
-  Blockly.Python['sat_camera_webserver_handle'] = function(block) {
+  Blockly.Python.forBlock['sat_camera_webserver_handle'] = function(block) {
     Blockly.Python.definitions_['fn_webserver_handle'] = 
       `def _processar_webserver_cam():\n` +
       `    global _cam_server_socket, _cam_station_title\n` +
@@ -1293,7 +1293,7 @@ def _sat_bmp_read(field, sea=1013.25):
     return `_processar_webserver_cam()\n`;
   };
 
-  Blockly.Python['sat_camera_lora_send_chunks'] = function(block) {
+  Blockly.Python.forBlock['sat_camera_lora_send_chunks'] = function(block) {
     const chunkSize = block.getFieldValue('CHUNK_SIZE') || 200;
     Blockly.Python.definitions_['import_camera'] = 'import camera';
     Blockly.Python.definitions_['import_time'] = 'import time';
@@ -1314,14 +1314,14 @@ def _sat_bmp_read(field, sea=1013.25):
            `    print("[LORA IMG ERROR]", _e)\n`;
   };
 
-  Blockly.Python['sat_camera_deinit'] = function(block) {
+  Blockly.Python.forBlock['sat_camera_deinit'] = function(block) {
     Blockly.Python.definitions_['import_camera'] = 'import camera';
     return `try:\n    camera.deinit()\n    print("[CAMERA] Sensor OV2640 desativado para economia de energia.")\nexcept Exception as _e:\n    print("[CAMERA DEINIT ERROR]", _e)\n`;
   };
 
-  Blockly.Python['sat_sd_write_log'] = function(block) {
+  Blockly.Python.forBlock['sat_sd_write_log'] = function(block) {
     const filename = block.getFieldValue('FILENAME') || 'telemetria.csv';
-    const text = Blockly.Python.valueToCode(block, 'TEXT', Blockly.Python.ORDER_NONE) || '""';
+    const text = Blockly.Python.valueToCode(block, 'TEXT', python.Order.NONE) || '""';
 
     return `try:\n` +
            `    with open("${filename}", "a") as _f:\n` +
@@ -1333,7 +1333,7 @@ def _sat_bmp_read(field, sea=1013.25):
   // ==========================================
   // 8. ATUADORES & EJEÇÃO
   // ==========================================
-  Blockly.Python['sat_actuator_servo_release'] = function(block) {
+  Blockly.Python.forBlock['sat_actuator_servo_release'] = function(block) {
     const pin = block.getFieldValue('PIN') || '18';
     const angle = block.getFieldValue('ANGLE') || 90;
     Blockly.Python.definitions_['init_servo_' + pin] = 
@@ -1343,7 +1343,7 @@ def _sat_bmp_read(field, sea=1013.25):
     return `_servo_${pin}.duty(${duty}) # Posiciona servo em ${angle} graus\n`;
   };
 
-  Blockly.Python['sat_actuator_buzzer'] = function(block) {
+  Blockly.Python.forBlock['sat_actuator_buzzer'] = function(block) {
     const pin = block.getFieldValue('PIN') || '25';
     const freq = block.getFieldValue('FREQ') || 2000;
     const dur = block.getFieldValue('DURATION') || 300;
@@ -1410,8 +1410,8 @@ def obsat_led_mcp(pin=0, state=1):
         pass`;
   }
 
-  Blockly.Python['sat_actuator_mcp23017_led'] = function(block) {
-    let pin = Blockly.Python.valueToCode(block, 'PIN', Blockly.Python.ORDER_ATOMIC);
+  Blockly.Python.forBlock['sat_actuator_mcp23017_led'] = function(block) {
+    let pin = Blockly.Python.valueToCode(block, 'PIN', python.Order.ATOMIC);
     if (!pin || pin === '') {
       pin = block.getFieldValue('PIN') || '0';
     }
@@ -1420,7 +1420,7 @@ def obsat_led_mcp(pin=0, state=1):
     return `obsat_led_mcp(${pin}, ${state})\n`;
   };
 
-  Blockly.Python['sat_actuator_led_status'] = function(block) {
+  Blockly.Python.forBlock['sat_actuator_led_status'] = function(block) {
     const pin = block.getFieldValue('PIN') || '2';
     const state = block.getFieldValue('STATE') || '1';
     if (pin.startsWith('mcp_')) {
@@ -1467,9 +1467,9 @@ def obsat_led_mcp(pin=0, state=1):
     }
   }
 
-  Blockly.Python['sat_iot_publish'] = function(block) {
+  Blockly.Python.forBlock['sat_iot_publish'] = function(block) {
     const canal = (block.getFieldValue('CANAL') || 'valor').replace(/[^a-zA-Z0-9_]/g, '_');
-    const valor = Blockly.Python.valueToCode(block, 'VALOR', Blockly.Python.ORDER_NONE) || '0';
+    const valor = Blockly.Python.valueToCode(block, 'VALOR', python.Order.NONE) || '0';
     ensureIotIdDefault();
     Blockly.Python.definitions_['00c_iot_token'] = `IOT_TOKEN = "${getOrCreateIotSessionToken()}"`;
 
@@ -1491,7 +1491,7 @@ def obsat_led_mcp(pin=0, state=1):
            `    print("[Painel IoT] Erro ao publicar:", _e)\n`;
   };
 
-  Blockly.Python['sat_iot_read'] = function(block) {
+  Blockly.Python.forBlock['sat_iot_read'] = function(block) {
     const canal = (block.getFieldValue('CANAL') || 'comando').replace(/[^a-zA-Z0-9_]/g, '_');
     ensureIotIdDefault();
     Blockly.Python.definitions_['00c_iot_token'] = `IOT_TOKEN = "${getOrCreateIotSessionToken()}"`;
@@ -1511,14 +1511,14 @@ def obsat_led_mcp(pin=0, state=1):
     return ""`;
 
     const code = `_iot_ler_canal("${canal}")`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
   // ==========================================
   // 10. REDE & INTERNET (HTTP CLIENT & SERVER)
   // ==========================================
 
-  Blockly.Python['sat_wifi_connect'] = function(block) {
+  Blockly.Python.forBlock['sat_wifi_connect'] = function(block) {
     if (isRp2040()) return 'print("[USB] RP2040-Zero: telemetria pelo navegador conectado a serial")\n';
     const ssid = block.getFieldValue('SSID') || 'OBSAT_WIFI';
     const pwd = block.getFieldValue('PASSWORD') || '';
@@ -1539,22 +1539,22 @@ def obsat_led_mcp(pin=0, state=1):
            `    print("[WI-FI FALHA] Nao foi possivel conectar")\n`;
   };
 
-  Blockly.Python['sat_http_get'] = function(block) {
-    const url = Blockly.Python.valueToCode(block, 'URL', Blockly.Python.ORDER_NONE) || '""';
+  Blockly.Python.forBlock['sat_http_get'] = function(block) {
+    const url = Blockly.Python.valueToCode(block, 'URL', python.Order.NONE) || '""';
     Blockly.Python.definitions_['import_urequests'] = 'import urequests';
     const code = `(urequests.get(${url}) if urequests is not None else None)`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_http_post_data'] = function(block) {
-    const url = Blockly.Python.valueToCode(block, 'URL', Blockly.Python.ORDER_NONE) || '""';
-    const data = Blockly.Python.valueToCode(block, 'DATA', Blockly.Python.ORDER_NONE) || '""';
+  Blockly.Python.forBlock['sat_http_post_data'] = function(block) {
+    const url = Blockly.Python.valueToCode(block, 'URL', python.Order.NONE) || '""';
+    const data = Blockly.Python.valueToCode(block, 'DATA', python.Order.NONE) || '""';
     Blockly.Python.definitions_['import_urequests'] = 'import urequests';
     const code = `(urequests.post(${url}, data=str(${data})) if urequests is not None else None)`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_i2c_init_pins'] = function(block) {
+  Blockly.Python.forBlock['sat_i2c_init_pins'] = function(block) {
     const preset = block.getFieldValue('PRESET') || 'esp32cam';
     let scl = block.getFieldValue('SCL_PIN') || 14;
     let sda = block.getFieldValue('SDA_PIN') || 15;
@@ -1567,15 +1567,15 @@ def obsat_led_mcp(pin=0, state=1):
            `print("[I2C] Barramento configurado: SCL=" + str(${scl}) + ", SDA=" + str(${sda}))\n`;
   };
 
-  Blockly.Python['sat_obsat_telemetry_packet'] = function(block) {
+  Blockly.Python.forBlock['sat_obsat_telemetry_packet'] = function(block) {
     const codeLines = [];
 
     if (block.itemCount_ !== undefined) {
       for (let i = 0; i < block.itemCount_; i++) {
         const key = (block.itemKeys_ && block.itemKeys_[i]) || ('campo' + (i + 1));
-        let valCode = Blockly.Python.valueToCode(block, 'VAL' + i, Blockly.Python.ORDER_NONE);
+        let valCode = Blockly.Python.valueToCode(block, 'VAL' + i, python.Order.NONE);
         if (!valCode) {
-          valCode = Blockly.Python.valueToCode(block, key.toUpperCase(), Blockly.Python.ORDER_NONE);
+          valCode = Blockly.Python.valueToCode(block, key.toUpperCase(), python.Order.NONE);
         }
         if (!valCode) valCode = '0';
 
@@ -1590,12 +1590,12 @@ def obsat_led_mcp(pin=0, state=1):
         }
       }
     } else {
-      const team = Blockly.Python.valueToCode(block, 'TEAM', Blockly.Python.ORDER_NONE) || '42';
-      const temp = Blockly.Python.valueToCode(block, 'TEMP', Blockly.Python.ORDER_NONE) || '25.0';
-      const press = Blockly.Python.valueToCode(block, 'PRESS', Blockly.Python.ORDER_NONE) || '1013.25';
-      const alt = Blockly.Python.valueToCode(block, 'ALT', Blockly.Python.ORDER_NONE) || '0.0';
-      const bat = Blockly.Python.valueToCode(block, 'BAT', Blockly.Python.ORDER_NONE) || '100';
-      const payload = Blockly.Python.valueToCode(block, 'PAYLOAD', Blockly.Python.ORDER_NONE) || '{}';
+      const team = Blockly.Python.valueToCode(block, 'TEAM', python.Order.NONE) || '42';
+      const temp = Blockly.Python.valueToCode(block, 'TEMP', python.Order.NONE) || '25.0';
+      const press = Blockly.Python.valueToCode(block, 'PRESS', python.Order.NONE) || '1013.25';
+      const alt = Blockly.Python.valueToCode(block, 'ALT', python.Order.NONE) || '0.0';
+      const bat = Blockly.Python.valueToCode(block, 'BAT', python.Order.NONE) || '100';
+      const payload = Blockly.Python.valueToCode(block, 'PAYLOAD', python.Order.NONE) || '{}';
 
       codeLines.push(`    "equipe": int(${team})`);
       codeLines.push(`    "temperatura": round(float(${temp}), 2)`);
@@ -1606,13 +1606,13 @@ def obsat_led_mcp(pin=0, state=1):
     }
 
     const code = `{\n` + codeLines.join(',\n') + `\n}`;
-    return [code, Blockly.Python.ORDER_ATOMIC];
+    return [code, python.Order.ATOMIC];
   };
-  Blockly.Python['sat_format_telemetry'] = Blockly.Python['sat_obsat_telemetry_packet'];
+  Blockly.Python.forBlock['sat_format_telemetry'] = Blockly.Python.forBlock['sat_obsat_telemetry_packet'];
 
-  Blockly.Python['sat_http_send_obsat_telemetry'] = function(block) {
+  Blockly.Python.forBlock['sat_http_send_obsat_telemetry'] = function(block) {
     const url = block.getFieldValue('SERVER_URL') || 'https://obsat.org.br/satblocks/telemetria/salvar_telemetria.php';
-    const json_data = Blockly.Python.valueToCode(block, 'JSON_DATA', Blockly.Python.ORDER_NONE) || '{}';
+    const json_data = Blockly.Python.valueToCode(block, 'JSON_DATA', python.Order.NONE) || '{}';
     if (isRp2040()) {
       Blockly.Python.definitions_['import_ujson'] = 'import ujson';
       return `try:\n    _obsat_pkt = ${json_data}\n    print("[TELEMETRIA] " + (ujson.dumps(_obsat_pkt) if isinstance(_obsat_pkt, dict) else str(_obsat_pkt)))\nexcept Exception as _e_tele:\n    print("[ERRO SENSORES/TELEMETRIA]", _e_tele)\n`;
@@ -1634,29 +1634,29 @@ def obsat_led_mcp(pin=0, state=1):
            `    print("[TELEMETRIA OBSAT] Status do envio:", _e_tele)\n`;
   };
 
-  Blockly.Python['sat_http_post_json'] = function(block) {
-    const url = Blockly.Python.valueToCode(block, 'URL', Blockly.Python.ORDER_NONE) || '""';
-    const json_data = Blockly.Python.valueToCode(block, 'JSON_DATA', Blockly.Python.ORDER_NONE) || '{}';
+  Blockly.Python.forBlock['sat_http_post_json'] = function(block) {
+    const url = Blockly.Python.valueToCode(block, 'URL', python.Order.NONE) || '""';
+    const json_data = Blockly.Python.valueToCode(block, 'JSON_DATA', python.Order.NONE) || '{}';
     Blockly.Python.definitions_['import_urequests'] = 'import urequests';
     Blockly.Python.definitions_['import_ujson'] = 'import ujson';
     const code = `(urequests.post(${url}, headers={'Content-Type': 'application/json'}, data=(ujson.dumps(${json_data}) if isinstance(${json_data}, (dict, list)) else str(${json_data}))) if urequests is not None else None)`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_http_status_code'] = function(block) {
-    const resp = Blockly.Python.valueToCode(block, 'RESPONSE', Blockly.Python.ORDER_MEMBER) || '_resp';
+  Blockly.Python.forBlock['sat_http_status_code'] = function(block) {
+    const resp = Blockly.Python.valueToCode(block, 'RESPONSE', python.Order.MEMBER) || '_resp';
     const code = `(${resp}.status_code if ${resp} else -1)`;
-    return [code, Blockly.Python.ORDER_MEMBER];
+    return [code, python.Order.MEMBER];
   };
 
-  Blockly.Python['sat_http_response_text'] = function(block) {
-    const resp = Blockly.Python.valueToCode(block, 'RESPONSE', Blockly.Python.ORDER_MEMBER) || '_resp';
+  Blockly.Python.forBlock['sat_http_response_text'] = function(block) {
+    const resp = Blockly.Python.valueToCode(block, 'RESPONSE', python.Order.MEMBER) || '_resp';
     const code = `(${resp}.text if ${resp} else "")`;
-    return [code, Blockly.Python.ORDER_MEMBER];
+    return [code, python.Order.MEMBER];
   };
 
   // HTTP Web Server
-  Blockly.Python['sat_http_server_start'] = function(block) {
+  Blockly.Python.forBlock['sat_http_server_start'] = function(block) {
     const port = block.getFieldValue('PORT') || 80;
     Blockly.Python.definitions_['import_usocket'] = 'import usocket as socket';
 
@@ -1670,20 +1670,20 @@ def obsat_led_mcp(pin=0, state=1):
            `    print("[HTTP SERVER ERRO]", _e)\n`;
   };
 
-  Blockly.Python['sat_http_server_wait_client'] = function(block) {
+  Blockly.Python.forBlock['sat_http_server_wait_client'] = function(block) {
     const code = `_http_server.accept()`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_http_server_requested_page'] = function(block) {
-    const client = Blockly.Python.valueToCode(block, 'CLIENT', Blockly.Python.ORDER_NONE) || '_client_conn';
+  Blockly.Python.forBlock['sat_http_server_requested_page'] = function(block) {
+    const client = Blockly.Python.valueToCode(block, 'CLIENT', python.Order.NONE) || '_client_conn';
     const code = `(${client}[0].recv(1024).decode().split()[1] if ${client} else "/")`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_http_server_send_html'] = function(block) {
-    const client = Blockly.Python.valueToCode(block, 'CLIENT', Blockly.Python.ORDER_NONE) || '_client_conn';
-    const html = Blockly.Python.valueToCode(block, 'HTML', Blockly.Python.ORDER_NONE) || '""';
+  Blockly.Python.forBlock['sat_http_server_send_html'] = function(block) {
+    const client = Blockly.Python.valueToCode(block, 'CLIENT', python.Order.NONE) || '_client_conn';
+    const html = Blockly.Python.valueToCode(block, 'HTML', python.Order.NONE) || '""';
     return `try:\n` +
            `    _c = ${client}[0] if isinstance(${client}, tuple) else ${client}\n` +
            `    _c.send('HTTP/1.1 200 OK\\r\\nContent-Type: text/html\\r\\nAccess-Control-Allow-Origin: *\\r\\nConnection: close\\r\\n\\r\\n')\n` +
@@ -1693,9 +1693,9 @@ def obsat_led_mcp(pin=0, state=1):
            `    print("[HTTP SEND ERRO]", _e)\n`;
   };
 
-  Blockly.Python['sat_http_server_send_jpg'] = function(block) {
-    const client = Blockly.Python.valueToCode(block, 'CLIENT', Blockly.Python.ORDER_NONE) || '_client_conn';
-    const img = Blockly.Python.valueToCode(block, 'IMAGE', Blockly.Python.ORDER_NONE) || 'b""';
+  Blockly.Python.forBlock['sat_http_server_send_jpg'] = function(block) {
+    const client = Blockly.Python.valueToCode(block, 'CLIENT', python.Order.NONE) || '_client_conn';
+    const img = Blockly.Python.valueToCode(block, 'IMAGE', python.Order.NONE) || 'b""';
     return `try:\n` +
            `    _c = ${client}[0] if isinstance(${client}, tuple) else ${client}\n` +
            `    _c.send('HTTP/1.1 200 OK\\r\\nContent-Type: image/jpeg\\r\\nConnection: close\\r\\n\\r\\n')\n` +
@@ -1705,7 +1705,7 @@ def obsat_led_mcp(pin=0, state=1):
            `    print("[HTTP SEND JPG ERRO]", _e)\n`;
   };
 
-  Blockly.Python['sat_http_server_close'] = function(block) {
+  Blockly.Python.forBlock['sat_http_server_close'] = function(block) {
     return `try:\n    _http_server.close()\nexcept:\n    pass\n`;
   };
 
@@ -1713,7 +1713,7 @@ def obsat_led_mcp(pin=0, state=1):
   // 12. BARRAMENTOS: UART & I2C LOW-LEVEL
   // ==========================================
 
-  Blockly.Python['sat_uart_init'] = function(block) {
+  Blockly.Python.forBlock['sat_uart_init'] = function(block) {
     const port = block.getFieldValue('PORT') || '2';
     const baud = block.getFieldValue('BAUD') || 115200;
     const stop = block.getFieldValue('STOP') || 1;
@@ -1728,34 +1728,34 @@ def obsat_led_mcp(pin=0, state=1):
            `print("[UART${port}] Inicializada em ${baud} baud (TX:${tx}, RX:${rx})")\n`;
   };
 
-  Blockly.Python['sat_uart_send'] = function(block) {
-    const data = Blockly.Python.valueToCode(block, 'DATA', Blockly.Python.ORDER_NONE) || '""';
+  Blockly.Python.forBlock['sat_uart_send'] = function(block) {
+    const data = Blockly.Python.valueToCode(block, 'DATA', python.Order.NONE) || '""';
     return `_uart.write(str(${data}) + "\\n")\n`;
   };
 
-  Blockly.Python['sat_uart_read_bytes'] = function(block) {
-    const nbytes = Blockly.Python.valueToCode(block, 'BYTES', Blockly.Python.ORDER_NONE) || '10';
+  Blockly.Python.forBlock['sat_uart_read_bytes'] = function(block) {
+    const nbytes = Blockly.Python.valueToCode(block, 'BYTES', python.Order.NONE) || '10';
     const code = `(_uart.read(${nbytes}).decode('utf-8', 'ignore') if _uart.any() else "")`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_uart_readline'] = function(block) {
+  Blockly.Python.forBlock['sat_uart_readline'] = function(block) {
     const code = `(_uart.readline().decode('utf-8', 'ignore') if _uart.any() else "")`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_uart_readall'] = function(block) {
+  Blockly.Python.forBlock['sat_uart_readall'] = function(block) {
     const code = `(_uart.read().decode('utf-8', 'ignore') if _uart.any() else "")`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_uart_any'] = function(block) {
+  Blockly.Python.forBlock['sat_uart_any'] = function(block) {
     const code = `(_uart.any() > 0)`;
-    return [code, Blockly.Python.ORDER_RELATIONAL];
+    return [code, python.Order.RELATIONAL];
   };
 
   // I2C Low-level
-  Blockly.Python['sat_i2c_init'] = function(block) {
+  Blockly.Python.forBlock['sat_i2c_init'] = function(block) {
     const scl = block.getFieldValue('SCL') || 22;
     const sda = block.getFieldValue('SDA') || 21;
     const freq = block.getFieldValue('FREQ') || 400000;
@@ -1765,36 +1765,36 @@ def obsat_led_mcp(pin=0, state=1):
            `print("[I2C] Barramento inicializado SCL:${scl}, SDA:${sda}, Freq:${freq}Hz")\n`;
   };
 
-  Blockly.Python['sat_i2c_scan'] = function(block) {
+  Blockly.Python.forBlock['sat_i2c_scan'] = function(block) {
     const code = `[hex(x) for x in i2c.scan()]`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_i2c_writeto'] = function(block) {
+  Blockly.Python.forBlock['sat_i2c_writeto'] = function(block) {
     const addr = block.getFieldValue('ADDR') || '0x76';
-    const data = Blockly.Python.valueToCode(block, 'DATA', Blockly.Python.ORDER_NONE) || 'b""';
+    const data = Blockly.Python.valueToCode(block, 'DATA', python.Order.NONE) || 'b""';
     return `i2c.writeto(int("${addr}", 16), ${data})\n`;
   };
 
-  Blockly.Python['sat_i2c_readfrom'] = function(block) {
+  Blockly.Python.forBlock['sat_i2c_readfrom'] = function(block) {
     const addr = block.getFieldValue('ADDR') || '0x76';
     const nbytes = block.getFieldValue('NBYTES') || 2;
     const code = `i2c.readfrom(int("${addr}", 16), ${nbytes})`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_i2c_readfrom_mem'] = function(block) {
+  Blockly.Python.forBlock['sat_i2c_readfrom_mem'] = function(block) {
     const addr = block.getFieldValue('ADDR') || '0x68';
     const memaddr = block.getFieldValue('MEMADDR') || '0x3B';
     const nbytes = block.getFieldValue('NBYTES') || 6;
     const code = `i2c.readfrom_mem(int("${addr}", 16), int("${memaddr}", 16), ${nbytes})`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_i2c_writeto_mem'] = function(block) {
+  Blockly.Python.forBlock['sat_i2c_writeto_mem'] = function(block) {
     const addr = block.getFieldValue('ADDR') || '0x68';
     const memaddr = block.getFieldValue('MEMADDR') || '0x6B';
-    const data = Blockly.Python.valueToCode(block, 'DATA', Blockly.Python.ORDER_NONE) || 'b""';
+    const data = Blockly.Python.valueToCode(block, 'DATA', python.Order.NONE) || 'b""';
     return `i2c.writeto_mem(int("${addr}", 16), int("${memaddr}", 16), ${data})\n`;
   };
 
@@ -1802,65 +1802,65 @@ def obsat_led_mcp(pin=0, state=1):
   // GERADORES DE CONVERSÃO DE TIPOS
   // =========================================================================
 
-  Blockly.Python['sat_math_to_int'] = function(block) {
-    const value = Blockly.Python.valueToCode(block, 'VALUE', Blockly.Python.ORDER_NONE) || '0';
+  Blockly.Python.forBlock['sat_math_to_int'] = function(block) {
+    const value = Blockly.Python.valueToCode(block, 'VALUE', python.Order.NONE) || '0';
     const code = `int(${value})`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_math_to_float'] = function(block) {
-    const value = Blockly.Python.valueToCode(block, 'VALUE', Blockly.Python.ORDER_NONE) || '0';
+  Blockly.Python.forBlock['sat_math_to_float'] = function(block) {
+    const value = Blockly.Python.valueToCode(block, 'VALUE', python.Order.NONE) || '0';
     const code = `float(${value})`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['sat_text_to_str'] = function(block) {
-    const value = Blockly.Python.valueToCode(block, 'VALUE', Blockly.Python.ORDER_NONE) || '""';
+  Blockly.Python.forBlock['sat_text_to_str'] = function(block) {
+    const value = Blockly.Python.valueToCode(block, 'VALUE', python.Order.NONE) || '""';
     const code = `str(${value})`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
   // =========================================================================
   // GERADORES DE TEMPORIZAÇÃO & RELÓGIO OFICIAIS DO BIPES
   // =========================================================================
 
-  Blockly.Python['delay'] = function(block) {
+  Blockly.Python.forBlock['delay'] = function(block) {
     Blockly.Python.definitions_['import_time'] = 'import time';
-    const timeVal = Blockly.Python.valueToCode(block, 'TIME', Blockly.Python.ORDER_NONE) || '1';
+    const timeVal = Blockly.Python.valueToCode(block, 'TIME', python.Order.NONE) || '1';
     const scale = block.getFieldValue('SCALE') || 'sleep';
     return `time.${scale}(${timeVal})\n`;
   };
 
-  Blockly.Python['utime.vars'] = function(block) {
+  Blockly.Python.forBlock['utime.vars'] = function(block) {
     Blockly.Python.definitions_['import_time'] = 'import time';
     const v = block.getFieldValue('VARS') || 'ticks_ms';
-    return [`time.${v}()`, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [`time.${v}()`, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['utime.ticks_add'] = function(block) {
+  Blockly.Python.forBlock['utime.ticks_add'] = function(block) {
     Blockly.Python.definitions_['import_time'] = 'import time';
-    const t1 = Blockly.Python.valueToCode(block, 'TIME1', Blockly.Python.ORDER_NONE) || 'time.ticks_ms()';
-    const t2 = Blockly.Python.valueToCode(block, 'TIME2', Blockly.Python.ORDER_NONE) || '100';
-    return [`time.ticks_add(${t1}, ${t2})`, Blockly.Python.ORDER_FUNCTION_CALL];
+    const t1 = Blockly.Python.valueToCode(block, 'TIME1', python.Order.NONE) || 'time.ticks_ms()';
+    const t2 = Blockly.Python.valueToCode(block, 'TIME2', python.Order.NONE) || '100';
+    return [`time.ticks_add(${t1}, ${t2})`, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['utime.ticks_diff'] = function(block) {
+  Blockly.Python.forBlock['utime.ticks_diff'] = function(block) {
     Blockly.Python.definitions_['import_time'] = 'import time';
-    const t1 = Blockly.Python.valueToCode(block, 'TIME1', Blockly.Python.ORDER_NONE) || 'time.ticks_ms()';
-    const t2 = Blockly.Python.valueToCode(block, 'TIME2', Blockly.Python.ORDER_NONE) || '0';
-    return [`time.ticks_diff(${t1}, ${t2})`, Blockly.Python.ORDER_FUNCTION_CALL];
+    const t1 = Blockly.Python.valueToCode(block, 'TIME1', python.Order.NONE) || 'time.ticks_ms()';
+    const t2 = Blockly.Python.valueToCode(block, 'TIME2', python.Order.NONE) || '0';
+    return [`time.ticks_diff(${t1}, ${t2})`, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['utime.deadline'] = function(block) {
+  Blockly.Python.forBlock['utime.deadline'] = function(block) {
     Blockly.Python.definitions_['import_time'] = 'import time';
     const id = block.getFieldValue('ID') || '0';
-    const timeVal = Blockly.Python.valueToCode(block, 'TIME', Blockly.Python.ORDER_NONE) || '5000';
+    const timeVal = Blockly.Python.valueToCode(block, 'TIME', python.Order.NONE) || '5000';
     const branch = Blockly.Python.statementToCode(block, 'DO') || '  pass\n';
     return `_deadline_${id} = time.ticks_add(time.ticks_ms(), ${timeVal})\n` +
            `while time.ticks_diff(_deadline_${id}, time.ticks_ms()) > 0:\n${branch}`;
   };
 
-  Blockly.Python['timer'] = function(block) {
+  Blockly.Python.forBlock['timer'] = function(block) {
     Blockly.Python.definitions_['import_timer'] = 'from machine import Timer';
     const timerNumber = block.getFieldValue('timerNumber') || '0';
     const mode = block.getFieldValue('MODE') || 'PERIODIC';
@@ -1873,176 +1873,176 @@ def obsat_led_mcp(pin=0, state=1):
            `_timer_${timerNumber}.init(period=${interval}, mode=Timer.${mode}, callback=${cbName})\n`;
   };
 
-  Blockly.Python['stop_timer'] = function(block) {
+  Blockly.Python.forBlock['stop_timer'] = function(block) {
     Blockly.Python.definitions_['import_timer'] = 'from machine import Timer';
-    const timerNumber = Blockly.Python.valueToCode(block, 'timerNumber', Blockly.Python.ORDER_NONE) || '0';
+    const timerNumber = Blockly.Python.valueToCode(block, 'timerNumber', python.Order.NONE) || '0';
     return `try:\n  Timer(${timerNumber}).deinit()\nexcept:\n  pass\n`;
   };
 
-  Blockly.Python['esp32_set_rtc'] = function(block) {
+  Blockly.Python.forBlock['esp32_set_rtc'] = function(block) {
     Blockly.Python.definitions_['import_rtc'] = 'from machine import RTC';
-    const year = Blockly.Python.valueToCode(block, 'year', Blockly.Python.ORDER_NONE) || '2026';
-    const month = Blockly.Python.valueToCode(block, 'month', Blockly.Python.ORDER_NONE) || '1';
-    const day = Blockly.Python.valueToCode(block, 'day', Blockly.Python.ORDER_NONE) || '1';
-    const hour = Blockly.Python.valueToCode(block, 'hour', Blockly.Python.ORDER_NONE) || '12';
-    const minute = Blockly.Python.valueToCode(block, 'minute', Blockly.Python.ORDER_NONE) || '0';
-    const second = Blockly.Python.valueToCode(block, 'second', Blockly.Python.ORDER_NONE) || '0';
+    const year = Blockly.Python.valueToCode(block, 'year', python.Order.NONE) || '2026';
+    const month = Blockly.Python.valueToCode(block, 'month', python.Order.NONE) || '1';
+    const day = Blockly.Python.valueToCode(block, 'day', python.Order.NONE) || '1';
+    const hour = Blockly.Python.valueToCode(block, 'hour', python.Order.NONE) || '12';
+    const minute = Blockly.Python.valueToCode(block, 'minute', python.Order.NONE) || '0';
+    const second = Blockly.Python.valueToCode(block, 'second', python.Order.NONE) || '0';
     return `RTC().datetime((${year}, ${month}, ${day}, 0, ${hour}, ${minute}, ${second}, 0))\n`;
   };
 
-  Blockly.Python['esp32_get_rtc'] = function(block) {
+  Blockly.Python.forBlock['esp32_get_rtc'] = function(block) {
     Blockly.Python.definitions_['import_rtc'] = 'from machine import RTC';
-    return [`RTC().datetime()`, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [`RTC().datetime()`, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['esp32_deep_sleep'] = function(block) {
+  Blockly.Python.forBlock['esp32_deep_sleep'] = function(block) {
     Blockly.Python.definitions_['import_machine'] = 'import machine';
-    const sec = Blockly.Python.valueToCode(block, 'interval', Blockly.Python.ORDER_NONE) || '60';
+    const sec = Blockly.Python.valueToCode(block, 'interval', python.Order.NONE) || '60';
     return `machine.deepsleep(int(${sec} * 1000))\n`;
   };
 
   // Compatibilidade com blocos legados
-  Blockly.Python['sat_time_sleep_ms'] = function(block) {
+  Blockly.Python.forBlock['sat_time_sleep_ms'] = function(block) {
     Blockly.Python.definitions_['import_time'] = 'import time';
-    const ms = Blockly.Python.valueToCode(block, 'MS', Blockly.Python.ORDER_NONE) || '500';
+    const ms = Blockly.Python.valueToCode(block, 'MS', python.Order.NONE) || '500';
     return `time.sleep_ms(${ms})\n`;
   };
 
-  Blockly.Python['sat_time_sleep_us'] = function(block) {
+  Blockly.Python.forBlock['sat_time_sleep_us'] = function(block) {
     Blockly.Python.definitions_['import_time'] = 'import time';
-    const us = Blockly.Python.valueToCode(block, 'US', Blockly.Python.ORDER_NONE) || '100';
+    const us = Blockly.Python.valueToCode(block, 'US', python.Order.NONE) || '100';
     return `time.sleep_us(${us})\n`;
   };
 
-  Blockly.Python['sat_time_ticks_ms'] = Blockly.Python['utime.vars'];
-  Blockly.Python['sat_time_ticks_us'] = Blockly.Python['utime.vars'];
-  Blockly.Python['sat_time_ticks_diff'] = Blockly.Python['utime.ticks_diff'];
-  Blockly.Python['sat_time_localtime'] = Blockly.Python['esp32_get_rtc'];
+  Blockly.Python.forBlock['sat_time_ticks_ms'] = Blockly.Python.forBlock['utime.vars'];
+  Blockly.Python.forBlock['sat_time_ticks_us'] = Blockly.Python.forBlock['utime.vars'];
+  Blockly.Python.forBlock['sat_time_ticks_diff'] = Blockly.Python.forBlock['utime.ticks_diff'];
+  Blockly.Python.forBlock['sat_time_localtime'] = Blockly.Python.forBlock['esp32_get_rtc'];
 
   // =========================================================================
   // GERADORES DE ARQUIVOS & OPERAÇÕES DE DISCO (FLASH / SD / UOS)
   // =========================================================================
 
-  Blockly.Python['file_open'] = function(block) {
-    const filename = Blockly.Python.valueToCode(block, 'file_name', Blockly.Python.ORDER_NONE) || '"file.txt"';
+  Blockly.Python.forBlock['file_open'] = function(block) {
+    const filename = Blockly.Python.valueToCode(block, 'file_name', python.Order.NONE) || '"file.txt"';
     let mode = block.getFieldValue('dropdown_mode') || 'a';
     const isBinary = block.getFieldValue('checkbox_binary') === 'TRUE';
     if (isBinary && !mode.includes('b')) {
       mode += 'b';
     }
-    return [`open(${filename}, "${mode}")`, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [`open(${filename}, "${mode}")`, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['file_open_write'] = function(block) {
-    const filename = Blockly.Python.valueToCode(block, 'filename', Blockly.Python.ORDER_NONE) || '"file.txt"';
-    return [`open(${filename}, "w")`, Blockly.Python.ORDER_FUNCTION_CALL];
+  Blockly.Python.forBlock['file_open_write'] = function(block) {
+    const filename = Blockly.Python.valueToCode(block, 'filename', python.Order.NONE) || '"file.txt"';
+    return [`open(${filename}, "w")`, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['file_open_read'] = function(block) {
-    const filename = Blockly.Python.valueToCode(block, 'filename', Blockly.Python.ORDER_NONE) || '"file.txt"';
-    return [`open(${filename}, "r")`, Blockly.Python.ORDER_FUNCTION_CALL];
+  Blockly.Python.forBlock['file_open_read'] = function(block) {
+    const filename = Blockly.Python.valueToCode(block, 'filename', python.Order.NONE) || '"file.txt"';
+    return [`open(${filename}, "r")`, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['file_write'] = function(block) {
+  Blockly.Python.forBlock['file_write'] = function(block) {
     const varName = Blockly.Python.nameDB_.getName(block.getFieldValue('filename'), "VARIABLE");
-    const data = Blockly.Python.valueToCode(block, 'data', Blockly.Python.ORDER_NONE) || '""';
+    const data = Blockly.Python.valueToCode(block, 'data', python.Order.NONE) || '""';
     return `${varName}.write(str(${data}))\n`;
   };
 
-  Blockly.Python['file_write_line'] = function(block) {
+  Blockly.Python.forBlock['file_write_line'] = function(block) {
     const varName = Blockly.Python.nameDB_.getName(block.getFieldValue('filename'), "VARIABLE");
-    const data = Blockly.Python.valueToCode(block, 'data', Blockly.Python.ORDER_NONE) || '""';
+    const data = Blockly.Python.valueToCode(block, 'data', python.Order.NONE) || '""';
     return `${varName}.write(str(${data}) + "\\n")\n`;
   };
 
-  Blockly.Python['file_write_byte'] = function(block) {
+  Blockly.Python.forBlock['file_write_byte'] = function(block) {
     const varName = Blockly.Python.nameDB_.getName(block.getFieldValue('filename'), "VARIABLE");
-    const data = Blockly.Python.valueToCode(block, 'data', Blockly.Python.ORDER_NONE) || '0';
+    const data = Blockly.Python.valueToCode(block, 'data', python.Order.NONE) || '0';
     return `${varName}.write(bytes([int(${data})]))\n`;
   };
 
-  Blockly.Python['file_read'] = function(block) {
+  Blockly.Python.forBlock['file_read'] = function(block) {
     const varName = Blockly.Python.nameDB_.getName(block.getFieldValue('filename'), "VARIABLE");
-    return [`${varName}.read()`, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [`${varName}.read()`, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['file_close'] = function(block) {
+  Blockly.Python.forBlock['file_close'] = function(block) {
     const varName = Blockly.Python.nameDB_.getName(block.getFieldValue('filename'), "VARIABLE");
     return `${varName}.close()\n`;
   };
 
-  Blockly.Python['files_list'] = function(block) {
+  Blockly.Python.forBlock['files_list'] = function(block) {
     Blockly.Python.definitions_['import_os'] = 'import os';
-    return [`os.listdir()`, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [`os.listdir()`, python.Order.FUNCTION_CALL];
   };
 
-  Blockly.Python['uos_mkdir'] = function(block) {
+  Blockly.Python.forBlock['uos_mkdir'] = function(block) {
     Blockly.Python.definitions_['import_os'] = 'import os';
-    const dirname = Blockly.Python.valueToCode(block, 'pIn', Blockly.Python.ORDER_NONE) || '"pasta"';
+    const dirname = Blockly.Python.valueToCode(block, 'pIn', python.Order.NONE) || '"pasta"';
     return `try:\n  os.mkdir(${dirname})\nexcept:\n  pass\n`;
   };
 
-  Blockly.Python['uos_remove'] = function(block) {
+  Blockly.Python.forBlock['uos_remove'] = function(block) {
     Blockly.Python.definitions_['import_os'] = 'import os';
-    const filename = Blockly.Python.valueToCode(block, 'pIn', Blockly.Python.ORDER_NONE) || '"file.txt"';
+    const filename = Blockly.Python.valueToCode(block, 'pIn', python.Order.NONE) || '"file.txt"';
     return `try:\n  os.remove(${filename})\nexcept:\n  pass\n`;
   };
 
-  Blockly.Python['uos_rmdir'] = function(block) {
+  Blockly.Python.forBlock['uos_rmdir'] = function(block) {
     Blockly.Python.definitions_['import_os'] = 'import os';
-    const dirname = Blockly.Python.valueToCode(block, 'pIn', Blockly.Python.ORDER_NONE) || '"pasta"';
+    const dirname = Blockly.Python.valueToCode(block, 'pIn', python.Order.NONE) || '"pasta"';
     return `try:\n  os.rmdir(${dirname})\nexcept:\n  pass\n`;
   };
 
-  Blockly.Python['uos_chdir'] = function(block) {
+  Blockly.Python.forBlock['uos_chdir'] = function(block) {
     Blockly.Python.definitions_['import_os'] = 'import os';
-    const path = Blockly.Python.valueToCode(block, 'pIn', Blockly.Python.ORDER_NONE) || '"/"';
+    const path = Blockly.Python.valueToCode(block, 'pIn', python.Order.NONE) || '"/"';
     return `os.chdir(${path})\n`;
   };
 
-  Blockly.Python['uos_getcwd'] = function(block) {
+  Blockly.Python.forBlock['uos_getcwd'] = function(block) {
     Blockly.Python.definitions_['import_os'] = 'import os';
-    return [`os.getcwd()`, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [`os.getcwd()`, python.Order.FUNCTION_CALL];
   };
 
   // =========================================================================
   // GERADORES AVANÇADOS & PYTHON (TRY/EXCEPT, EXEC_PYTHON, IRQ INTERRUPÇÕES)
   // =========================================================================
 
-  Blockly.Python['try_catch'] = function(block) {
+  Blockly.Python.forBlock['try_catch'] = function(block) {
     const mainCode = Blockly.Python.statementToCode(block, 'main_code') || '  pass\n';
     const catchCode = Blockly.Python.statementToCode(block, 'catch_code') || '  pass\n';
     return `try:\n${mainCode}except Exception as _e:\n${catchCode}`;
   };
 
-  Blockly.Python['exec_python'] = function(block) {
-    const command = Blockly.Python.valueToCode(block, 'command', Blockly.Python.ORDER_NONE);
+  Blockly.Python.forBlock['exec_python'] = function(block) {
+    const command = Blockly.Python.valueToCode(block, 'command', python.Order.NONE);
     if (!command) return '';
     // Se for string com aspas envolventes, descompacta
     const raw = command.replace(/^['"]|['"]$/g, '');
     return `${raw}\n`;
   };
 
-  Blockly.Python['exec_python_output'] = function(block) {
-    const command = Blockly.Python.valueToCode(block, 'command', Blockly.Python.ORDER_NONE) || 'None';
+  Blockly.Python.forBlock['exec_python_output'] = function(block) {
+    const command = Blockly.Python.valueToCode(block, 'command', python.Order.NONE) || 'None';
     const raw = command.replace(/^['"]|['"]$/g, '');
-    return [raw, Blockly.Python.ORDER_ATOMIC];
+    return [raw, python.Order.ATOMIC];
   };
 
-  Blockly.Python['inter_init'] = function(block) {
+  Blockly.Python.forBlock['inter_init'] = function(block) {
     Blockly.Python.definitions_['import_pin'] = 'from machine import Pin';
-    let nome = Blockly.Python.valueToCode(block, 'Nome', Blockly.Python.ORDER_ATOMIC) || '"btn"';
+    let nome = Blockly.Python.valueToCode(block, 'Nome', python.Order.ATOMIC) || '"btn"';
     nome = nome.replace(/['"]/g, '').trim() || 'btn';
-    let handler = Blockly.Python.valueToCode(block, 'Função', Blockly.Python.ORDER_ATOMIC) || '"callback"';
+    let handler = Blockly.Python.valueToCode(block, 'Função', python.Order.ATOMIC) || '"callback"';
     handler = handler.replace(/['"]/g, '').trim() || 'callback';
-    const pin = Blockly.Python.valueToCode(block, 'pin', Blockly.Python.ORDER_ATOMIC) || '0';
+    const pin = Blockly.Python.valueToCode(block, 'pin', python.Order.ATOMIC) || '0';
     const trigger = block.getFieldValue('TRIGGER') || 'IRQ_FALLING';
 
     return `${nome} = Pin(${pin}, Pin.IN, Pin.PULL_UP)\n` +
            `${nome}.irq(trigger=Pin.${trigger}, handler=${handler})\n`;
   };
 
-  Blockly.Python['sat_python_comment'] = function(block) {
+  Blockly.Python.forBlock['sat_python_comment'] = function(block) {
     const comment = block.getFieldValue('COMMENT') || '';
     return `# ${comment}\n`;
   };
@@ -2050,7 +2050,7 @@ def obsat_led_mcp(pin=0, state=1):
   // ==========================================
   // BLOCOS ESPECIAIS WAVESHARE RP2040-ZERO
   // ==========================================
-  Blockly.Python['sat_rp2040_rgb_led'] = function(block) {
+  Blockly.Python.forBlock['sat_rp2040_rgb_led'] = function(block) {
     const r = block.getFieldValue('R') !== null ? block.getFieldValue('R') : 255;
     const g = block.getFieldValue('G') !== null ? block.getFieldValue('G') : 0;
     const b = block.getFieldValue('B') !== null ? block.getFieldValue('B') : 0;
@@ -2068,19 +2068,19 @@ def obsat_led_mcp(pin=0, state=1):
            `    _rgb_rp2040.write()\n`;
   };
 
-  Blockly.Python['sat_rp2040_temp'] = function(block) {
+  Blockly.Python.forBlock['sat_rp2040_temp'] = function(block) {
     Blockly.Python.definitions_['import_adc'] = 'from machine import ADC';
     Blockly.Python.definitions_['init_rp2040_temp'] = '_adc_rp2040_temp = ADC(4) # Sensor Termico On-chip RP2040';
     const code = `round(27.0 - (((_adc_rp2040_temp.read_u16() * 3.3 / 65535.0) - 0.706) / 0.001721), 1)`;
-    return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+    return [code, python.Order.FUNCTION_CALL];
   };
 
   // =========================================================================
   // GERADORES OFICIAIS OBSAT: MCP23017 I/O EXPANDER & TONE SOUND (GPIO 25)
   // =========================================================================
-  Blockly.Python['mcp23017_init'] = function(block) {
-    const scl = Blockly.Python.valueToCode(block, 'scl', Blockly.Python.ORDER_ATOMIC) || '22';
-    const sda = Blockly.Python.valueToCode(block, 'sda', Blockly.Python.ORDER_ATOMIC) || '21';
+  Blockly.Python.forBlock['mcp23017_init'] = function(block) {
+    const scl = Blockly.Python.valueToCode(block, 'scl', python.Order.ATOMIC) || '22';
+    const sda = Blockly.Python.valueToCode(block, 'sda', python.Order.ATOMIC) || '21';
     Blockly.Python.definitions_['import_machine'] = 'from machine import Pin, I2C, PWM';
     Blockly.Python.definitions_['class_mcp23017_driver'] = 
 `class _MCP23017_Driver:
@@ -2120,17 +2120,17 @@ def obsat_led_mcp(pin=0, state=1):
            `_mcp = _MCP23017_Driver(i2c, 0x20)\n`;
   };
 
-  Blockly.Python['mcp23017_set_pin'] = function(block) {
-    const pin = Blockly.Python.valueToCode(block, 'pin', Blockly.Python.ORDER_ATOMIC) || '0';
-    const value = Blockly.Python.valueToCode(block, 'value', Blockly.Python.ORDER_ATOMIC) || '1';
+  Blockly.Python.forBlock['mcp23017_set_pin'] = function(block) {
+    const pin = Blockly.Python.valueToCode(block, 'pin', python.Order.ATOMIC) || '0';
+    const value = Blockly.Python.valueToCode(block, 'value', python.Order.ATOMIC) || '1';
     return `if '_mcp' in locals() or '_mcp' in globals():\n` +
            `    _mcp.set_pin(${pin}, ${value})\n`;
   };
 
-  Blockly.Python['tone'] = function(block) {
+  Blockly.Python.forBlock['tone'] = function(block) {
     const pin = block.getFieldValue('pin') || '25';
-    const freq = Blockly.Python.valueToCode(block, 'frequency', Blockly.Python.ORDER_ATOMIC) || '2200';
-    const dur = Blockly.Python.valueToCode(block, 'duration', Blockly.Python.ORDER_ATOMIC) || '1';
+    const freq = Blockly.Python.valueToCode(block, 'frequency', python.Order.ATOMIC) || '2200';
+    const dur = Blockly.Python.valueToCode(block, 'duration', python.Order.ATOMIC) || '1';
     Blockly.Python.definitions_['import_time'] = 'import time';
     Blockly.Python.definitions_['import_machine'] = 'from machine import Pin, I2C, SPI, ADC, PWM';
     Blockly.Python.definitions_['func_bipes_tone'] = 

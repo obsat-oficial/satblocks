@@ -4,12 +4,20 @@
  * A partir do Blockly v9+, as constantes de precedência ORDER_* deixaram de
  * ser propriedades de Blockly.Python e passaram a ser um enum `Order`
  * exportado separadamente (exposto no browser como `window.python.Order`
- * pelo wrapper UMD de python_compressed.js). Todo o gerador customizado do
- * SatBlocks (satblocks/generator_python.js, ~145 funções) e o motor de
- * síntese do SatBlocks Studio (js/sat_studio_core.js) foram escritos contra
- * o nome antigo Blockly.Python.ORDER_*. Este shim recria essas propriedades
- * como aliases do enum novo, para que todo o código existente continue
- * funcionando sem precisar editar cada ponto de uso individualmente.
+ * pelo wrapper UMD de python_compressed.js).
+ *
+ * satblocks/generator_python.js (os ~145 geradores oficiais) e o motor de
+ * síntese do SatBlocks Studio (js/sat_studio_core.js, js/sat_ai_synthesizer.js)
+ * já foram migrados para o formato nativo do Blockly v13 (`Blockly.Python.
+ * forBlock['nome'] = function(block) {...}` + `python.Order.*`) — este shim
+ * NÃO é mais necessário para eles. Ele continua carregado, e continua
+ * necessário, só por causa de blocos customizados salvos no `localStorage`
+ * de quem os criou no SatBlocks Studio ANTES desta migração (ainda no
+ * formato antigo `Blockly.Python['nome'] = function(block) {...}` +
+ * `Blockly.Python.ORDER_*`) — são `eval()`'d de volta no runtime tal como
+ * foram salvos, e sem este shim eles simplesmente parariam de gerar código.
+ * Remover este arquivo só é seguro se algum dia se migrar/invalidar todo
+ * `localStorage.satblocks_custom_blocks` já salvo por usuários.
  */
 (function () {
   if (typeof Blockly === 'undefined' || !Blockly.Python) {
@@ -52,17 +60,18 @@
   // generate code for block type X": a partir do Blockly >= v9, blockToCode()
   // só procura a função geradora em `this.forBlock[tipo]` (um objeto próprio
   // por instância, Object.create(null)) — NUNCA em `this[tipo]` diretamente.
-  // Todo o gerador customizado do SatBlocks (satblocks/generator_python.js,
-  // ~145 blocos) e o motor de síntese do SatBlocks Studio foram escritos no
-  // padrão antigo `Blockly.Python['nome_do_bloco'] = function(block) {...}`,
-  // que grava a função como propriedade direta de Blockly.Python, não dentro
-  // de `forBlock`. Sem isso, TODO bloco customizado falha ao gerar código —
-  // só aparece um erro por vez porque workspaceToCode() aborta no primeiro.
   //
-  // Em vez de editar as ~145 atribuições (e as que o Studio cria em runtime
-  // via eval), interceptamos workspaceToCode()/blockToCode() para sincronizar
-  // automaticamente qualquer função própria de Blockly.Python (velho padrão)
-  // para dentro de forBlock (novo padrão) bem antes de cada geração de código.
+  // Os ~145 geradores oficiais (satblocks/generator_python.js) e o motor de
+  // síntese do SatBlocks Studio já foram migrados para escrever direto em
+  // `forBlock`. O único caso que ainda precisa deste sync é um bloco
+  // customizado antigo, criado no Studio ANTES da migração e salvo no
+  // `localStorage` de alguém no padrão antigo (`Blockly.Python['nome'] =
+  // function(block) {...}`, propriedade direta, fora de `forBlock`) — ao
+  // ser recarregado via eval(), continuaria invisível para blockToCode()
+  // sem este sync. Interceptamos workspaceToCode()/blockToCode() para
+  // sincronizar automaticamente qualquer função própria de Blockly.Python
+  // (padrão antigo, se houver) para dentro de forBlock antes de cada
+  // geração de código.
   // ==========================================================
   function syncPythonGeneratorForBlock() {
     if (!P.forBlock) return;
