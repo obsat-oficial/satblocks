@@ -291,7 +291,11 @@ body.studio-body {
   align-items: center;
   gap: 6px;
   overflow-x: auto;
-  padding-bottom: 2px;
+  /* overflow-x:auto força overflow-y a virar auto também (não dá pra
+     misturar "visible" num eixo com "auto"/"scroll" no outro) — sem esse
+     padding-top, o realce de :hover do .preset-chip (translateY + borda)
+     ficava cortado no topo da faixa. */
+  padding: 3px 0 2px;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -312,14 +316,6 @@ body.studio-body {
 
 .prompt-input-container input::placeholder {
   color: var(--text-studio-muted);
-}
-
-.prompt-presets {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  overflow-x: auto;
-  padding-bottom: 2px;
 }
 
 .presets-label {
