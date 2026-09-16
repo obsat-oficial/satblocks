@@ -29,7 +29,7 @@
 
   <!-- Módulos do SatBlocks Studio Pro -->
   <script src="js/sat_driver_hub.js?v=20260916-1"></script>
-  <script src="js/sat_ai_synthesizer.js?v=20260916-2"></script>
+  <script src="js/sat_ai_synthesizer.js?v=20260916-3"></script>
   <script src="js/sat_studio_core.js?v=20260916-2"></script>
 </head>
 <body class="studio-body">
@@ -310,21 +310,30 @@
       </div>
       <div class="modal-body">
         <p class="modal-desc">
-          Conecte sua chave de API do <strong>Google Gemini</strong> para que a IA analise qualquer sensor, módulo ou hardware e gere automaticamente blocos avançados, drivers MicroPython e registradores.
+          Conecte a chave de API de um provedor de IA para que ela analise qualquer sensor, módulo ou hardware e gere automaticamente blocos avançados, drivers MicroPython e registradores.
         </p>
 
         <div class="form-group">
           <label>Provedor de IA:</label>
-          <select id="selectAIProvider">
-            <option value="gemini">Google Gemini (Gemini 1.5 / 2.0 Flash — Rápido &amp; Gratuito)</option>
+          <select id="selectAIProvider" onchange="onAIProviderChange()">
+            <option value="gemini">Google Gemini — Grátis, limite generoso</option>
+            <option value="openrouter">OpenRouter — Agregador, vários modelos grátis</option>
           </select>
         </div>
 
         <div class="form-group">
           <label>Chave de API (API Key):</label>
-          <input type="password" id="inputAIApiKey" placeholder="Cole sua API Key do Google Gemini..." autocomplete="off">
-          <span class="help-text">Sua chave é armazenada de forma segura exclusivamente no seu navegador local (LocalStorage).</span>
+          <input type="password" id="inputAIApiKey" placeholder="Cole sua API Key..." autocomplete="off">
+          <span class="help-text" id="aiProviderKeyHelp"></span>
         </div>
+
+        <div class="form-group" id="groupAIModel">
+          <label>Modelo:</label>
+          <input type="text" id="inputAIModel" autocomplete="off">
+          <span class="help-text">Pode trocar por qualquer outro modelo do catálogo do provedor escolhido.</span>
+        </div>
+
+        <span class="help-text">Sua chave e o modelo escolhido ficam salvos só no seu navegador local (LocalStorage) — nunca são enviados para o servidor do SatBlocks.</span>
 
         <div class="modal-actions">
           <button class="sat-btn" onclick="closeAIConfigModal()">Cancelar</button>
@@ -358,7 +367,10 @@
 
     function openAIConfigModal() {
       const apiKey = window.SatAISynthesizer ? window.SatAISynthesizer.getApiKey() : '';
+      const provider = window.SatAISynthesizer ? window.SatAISynthesizer.getProvider() : 'gemini';
       document.getElementById('inputAIApiKey').value = apiKey;
+      document.getElementById('selectAIProvider').value = provider;
+      onAIProviderChange();
       document.getElementById('modalAIConfigBackdrop').style.display = 'flex';
     }
 
@@ -366,15 +378,30 @@
       document.getElementById('modalAIConfigBackdrop').style.display = 'none';
     }
 
+    // Atualiza o texto de ajuda e o campo de modelo (com o padrão do
+    // provedor escolhido) sempre que o dropdown de provedor muda.
+    function onAIProviderChange() {
+      if (!window.SatAISynthesizer) return;
+      const provider = document.getElementById('selectAIProvider').value;
+      const info = window.SatAISynthesizer.getProviders()[provider];
+      document.getElementById('aiProviderKeyHelp').textContent = info.keyHelp;
+      document.getElementById('inputAIModel').value = window.SatAISynthesizer.getModel(provider);
+    }
+
     function saveAIConfig() {
       const key = document.getElementById('inputAIApiKey').value;
+      const provider = document.getElementById('selectAIProvider').value;
+      const model = document.getElementById('inputAIModel').value;
       if (window.SatAISynthesizer) {
         window.SatAISynthesizer.setApiKey(key);
+        window.SatAISynthesizer.setProvider(provider);
+        window.SatAISynthesizer.setModel(provider, model);
       }
       updateAIStatusBadge();
       closeAIConfigModal();
       if (key && key.trim()) {
-        alert('✨ Chave de API do Gemini salva com sucesso!');
+        const label = window.SatAISynthesizer ? window.SatAISynthesizer.getProviders()[provider].label : provider;
+        alert(`✨ Chave de API salva com sucesso! Provedor ativo: ${label}.`);
       } else {
         alert('ℹ️ Modo local inteligente ativado.');
       }
@@ -384,9 +411,10 @@
       const key = window.SatAISynthesizer ? window.SatAISynthesizer.getApiKey() : '';
       const icon = document.getElementById('aiStatusIcon');
       const btn = document.getElementById('btnOpenAIModal');
+      const label = window.SatAISynthesizer ? window.SatAISynthesizer.getProviders()[window.SatAISynthesizer.getProvider()].label : '';
       if (key && key.trim()) {
         if (icon) icon.textContent = '🟢';
-        if (btn) btn.title = 'IA Conectada (Gemini Flash ativo)';
+        if (btn) btn.title = `IA Conectada (${label})`;
       } else {
         if (icon) icon.textContent = '⚙️';
         if (btn) btn.title = 'Configurar Chave de API da IA';

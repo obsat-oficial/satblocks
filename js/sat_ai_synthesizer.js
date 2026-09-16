@@ -10,7 +10,30 @@ window.SatAISynthesizer = (function() {
   'use strict';
 
   const DEFAULT_PROVIDER = 'gemini';
-  const GEMINI_MODEL = 'gemini-1.5-flash';
+
+  // Cada provedor é chamado diretamente do navegador com a chave da própria
+  // pessoa (nunca uma chave nossa) — por isso só entram aqui provedores
+  // confirmadamente compatíveis com CORS em requisição direta do browser.
+  // Groq foi cogitado mas não há confirmação documentada de CORS liberado
+  // para chamada direta do navegador, então ficou de fora por ora.
+  const PROVIDERS = {
+    gemini: {
+      label: 'Google Gemini',
+      badge: 'Grátis (limite generoso)',
+      defaultModel: 'gemini-2.5-flash',
+      keyHelp: 'Gere uma chave grátis em aistudio.google.com/apikey.'
+    },
+    openrouter: {
+      label: 'OpenRouter',
+      badge: 'Agregador — vários modelos grátis',
+      defaultModel: 'meta-llama/llama-3.3-70b-instruct:free',
+      keyHelp: 'Gere uma chave grátis em openrouter.ai/keys. Modelos terminados em ":free" não custam nada — troque o campo "Modelo" abaixo por qualquer outro do catálogo da OpenRouter.'
+    }
+  };
+
+  function getProviders() {
+    return PROVIDERS;
+  }
 
   function getApiKey() {
     return localStorage.getItem('sat_studio_api_key') || '';
@@ -21,11 +44,21 @@ window.SatAISynthesizer = (function() {
   }
 
   function getProvider() {
-    return localStorage.getItem('sat_studio_ai_provider') || DEFAULT_PROVIDER;
+    const prov = localStorage.getItem('sat_studio_ai_provider') || DEFAULT_PROVIDER;
+    return PROVIDERS[prov] ? prov : DEFAULT_PROVIDER;
   }
 
   function setProvider(prov) {
     localStorage.setItem('sat_studio_ai_provider', prov);
+  }
+
+  function getModel(provider) {
+    const prov = provider || getProvider();
+    return localStorage.getItem('sat_studio_ai_model_' + prov) || (PROVIDERS[prov] || PROVIDERS[DEFAULT_PROVIDER]).defaultModel;
+  }
+
+  function setModel(provider, model) {
+    localStorage.setItem('sat_studio_ai_model_' + provider, (model || '').trim());
   }
 
   /**
@@ -71,7 +104,8 @@ Regras Cruciais:
    * Sintetiza o bloco usando a API do Google Gemini
    */
   async function synthesizeWithGemini(promptText, apiKey) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+    const model = getModel('gemini');
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
     const payload = {
       contents: [
@@ -105,6 +139,44 @@ Regras Cruciais:
     if (!rawText) throw new Error('A API não retornou resposta estruturada.');
 
     // Limpa possíveis blocos ```json
+    const cleaned = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+    return JSON.parse(cleaned);
+  }
+
+  /**
+   * Sintetiza o bloco usando a API da OpenRouter (agregador OpenAI-compatible
+   * com vários modelos de terceiros, incluindo opções ":free" sem custo).
+   * Confirmadamente aberta a chamadas diretas do navegador (CORS liberado),
+   * ao contrário da maioria das APIs de LLM.
+   */
+  async function synthesizeWithOpenRouter(promptText, apiKey) {
+    const model = getModel('openrouter');
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'system', content: SYSTEM_INSTRUCTION },
+          { role: 'user', content: `Solicitação do Usuário: "${promptText}"` }
+        ],
+        temperature: 0.2,
+        response_format: { type: 'json_object' }
+      })
+    });
+
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.error?.message || `Erro HTTP ${response.status} na API OpenRouter`);
+    }
+
+    const data = await response.json();
+    const rawText = data.choices?.[0]?.message?.content;
+    if (!rawText) throw new Error('A API não retornou resposta estruturada. Verifique se o modelo "' + model + '" ainda existe no catálogo da OpenRouter.');
+
     const cleaned = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
     return JSON.parse(cleaned);
   }
@@ -257,8 +329,12 @@ Regras Cruciais:
   async function synthesize(promptText) {
     const apiKey = getApiKey();
     if (apiKey) {
+      const provider = getProvider();
       try {
-        console.log('🤖 Sintetizando bloco via IA (Gemini)...');
+        console.log(`🤖 Sintetizando bloco via IA (${PROVIDERS[provider].label})...`);
+        if (provider === 'openrouter') {
+          return await synthesizeWithOpenRouter(promptText, apiKey);
+        }
         return await synthesizeWithGemini(promptText, apiKey);
       } catch (err) {
         console.warn('Falha na síntese por IA online, usando motor semântico local:', err);
@@ -273,6 +349,9 @@ Regras Cruciais:
     getApiKey,
     setApiKey,
     getProvider,
-    setProvider
+    setProvider,
+    getModel,
+    setModel,
+    getProviders
   };
 })();
