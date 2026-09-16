@@ -33,6 +33,12 @@ Se aparecer `BIPES/BIPES` como base, troque o repositório de destino no seletor
 3. Abra o Pull Request pela aba **Pull Requests** do repositório `obsat-oficial/satblocks` (não pelo banner de sugestão automática), garantindo que tanto a base quanto o compare apontam para `obsat-oficial/satblocks`.
 4. Peça revisão de outro membro da equipe antes de fazer o merge em `master`.
 
+## Blocos criados no SatBlocks Studio
+
+O [SatBlocks Studio](studio/index.html) permite que qualquer pessoa crie blocos customizados. Por segurança, esses blocos **ficam salvos só no navegador de quem criou** (via `localStorage`) — nunca são aplicados automaticamente à plataforma geral, e nunca chegam a este repositório sozinhos.
+
+Quem quiser propor um bloco criado no Studio para virar oficial pode clicar em **"📤 Enviar para Avaliação"** — isso abre uma Issue pré-preenchida (rótulo `bloco-proposto`) neste repositório, com o código gerado, para a equipe avaliar antes de incluir. Não existe (nem deveria existir) um caminho de "commit automático" a partir do navegador: isso exigiria guardar uma credencial de escrita do GitHub em código do lado do cliente, algo que qualquer visitante poderia extrair e usar para alterar o repositório.
+
 ## Licença
 
 Este projeto é distribuído sob a **GPL-3.0** (mesma licença do BIPES original) — veja [LICENSE](LICENSE). Qualquer contribuição enviada para este repositório é aceita sob os mesmos termos.

@@ -12,6 +12,16 @@ window.SatStudioCore = (function() {
   let previewWorkspace = null;
   let currentBlockConfig = null;
 
+  // Nomes de blocos oficiais do SatBlocks (gerado a partir de
+  // satblocks/block_definitions.js) — um bloco custom não pode usar um
+  // desses nomes, ou sobrescreveria silenciosamente o bloco oficial
+  // naquele navegador ao carregar a IDE principal.
+  let reservedBlockNames = new Set();
+  fetch('studio/reserved_block_names.json')
+    .then(r => r.json())
+    .then(list => { reservedBlockNames = new Set(list); })
+    .catch(() => {});
+
   // Catálogo de blocos existentes para servir como Template Base
   const BASE_TEMPLATES = [
     {
@@ -687,6 +697,18 @@ window.SatStudioCore = (function() {
       return { valid: false, errorType: 'NAME_ERROR', message: 'O nome do bloco deve conter apenas letras, números e underlines.' };
     }
 
+    // Trava 6: Colisão com bloco oficial do SatBlocks — sem isso, um bloco
+    // custom chamado, por exemplo, "sat_wifi_connect" sobrescreveria
+    // silenciosamente o bloco oficial de mesmo nome ao carregar a IDE
+    // principal nesse mesmo navegador.
+    if (reservedBlockNames.has(blockName)) {
+      return {
+        valid: false,
+        errorType: 'NAME_COLLISION',
+        message: `"${blockName}" já é o nome de um bloco oficial do SatBlocks. Escolha outro nome para o seu bloco customizado.`
+      };
+    }
+
     return { valid: true };
   }
 
@@ -757,6 +779,87 @@ window.SatStudioCore = (function() {
     });
 
     localStorage.setItem('satblocks_custom_blocks', JSON.stringify(customBlocks));
+    return true;
+  }
+
+  /**
+   * Abre uma Issue pré-preenchida no GitHub do projeto, propondo o bloco
+   * atual para avaliação da equipe antes de entrar oficialmente na
+   * plataforma. Não faz nenhum commit sozinho — só prepara o texto e deixa
+   * a pessoa decidir se quer mesmo enviar (precisa de conta no GitHub).
+   * Isso é intencional: um "commit automático" exigiria guardar uma
+   * credencial de escrita do GitHub no código do navegador, o que qualquer
+   * pessoa poderia roubar e usar pra alterar o repositório.
+   */
+  function submitBlockForReview(authorInfo) {
+    if (!currentBlockConfig) {
+      alert('Crie um bloco antes de enviar para avaliação.');
+      return false;
+    }
+
+    const jsDef = getEditedPanelCode('blockDefinitionOutput') || generateBlockJsDefinition(currentBlockConfig);
+    const pyGen = getEditedPanelCode('generatorStubOutput') || currentBlockConfig.pyCodeGenerator;
+    const toolboxXml = getEditedPanelCode('toolboxSnippetOutput') || generateToolboxXmlSnippet(currentBlockConfig);
+    const driverPy = getEditedPanelCode('driverPyOutput');
+
+    const check = validateBlockSafety(jsDef, pyGen, toolboxXml, currentBlockConfig.blockName);
+    if (!check.valid) {
+      alert(`⛔ Não é possível enviar: corrija primeiro o problema abaixo.\n\n${check.message}`);
+      return false;
+    }
+
+    const autor = (authorInfo || '').trim() || 'Não informado';
+    const title = `[Bloco Proposto] ${currentBlockConfig.label || currentBlockConfig.blockName}`;
+    let body =
+`### Bloco proposto via SatBlocks Studio
+
+**Nome interno:** \`${currentBlockConfig.blockName}\`
+**Categoria sugerida:** ${currentBlockConfig.category || 'Não informada'}
+**Autor/Equipe:** ${autor}
+
+> Gerado automaticamente pelo SatBlocks Studio. A equipe do SatBlocks avalia este bloco antes de incluí-lo oficialmente na plataforma — nada aqui é aplicado automaticamente.
+
+**Definição do bloco (JS):**
+\`\`\`javascript
+${jsDef}
+\`\`\`
+
+**Gerador MicroPython:**
+\`\`\`javascript
+${pyGen}
+\`\`\`
+
+**Trecho de toolbox (XML):**
+\`\`\`xml
+${toolboxXml}
+\`\`\`
+`;
+
+    if (driverPy && driverPy.trim()) {
+      body += `\n**Driver / snippet MicroPython original:**\n\`\`\`python\n${driverPy}\n\`\`\`\n`;
+    }
+
+    const params = new URLSearchParams({
+      title: title,
+      body: body,
+      labels: 'bloco-proposto'
+    });
+    const issueUrl = `https://github.com/obsat-oficial/satblocks/issues/new?${params.toString()}`;
+
+    // URLs muito longas podem ser recusadas pelo navegador/GitHub — nesse
+    // caso, copia o texto e abre a página de nova issue em branco pra
+    // colar manualmente, em vez de simplesmente falhar sem explicação.
+    if (issueUrl.length > 7500) {
+      const fallbackText = `${title}\n\n${body}`;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(fallbackText).catch(() => {});
+      }
+      alert('O bloco gerou um texto muito grande para ir direto na URL. Copiei o conteúdo para a área de transferência — vou abrir uma issue em branco no GitHub, é só colar (Ctrl+V) no corpo da issue.');
+      window.open('https://github.com/obsat-oficial/satblocks/issues/new?labels=bloco-proposto', '_blank', 'noopener');
+      return true;
+    }
+
+    window.open(issueUrl, '_blank', 'noopener');
     return true;
   }
 
@@ -849,6 +952,7 @@ window.SatStudioCore = (function() {
     recompileFromEditedPanels,
     getCurrentConfig: () => currentBlockConfig,
     injectIntoSatBlocksIDE,
+    submitBlockForReview,
     exportBlockImage
   };
 })();

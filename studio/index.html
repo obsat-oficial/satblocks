@@ -28,9 +28,9 @@
   <script src="core/msg/pt-br.js?v=2026.3"></script>
 
   <!-- Módulos do SatBlocks Studio Pro -->
-  <script src="js/sat_driver_hub.js"></script>
-  <script src="js/sat_ai_synthesizer.js"></script>
-  <script src="js/sat_studio_core.js"></script>
+  <script src="js/sat_driver_hub.js?v=20260916-1"></script>
+  <script src="js/sat_ai_synthesizer.js?v=20260916-1"></script>
+  <script src="js/sat_studio_core.js?v=20260916-1"></script>
 </head>
 <body class="studio-body">
 
@@ -63,8 +63,12 @@
         <span>⬅️</span> <span class="btn-label">Voltar para IDE</span>
       </button>
 
-      <button class="sat-btn success" id="btnInjectIDE" title="Injetar e testar imediatamente na IDE SatBlocks">
-        <span>📥</span> <span class="btn-label">Injetar na IDE</span>
+      <button class="sat-btn success" id="btnInjectIDE" title="Injetar e testar imediatamente na IDE SatBlocks (fica salvo só neste navegador)">
+        <span>📥</span> <span class="btn-label">Injetar na IDE (só este navegador)</span>
+      </button>
+
+      <button class="sat-btn" id="btnSubmitForReview" title="Propor este bloco para avaliação da equipe SatBlocks, via Issue no GitHub — nada é aplicado automaticamente" style="background: rgba(2, 132, 199, 0.15); border-color: rgba(2, 132, 199, 0.4); color: #38bdf8;">
+        <span>📤</span> <span class="btn-label">Enviar para Avaliação</span>
       </button>
 
       <button class="sat-btn primary" id="btnExportPng" title="Exportar imagem do bloco em alta resolução PNG (300 DPI)">
@@ -479,7 +483,16 @@
 
       document.getElementById('btnInjectIDE').addEventListener('click', () => {
         if (SatStudioCore.injectIntoSatBlocksIDE()) {
-          alert('✨ Bloco validado com 5 travas de segurança e injetado na IDE SatBlocks com sucesso!\nEle estará disponível imediatamente na sua barra de ferramentas.');
+          alert('✨ Bloco validado e injetado na IDE SatBlocks com sucesso!\nFica salvo só neste navegador — vai estar disponível na sua barra de ferramentas na próxima vez que abrir a IDE aqui.');
+        }
+      });
+
+      document.getElementById('btnSubmitForReview').addEventListener('click', () => {
+        const autor = prompt('Nome ou equipe (opcional) para identificar quem está propondo o bloco:', '');
+        if (autor === null) return; // cancelou
+        if (SatStudioCore.submitBlockForReview(autor)) {
+          // A própria função já abre o GitHub (ou copia o texto, se for
+          // grande demais para a URL) — nada mais a fazer aqui.
         }
       });
 
