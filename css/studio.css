@@ -137,6 +137,24 @@ body.studio-body {
   flex-wrap: nowrap;
 }
 
+.sat-btn.icon-only {
+  padding: 6px 10px;
+}
+
+/* .sat-actions-dropdown-container vem de satblocks_theme.css como "display:
+   none" (lá ele só aparece quando a topbar principal entra em modo
+   compacto). Aqui no Studio ele É a forma normal de agrupar as ações
+   secundárias, então fica sempre visível. */
+.studio-header .sat-actions-dropdown-container {
+  display: flex;
+}
+
+.sat-dropdown-menu-divider {
+  height: 1px;
+  background: var(--border-studio);
+  margin: 4px 2px;
+}
+
 /* BARRA DE CRIAÇÃO INTELIGENTE (MICROPYTHON & PROMPT/IA) */
 .studio-creation-bar {
   background: #ffffff;

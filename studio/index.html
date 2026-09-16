@@ -9,8 +9,8 @@
   <base href="/satblocks/">
 
   <!-- Estilos e Fontes -->
-  <link rel="stylesheet" href="css/satblocks_theme.css">
-  <link rel="stylesheet" href="css/studio.css">
+  <link rel="stylesheet" href="css/satblocks_theme.css?v=20260916-1">
+  <link rel="stylesheet" href="css/studio.css?v=20260916-1">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -57,35 +57,47 @@
       </select>
     </div>
 
-    <!-- AÇÕES DA TOPBAR -->
+    <!-- AÇÕES DA TOPBAR: só as duas ações realmente do dia a dia ficam sempre
+         visíveis; o resto (avaliação, exportações) vai para "Mais Ações",
+         reaproveitando o mesmo menu suspenso já usado na IDE principal
+         (css/satblocks_theme.css: .sat-tab-dropdown-btn / .sat-tabs-dropdown-menu). -->
     <div class="sat-toolbar">
-      <button class="sat-btn" onclick="window.location.href='index.html'" title="Voltar para a IDE principal">
-        <span>⬅️</span> <span class="btn-label">Voltar para IDE</span>
+      <button class="sat-btn icon-only" onclick="window.location.href='index.html'" title="Voltar para a IDE principal">
+        <span>⬅️</span>
       </button>
 
       <button class="sat-btn success" id="btnInjectIDE" title="Injetar e testar imediatamente na IDE SatBlocks (fica salvo só neste navegador)">
-        <span>📥</span> <span class="btn-label">Injetar na IDE (só este navegador)</span>
+        <span>📥</span> <span class="btn-label">Injetar na IDE</span>
       </button>
 
-      <button class="sat-btn" id="btnSubmitForReview" title="Propor este bloco para avaliação da equipe SatBlocks, via Issue no GitHub — nada é aplicado automaticamente" style="background: rgba(2, 132, 199, 0.15); border-color: rgba(2, 132, 199, 0.4); color: #38bdf8;">
-        <span>📤</span> <span class="btn-label">Enviar para Avaliação</span>
-      </button>
-
-      <button class="sat-btn primary" id="btnExportPng" title="Exportar imagem do bloco em alta resolução PNG (300 DPI)">
-        <span>🖼️</span> <span class="btn-label">Exportar PNG (300 DPI)</span>
-      </button>
-
-      <button class="sat-btn accent" id="btnExportSvg" title="Exportar vetor SVG escalável">
-        <span>📐</span> <span class="btn-label">Exportar SVG</span>
-      </button>
-
-      <button class="sat-btn" id="btnExportBlockJson" title="Salvar este bloco em um arquivo .json para guardar ou enviar para outra pessoa importar no Studio dela">
-        <span>💾</span> <span class="btn-label">Exportar Bloco (.json)</span>
-      </button>
-
-      <button class="sat-btn" id="btnImportBlockJson" title="Carregar um bloco a partir de um arquivo .json exportado por outra pessoa">
-        <span>📂</span> <span class="btn-label">Importar Bloco (.json)</span>
-      </button>
+      <div class="sat-actions-dropdown-container" id="studioMoreActionsContainer">
+        <button class="sat-tab-dropdown-btn" id="studioMoreActionsBtn" title="Mais ações" onclick="toggleStudioMoreActions(event)">
+          <span class="dropdown-icon-badge">⋯</span>
+          <span class="dropdown-tab-text">Mais Ações</span>
+          <svg class="dropdown-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+        <div class="sat-tabs-dropdown-menu" id="studioMoreActionsMenu">
+          <div class="sat-dropdown-item" id="btnSubmitForReview">
+            <span class="item-icon">📤</span> <span class="item-label">Enviar para Avaliação</span>
+          </div>
+          <div class="sat-dropdown-menu-divider"></div>
+          <div class="sat-dropdown-item" id="btnExportBlockJson">
+            <span class="item-icon">💾</span> <span class="item-label">Exportar Bloco (.json)</span>
+          </div>
+          <div class="sat-dropdown-item" id="btnImportBlockJson">
+            <span class="item-icon">📂</span> <span class="item-label">Importar Bloco (.json)</span>
+          </div>
+          <div class="sat-dropdown-menu-divider"></div>
+          <div class="sat-dropdown-item" id="btnExportPng">
+            <span class="item-icon">🖼️</span> <span class="item-label">Exportar PNG (300 DPI)</span>
+          </div>
+          <div class="sat-dropdown-item" id="btnExportSvg">
+            <span class="item-icon">📐</span> <span class="item-label">Exportar SVG</span>
+          </div>
+        </div>
+      </div>
       <input type="file" id="inputImportBlockJson" accept="application/json,.json" style="display:none;">
     </div>
   </header>
@@ -327,6 +339,23 @@
     let activeCodeTab = 'js';
     let activePythonTab = 'gen';
 
+    function toggleStudioMoreActions(event) {
+      if (event) event.stopPropagation();
+      const menu = document.getElementById('studioMoreActionsMenu');
+      if (menu) menu.classList.toggle('open');
+    }
+
+    function closeStudioMoreActions() {
+      const menu = document.getElementById('studioMoreActionsMenu');
+      if (menu) menu.classList.remove('open');
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#studioMoreActionsContainer')) {
+        closeStudioMoreActions();
+      }
+    });
+
     function openAIConfigModal() {
       const apiKey = window.SatAISynthesizer ? window.SatAISynthesizer.getApiKey() : '';
       document.getElementById('inputAIApiKey').value = apiKey;
@@ -497,6 +526,7 @@
       });
 
       document.getElementById('btnSubmitForReview').addEventListener('click', () => {
+        closeStudioMoreActions();
         const autor = prompt('Nome ou equipe (opcional) para identificar quem está propondo o bloco:', '');
         if (autor === null) return; // cancelou
         if (SatStudioCore.submitBlockForReview(autor)) {
@@ -506,18 +536,22 @@
       });
 
       document.getElementById('btnExportPng').addEventListener('click', () => {
+        closeStudioMoreActions();
         SatStudioCore.exportBlockImage('png');
       });
 
       document.getElementById('btnExportSvg').addEventListener('click', () => {
+        closeStudioMoreActions();
         SatStudioCore.exportBlockImage('svg');
       });
 
       document.getElementById('btnExportBlockJson').addEventListener('click', () => {
+        closeStudioMoreActions();
         SatStudioCore.exportBlockToFile();
       });
 
       document.getElementById('btnImportBlockJson').addEventListener('click', () => {
+        closeStudioMoreActions();
         document.getElementById('inputImportBlockJson').click();
       });
 
